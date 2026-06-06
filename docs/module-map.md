@@ -48,6 +48,13 @@ This repository is organized so the file names tell the implementation story.
 - `examples/workflow-showcase.schema.json`: canonical workflow showcase schema.
 - `examples/workflow-showcase.json`: canonical workflow showcase source data.
 - `examples/workflow-showcase.md`: canonical rendered workflow showcase output.
+- `examples/table-showcase.schema.json`: canonical table showcase schema.
+- `examples/table-showcase.json`: canonical table showcase source data.
+- `examples/table-showcase.md`: canonical rendered table showcase output.
+
+## Scripts
+
+- `scripts/generate_table_showcase.py`: portable Python generator for the table showcase example.
 
 ## Tests
 

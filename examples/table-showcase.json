@@ -1,0 +1,29 @@
+{
+  "intro": "This example shows how the generation fabric can render tables from structured JSON.",
+  "status_table": [
+    {
+      "artifact": "Schema",
+      "source": "json_schema_crud.py new",
+      "format": "JSON Schema",
+      "notes": "Defines the contract"
+    },
+    {
+      "artifact": "Sample JSON",
+      "source": "json-sample",
+      "format": "JSON",
+      "notes": "Generated from schema hints"
+    },
+    {
+      "artifact": "Markdown",
+      "source": "markdown",
+      "format": "Markdown",
+      "notes": "Rendered deterministically"
+    }
+  ],
+  "action_items": [
+    "Define the schema contract",
+    "Generate the JSON sample",
+    "Render Markdown from the sample"
+  ],
+  "closing_note": "The table is generated from JSON, and the JSON is generated from the schema."
+}

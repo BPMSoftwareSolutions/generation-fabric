@@ -17,6 +17,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `generation_fabric/schema/` owns schema creation, inference, and validation.
 - `generation_fabric/markdown/` owns Markdown rendering, the contract registry, contract scaffolding, and Markdown import.
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
+- `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
 - `tests/` contains end-to-end coverage for the published behaviors.
 
 If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).

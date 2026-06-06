@@ -44,6 +44,18 @@ MARKDOWN_CONTRACTS: dict[str, MarkdownContractSpec] = {
         sample_path=EXAMPLES_DIR / "readme.json",
         base_name="readme",
     ),
+    "workflow-showcase": MarkdownContractSpec(
+        kind="workflow-showcase",
+        schema_path=EXAMPLES_DIR / "workflow-showcase.schema.json",
+        sample_path=EXAMPLES_DIR / "workflow-showcase.json",
+        base_name="workflow-showcase",
+    ),
+    "table-showcase": MarkdownContractSpec(
+        kind="table-showcase",
+        schema_path=EXAMPLES_DIR / "table-showcase.schema.json",
+        sample_path=EXAMPLES_DIR / "table-showcase.json",
+        base_name="table-showcase",
+    ),
 }
 
 

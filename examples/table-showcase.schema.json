@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Table Showcase",
+  "description": "A contract-driven example that demonstrates Markdown tables and structured document generation.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "intro": {
+      "type": "string",
+      "x-sample": "This example shows how the generation fabric can render tables from structured JSON.",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "status_table": {
+      "type": "array",
+      "x-sample": [
+        {
+          "artifact": "Schema",
+          "source": "json_schema_crud.py new",
+          "format": "JSON Schema",
+          "notes": "Defines the contract"
+        },
+        {
+          "artifact": "Sample JSON",
+          "source": "json-sample",
+          "format": "JSON",
+          "notes": "Generated from schema hints"
+        },
+        {
+          "artifact": "Markdown",
+          "source": "markdown",
+          "format": "Markdown",
+          "notes": "Rendered deterministically"
+        }
+      ],
+      "x-markdown": {
+        "kind": "table"
+      },
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact",
+          "source",
+          "format",
+          "notes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "action_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-sample": [
+        "Define the schema contract",
+        "Generate the JSON sample",
+        "Render Markdown from the sample"
+      ],
+      "x-markdown": {
+        "kind": "ordered-list"
+      }
+    },
+    "closing_note": {
+      "type": "string",
+      "x-sample": "The table is generated from JSON, and the JSON is generated from the schema.",
+      "x-markdown": {
+        "kind": "blockquote"
+      }
+    }
+  },
+  "required": [
+    "intro",
+    "status_table",
+    "action_items",
+    "closing_note"
+  ]
+}
