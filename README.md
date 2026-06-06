@@ -15,7 +15,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `generation_fabric/core/` holds shared JSON and IO helpers.
 - `generation_fabric/json_documents/` handles generic JSON tree CRUD.
 - `generation_fabric/schema/` owns schema creation, inference, and validation.
-- `generation_fabric/markdown/` owns Markdown rendering, the contract registry, and contract scaffolding.
+- `generation_fabric/markdown/` owns Markdown rendering, the contract registry, contract scaffolding, and Markdown import.
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `tests/` contains end-to-end coverage for the published behaviors.
 
@@ -84,6 +84,12 @@ Scaffold a ready-to-use Markdown contract:
 python json_schema_crud.py markdown-contract --directory examples --with-markdown
 ```
 
+Import a legacy Markdown file into a schema plus JSON contract:
+
+```powershell
+python json_schema_crud.py markdown-import --file legacy.md --directory generated --with-markdown
+```
+
 Start the interactive schema shell:
 
 ```powershell
@@ -103,6 +109,7 @@ python json_schema_crud.py interactive
 - `anyof`: attach an `anyOf` combinator
 - `markdown`: render Markdown from a schema plus JSON data
 - `markdown-contract`: scaffold a canonical document contract
+- `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
 - `interactive`: use the tiny schema shell for quick experiments
 
 ## Canonical Example

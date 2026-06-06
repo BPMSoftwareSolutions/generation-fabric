@@ -66,8 +66,13 @@ def markdown_list(value: Any, ordered: bool = False) -> str:
 def markdown_blockquote(value: Any) -> str:
     """Render a blockquote block."""
 
-    text = markdown_paragraph(value)
-    lines = text.splitlines() or [text]
+    if isinstance(value, str):
+        lines = value.splitlines() or [value]
+    elif isinstance(value, list):
+        lines = [markdown_inline_text(item) for item in value] or [""]
+    else:
+        text = markdown_inline_text(value)
+        lines = text.splitlines() or [text]
     return "\n".join(f"> {line}" if line else ">" for line in lines)
 
 

@@ -1,2 +1,1 @@
-"""Markdown rendering and scaffolding."""
-
+"""Markdown rendering, scaffolding, and import helpers."""

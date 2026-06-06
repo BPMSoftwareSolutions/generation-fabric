@@ -213,6 +213,77 @@ class JsonSchemaCrudTests(unittest.TestCase):
             self.assertIn("## Renderer", rendered)
             self.assertIn("- Validates the schema before rendering", rendered)
 
+    def test_markdown_import_generates_a_reusable_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            source_path = tmp_path / "legacy.md"
+            output_dir = tmp_path / "generated"
+            source_text = (
+                "# Legacy Notes\n\n"
+                "This is an intro paragraph.\n\n"
+                "> Self-healing starts here.\n"
+                "> Legacy content becomes structure.\n\n"
+                "- Alpha\n"
+                "- Beta\n\n"
+                "1. First\n"
+                "2. Second\n\n"
+                "```python\n"
+                "print(\"hello\")\n"
+                "```\n\n"
+                "| Name | Value |\n"
+                "| --- | --- |\n"
+                "| One | 1 |\n"
+                "| Two | 2 |\n"
+            )
+            source_path.write_text(source_text, encoding="utf-8")
+
+            code, stdout, stderr = self.run_cli(
+                "markdown-import",
+                "--file",
+                str(source_path),
+                "--directory",
+                str(output_dir),
+                "--with-markdown",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("imported markdown contract", stdout)
+
+            schema_path = output_dir / "legacy.schema.json"
+            data_path = output_dir / "legacy.json"
+            markdown_path = output_dir / "legacy.md"
+            self.assertTrue(schema_path.exists())
+            self.assertTrue(data_path.exists())
+            self.assertTrue(markdown_path.exists())
+
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            data = json.loads(data_path.read_text(encoding="utf-8"))
+            rendered = markdown_path.read_text(encoding="utf-8")
+
+            self.assertEqual(schema["title"], "Legacy Notes")
+            self.assertEqual(schema["properties"]["paragraph_1"]["x-markdown"]["kind"], "paragraph")
+            self.assertEqual(schema["properties"]["blockquote_1"]["x-markdown"]["kind"], "blockquote")
+            self.assertEqual(schema["properties"]["list_1"]["x-markdown"]["kind"], "list")
+            self.assertEqual(schema["properties"]["ordered_list_1"]["x-markdown"]["kind"], "ordered-list")
+            self.assertEqual(schema["properties"]["code_1"]["x-markdown"]["kind"], "code")
+            self.assertEqual(schema["properties"]["table_1"]["x-markdown"]["kind"], "table")
+            self.assertEqual(data["paragraph_1"], "This is an intro paragraph.")
+            self.assertEqual(data["blockquote_1"], "Self-healing starts here.\nLegacy content becomes structure.")
+            self.assertEqual(data["list_1"], ["Alpha", "Beta"])
+            self.assertEqual(data["ordered_list_1"], ["First", "Second"])
+            self.assertEqual(data["code_1"], 'print("hello")')
+            self.assertEqual(data["table_1"][0]["Name"], "One")
+
+            code, stdout, stderr = self.run_cli(
+                "markdown",
+                "--schema",
+                str(schema_path),
+                "--data-file",
+                str(data_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertEqual(stdout, rendered)
+            self.assertEqual(rendered.strip(), source_text.strip())
+
     def test_example_contract_files_are_in_sync(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
         schema_path = repo_root / "examples" / "release-notes.schema.json"

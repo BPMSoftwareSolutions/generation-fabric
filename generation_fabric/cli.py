@@ -17,6 +17,7 @@ from generation_fabric.markdown.contracts import (
     DEFAULT_MARKDOWN_CONTRACT_KIND,
     scaffold_markdown_contract,
 )
+from generation_fabric.markdown.importer import scaffold_markdown_import
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.markdown.registry import list_markdown_contract_kinds
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
@@ -348,6 +349,27 @@ def markdown_contract_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def markdown_import_command(args: argparse.Namespace) -> int:
+    """Import a Markdown file into a schema, JSON sample, and optional rendered Markdown."""
+
+    _schema, _sample, schema_path, data_path, markdown_path = scaffold_markdown_import(
+        args.file,
+        args.directory,
+        base_name=args.base_name,
+        title=args.title,
+        description=args.description,
+        with_markdown=args.with_markdown,
+        overwrite=args.overwrite,
+        draft=args.draft,
+    )
+    print(f"imported markdown contract from: {args.file}")
+    if args.with_markdown:
+        print(f"generated: {schema_path}, {data_path}, {markdown_path}")
+    else:
+        print(f"generated: {schema_path}, {data_path}")
+    return 0
+
+
 def create_schema_command(args: argparse.Namespace) -> int:
     """Create a schema file and return an exit code."""
 
@@ -588,6 +610,44 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing existing scaffold files",
     )
     markdown_contract_parser.set_defaults(func=markdown_contract_command)
+
+    markdown_import_parser = subparsers.add_parser(
+        "markdown-import",
+        help="Import a Markdown file into a schema plus JSON contract",
+    )
+    markdown_import_parser.add_argument("--file", required=True, help="Path to the legacy Markdown file")
+    markdown_import_parser.add_argument(
+        "--directory",
+        default="generated",
+        help="Directory where the imported contract files should be written",
+    )
+    markdown_import_parser.add_argument(
+        "--base-name",
+        default="",
+        help="Override the default filename prefix",
+    )
+    markdown_import_parser.add_argument("--title", default="", help="Override the inferred schema title")
+    markdown_import_parser.add_argument(
+        "--description",
+        default="",
+        help="Optional schema description for the imported contract",
+    )
+    markdown_import_parser.add_argument(
+        "--draft",
+        default=DEFAULT_SCHEMA_DRAFT,
+        help="JSON Schema draft URI to store in $schema",
+    )
+    markdown_import_parser.add_argument(
+        "--with-markdown",
+        action="store_true",
+        help="Also render Markdown from the imported contract to verify the round trip",
+    )
+    markdown_import_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing existing imported files",
+    )
+    markdown_import_parser.set_defaults(func=markdown_import_command)
 
     interactive_parser = subparsers.add_parser("interactive", help="Start a tiny interactive shell")
     interactive_parser.add_argument("--file", default="", help="Optional schema file to load at startup")

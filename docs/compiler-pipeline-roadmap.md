@@ -160,6 +160,16 @@ Only do this if we need editable Markdown as a structured document model.
 
 This is where we would introduce a richer Markdown AST or document model, so edits are made against structure instead of raw text.
 
+### Phase 7: Import Legacy Markdown
+
+Add a Markdown importer that turns existing `.md` files into a schema plus JSON contract.
+
+Includes:
+
+- legacy Markdown parsing for common block types
+- generated schema and sample JSON
+- optional round-trip rendering for verification
+
 Acceptance criteria:
 
 - Markdown can round-trip through a structured model if needed
