@@ -1,0 +1,87 @@
+{
+  "intro": "This example shows that raw Markdown syntax can still be captured as editable JSON sections.",
+  "sections": [
+    {
+      "title": "Inline HTML",
+      "summary": "Inline HTML can be preserved as raw Markdown text and edited through JSON.",
+      "snippet": "<details>\n  <summary>Expand me</summary>\n  <p>Hidden content can stay in the Markdown source.</p>\n</details>",
+      "notes": [
+        "The raw block is preserved without inventing a new HTML model.",
+        "The section remains editable through JSON CRUD operations."
+      ]
+    },
+    {
+      "title": "Footnotes",
+      "summary": "Footnote references and definitions can be preserved as raw Markdown text.",
+      "snippet": "Here is a sentence with a footnote.[^1]\n\n[^1]: Footnotes are captured as raw markdown text.",
+      "notes": [
+        "The source remains easy to edit.",
+        "The renderer does not need special footnote semantics to keep the text intact."
+      ]
+    },
+    {
+      "title": "Task Lists",
+      "summary": "Task list checkboxes can remain plain Markdown while still being tracked in JSON.",
+      "snippet": "- [ ] Draft schema\n- [x] Render output\n- [ ] Verify round-trip",
+      "notes": [
+        "Checkbox syntax stays visible in the output.",
+        "The JSON layer can still update the section body atomically."
+      ]
+    },
+    {
+      "title": "Nested Lists",
+      "summary": "Nested list syntax can be preserved as raw Markdown content.",
+      "snippet": "- Parent\n  - Child\n  - Another child\n- Sibling",
+      "notes": [
+        "The structure remains readable in source control.",
+        "No custom nested-list model is required for pass-through use cases."
+      ]
+    },
+    {
+      "title": "Definition Lists",
+      "summary": "Definition list syntax can be carried through as raw text.",
+      "snippet": "Term\n: Definition\nAnother term\n: Another definition",
+      "notes": [
+        "The importer does not need to normalize this into a special shape.",
+        "Editors can still update the text through CRUD operations."
+      ]
+    },
+    {
+      "title": "Admonitions",
+      "summary": "Flavor-specific admonition syntax can live inside a raw section.",
+      "snippet": "> [!NOTE]\n> This content is preserved as blockquote-style markdown.\n> It can still be edited as raw text.",
+      "notes": [
+        "The fabric can preserve the syntax even when it does not interpret it semantically.",
+        "The source remains deterministic and diffable."
+      ]
+    },
+    {
+      "title": "HTML Tables",
+      "summary": "HTML table markup can be preserved as raw Markdown source when needed.",
+      "snippet": "<table>\n  <tr><th>Name</th><th>Value</th></tr>\n  <tr><td>Alpha</td><td>1</td></tr>\n</table>",
+      "notes": [
+        "This keeps custom table layouts intact.",
+        "It avoids forcing HTML into a simplified Markdown table model."
+      ]
+    },
+    {
+      "title": "Math",
+      "summary": "Inline and block math can remain raw source text in a Markdown section.",
+      "snippet": "Euler said $e^{i\\pi} + 1 = 0$ and display math can stay as plain text:\n$$\nx^2 + y^2 = z^2\n$$",
+      "notes": [
+        "Math delimiters stay visible in source.",
+        "A richer math renderer can be added later if we choose to invest in it."
+      ]
+    },
+    {
+      "title": "Embedded Media",
+      "summary": "Images, iframes, and other embedded media can be preserved as raw content.",
+      "snippet": "<img src=\"diagram.png\" alt=\"Diagram\" />\n<iframe src=\"https://example.com/demo\"></iframe>",
+      "notes": [
+        "The section stays editable as raw Markdown text.",
+        "Media semantics can be layered on later if needed."
+      ]
+    }
+  ],
+  "closing_note": "The section body can remain raw text while still being fully editable through JSON CRUD operations."
+}

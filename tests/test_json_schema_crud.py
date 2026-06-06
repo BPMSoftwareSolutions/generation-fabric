@@ -410,6 +410,7 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertIn("readme", kinds)
         self.assertIn("workflow-showcase", kinds)
         self.assertIn("table-showcase", kinds)
+        self.assertIn("raw-sections-showcase", kinds)
 
         spec = get_markdown_contract_spec(DEFAULT_MARKDOWN_CONTRACT_KIND)
         self.assertEqual(spec.kind, DEFAULT_MARKDOWN_CONTRACT_KIND)
@@ -440,6 +441,12 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertEqual(table_spec.base_name, "table-showcase")
         self.assertTrue(table_spec.schema_path.exists())
         self.assertTrue(table_spec.sample_path.exists())
+
+        raw_sections_spec = get_markdown_contract_spec("raw-sections-showcase")
+        self.assertEqual(raw_sections_spec.kind, "raw-sections-showcase")
+        self.assertEqual(raw_sections_spec.base_name, "raw-sections-showcase")
+        self.assertTrue(raw_sections_spec.schema_path.exists())
+        self.assertTrue(raw_sections_spec.sample_path.exists())
 
         with self.assertRaises(jsc.SchemaError):
             get_markdown_contract_spec("does-not-exist")
@@ -546,6 +553,40 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertIn("| artifact | source | format | notes |", stdout)
         self.assertEqual(generated_schema["title"], "Table Showcase")
         self.assertEqual(generated_data["status_table"][0]["artifact"], "Schema")
+
+    def test_raw_sections_showcase_is_generated_by_the_portable_python_script(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        schema_path = repo_root / "examples" / "raw-sections-showcase.schema.json"
+        data_path = repo_root / "examples" / "raw-sections-showcase.json"
+        markdown_path = repo_root / "examples" / "raw-sections-showcase.md"
+
+        script_path = repo_root / "scripts" / "generate_raw_sections_showcase.py"
+        result = subprocess.run(
+            [sys.executable, str(script_path)],
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("generated:", result.stdout)
+
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        data = json.loads(data_path.read_text(encoding="utf-8"))
+
+        code, stdout, stderr = self.run_cli(
+            "markdown",
+            "--schema",
+            str(schema_path),
+            "--data-file",
+            str(data_path),
+        )
+        self.assertEqual(code, 0, stderr)
+        self.assertEqual(stdout, markdown_path.read_text(encoding="utf-8"))
+        self.assertIn("<details>", stdout)
+        self.assertIn("[^1]: Footnotes are captured as raw markdown text.", stdout)
+        self.assertEqual(schema["title"], "Raw Sections Showcase")
+        self.assertEqual(data["sections"][0]["title"], "Inline HTML")
 
     def test_markdown_contract_scaffold_can_emit_docs_showcase(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

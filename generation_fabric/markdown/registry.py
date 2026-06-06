@@ -56,6 +56,12 @@ MARKDOWN_CONTRACTS: dict[str, MarkdownContractSpec] = {
         sample_path=EXAMPLES_DIR / "table-showcase.json",
         base_name="table-showcase",
     ),
+    "raw-sections-showcase": MarkdownContractSpec(
+        kind="raw-sections-showcase",
+        schema_path=EXAMPLES_DIR / "raw-sections-showcase.schema.json",
+        sample_path=EXAMPLES_DIR / "raw-sections-showcase.json",
+        base_name="raw-sections-showcase",
+    ),
 }
 
 

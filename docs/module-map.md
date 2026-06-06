@@ -11,6 +11,11 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/cli.py`: command parsing and orchestration only.
 - `generation_fabric/exceptions.py`: shared exception types.
 
+## Reference Docs
+
+- `docs/compiler-pipeline-roadmap.md`: implementation roadmap for the compiler-style pipeline.
+- `docs/unsupported-markdown-features.md`: manual reference for Markdown features that are not yet modeled by the fabric.
+
 ## Core
 
 - `generation_fabric/core/io.py`: atomic JSON/text IO and JSON loading helpers.
@@ -51,10 +56,14 @@ This repository is organized so the file names tell the implementation story.
 - `examples/table-showcase.schema.json`: canonical table showcase schema.
 - `examples/table-showcase.json`: canonical table showcase source data.
 - `examples/table-showcase.md`: canonical rendered table showcase output.
+- `examples/raw-sections-showcase.schema.json`: canonical raw-sections showcase schema.
+- `examples/raw-sections-showcase.json`: canonical raw-sections showcase source data.
+- `examples/raw-sections-showcase.md`: canonical rendered raw-sections showcase output.
 
 ## Scripts
 
 - `scripts/generate_table_showcase.py`: portable Python generator for the table showcase example.
+- `scripts/generate_raw_sections_showcase.py`: portable Python generator for the raw sections showcase example.
 
 ## Tests
 
