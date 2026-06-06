@@ -29,7 +29,7 @@ This repository is organized so the file names tell the implementation story.
 ## Markdown
 
 - `generation_fabric/markdown/renderer.py`: deterministic Markdown rendering from schema plus JSON data.
-- `generation_fabric/markdown/contracts.py`: canonical Markdown contract scaffolding and examples.
+- `generation_fabric/markdown/contracts.py`: loads canonical Markdown contract assets and scaffolds example files.
 
 ## Example Assets
 
@@ -40,4 +40,3 @@ This repository is organized so the file names tell the implementation story.
 ## Tests
 
 - `tests/test_json_schema_crud.py`: CLI-level and end-to-end coverage for schema, inference, scaffolding, and Markdown generation.
-
