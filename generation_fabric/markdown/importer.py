@@ -84,10 +84,11 @@ def _parse_markdown_blocks(text: str) -> tuple[str, list[dict[str, Any]]]:
         nonlocal paragraph_lines, seen_content
         if not paragraph_lines:
             return
-        paragraph = " ".join(part.strip() for part in paragraph_lines).strip()
+        paragraph = "\n".join(part.rstrip() for part in paragraph_lines).rstrip()
+        is_raw = len(paragraph_lines) > 1
         paragraph_lines = []
         if paragraph:
-            blocks.append({"kind": "paragraph", "text": paragraph})
+            blocks.append({"kind": "raw" if is_raw else "paragraph", "text": paragraph})
             seen_content = True
 
     while index < len(lines):
@@ -249,6 +250,15 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
             {
                 "type": "string",
                 "x-markdown": {"kind": "paragraph"},
+            },
+            block.get("text", ""),
+        )
+
+    if kind == "raw":
+        return (
+            {
+                "type": "string",
+                "x-markdown": {"kind": "raw"},
             },
             block.get("text", ""),
         )

@@ -52,6 +52,16 @@ def markdown_paragraph(value: Any) -> str:
     return markdown_inline_text(value)
 
 
+def markdown_raw(value: Any) -> str:
+    """Render a raw Markdown block without normalization."""
+
+    if isinstance(value, str):
+        return value.rstrip()
+    if isinstance(value, list):
+        return "\n".join(str(item) for item in value).rstrip()
+    return markdown_inline_text(value)
+
+
 def markdown_list(value: Any, ordered: bool = False) -> str:
     """Render a list block."""
 
@@ -198,6 +208,9 @@ def render_markdown_field(field_name: str, schema_node: Any, value: Any, level: 
         if meta.get("label"):
             return [f"**{field_name}**: {markdown_paragraph(value)}"]
         return [markdown_paragraph(value)]
+
+    if kind == "raw":
+        return [markdown_raw(value)]
 
     if kind == "list":
         return [markdown_list(value, ordered=False)]

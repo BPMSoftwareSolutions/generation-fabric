@@ -209,6 +209,23 @@ Why it matters:
 - proves the same pipeline can handle highly structured technical docs
 - introduces more table-heavy and nested content
 
+### 2b. Repository README
+
+This is the important migration example now that the README is contract-backed.
+
+Shape:
+
+- repository overview
+- module taxonomy
+- CLI command examples
+- canonical artifacts and tests
+
+Why it matters:
+
+- proves that the generation fabric can own the repository's own README
+- demonstrates exact round-trip generation from schema plus JSON
+- gives us a real migration pattern for legacy Markdown documents
+
 ### 3. Incident Report
 
 Good example for operational content.

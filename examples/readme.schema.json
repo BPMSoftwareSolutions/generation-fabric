@@ -1,0 +1,360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generation Fabric",
+  "type": "object",
+  "properties": {
+    "paragraph_1": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "paragraph_2": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "paragraph_3": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "paragraph_4": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "heading_h2_1": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "list_1": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "raw_1": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "raw"
+      }
+    },
+    "heading_h2_2": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "paragraph_5": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "list_2": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "paragraph_6": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "heading_h2_3": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "paragraph_7": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_1": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_8": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_2": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_9": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_3": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_10": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_4": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_11": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_5": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_12": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_6": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_13": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_7": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_14": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_8": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_15": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_9": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "heading_h2_4": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "list_3": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "heading_h2_5": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "paragraph_16": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "list_4": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "paragraph_17": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "heading_h2_6": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "paragraph_18": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_10": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_19": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "list_5": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "heading_h2_7": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "paragraph_20": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "ordered_list_1": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "ordered-list"
+      }
+    },
+    "paragraph_21": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    }
+  },
+  "required": [
+    "paragraph_1",
+    "paragraph_2",
+    "paragraph_3",
+    "paragraph_4",
+    "heading_h2_1",
+    "list_1",
+    "raw_1",
+    "heading_h2_2",
+    "paragraph_5",
+    "list_2",
+    "paragraph_6",
+    "heading_h2_3",
+    "paragraph_7",
+    "code_1",
+    "paragraph_8",
+    "code_2",
+    "paragraph_9",
+    "code_3",
+    "paragraph_10",
+    "code_4",
+    "paragraph_11",
+    "code_5",
+    "paragraph_12",
+    "code_6",
+    "paragraph_13",
+    "code_7",
+    "paragraph_14",
+    "code_8",
+    "paragraph_15",
+    "code_9",
+    "heading_h2_4",
+    "list_3",
+    "heading_h2_5",
+    "paragraph_16",
+    "list_4",
+    "paragraph_17",
+    "heading_h2_6",
+    "paragraph_18",
+    "code_10",
+    "paragraph_19",
+    "list_5",
+    "heading_h2_7",
+    "paragraph_20",
+    "ordered_list_1",
+    "paragraph_21"
+  ],
+  "additionalProperties": false
+}

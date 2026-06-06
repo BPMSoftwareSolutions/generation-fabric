@@ -32,6 +32,12 @@ MARKDOWN_CONTRACTS: dict[str, MarkdownContractSpec] = {
         sample_path=EXAMPLES_DIR / "release-notes.json",
         base_name="release-notes",
     ),
+    "readme": MarkdownContractSpec(
+        kind="readme",
+        schema_path=EXAMPLES_DIR / "readme.schema.json",
+        sample_path=EXAMPLES_DIR / "readme.json",
+        base_name="readme",
+    ),
 }
 
 

@@ -307,6 +307,7 @@ class JsonSchemaCrudTests(unittest.TestCase):
     def test_markdown_contract_registry_is_discoverable(self) -> None:
         kinds = list_markdown_contract_kinds()
         self.assertIn(DEFAULT_MARKDOWN_CONTRACT_KIND, kinds)
+        self.assertIn("readme", kinds)
 
         spec = get_markdown_contract_spec(DEFAULT_MARKDOWN_CONTRACT_KIND)
         self.assertEqual(spec.kind, DEFAULT_MARKDOWN_CONTRACT_KIND)
@@ -314,8 +315,30 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertTrue(spec.schema_path.exists())
         self.assertTrue(spec.sample_path.exists())
 
+        readme_spec = get_markdown_contract_spec("readme")
+        self.assertEqual(readme_spec.kind, "readme")
+        self.assertEqual(readme_spec.base_name, "readme")
+        self.assertTrue(readme_spec.schema_path.exists())
+        self.assertTrue(readme_spec.sample_path.exists())
+
         with self.assertRaises(jsc.SchemaError):
             get_markdown_contract_spec("does-not-exist")
+
+    def test_readme_contract_renders_the_checked_in_readme(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        schema_path = repo_root / "examples" / "readme.schema.json"
+        data_path = repo_root / "examples" / "readme.json"
+        readme_path = repo_root / "README.md"
+
+        code, stdout, stderr = self.run_cli(
+            "markdown",
+            "--schema",
+            str(schema_path),
+            "--data-file",
+            str(data_path),
+        )
+        self.assertEqual(code, 0, stderr)
+        self.assertEqual(stdout, readme_path.read_text(encoding="utf-8"))
 
     def test_interactive_mode_can_create_and_validate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
