@@ -307,6 +307,7 @@ class JsonSchemaCrudTests(unittest.TestCase):
     def test_markdown_contract_registry_is_discoverable(self) -> None:
         kinds = list_markdown_contract_kinds()
         self.assertIn(DEFAULT_MARKDOWN_CONTRACT_KIND, kinds)
+        self.assertIn("docs-showcase", kinds)
         self.assertIn("readme", kinds)
 
         spec = get_markdown_contract_spec(DEFAULT_MARKDOWN_CONTRACT_KIND)
@@ -314,6 +315,12 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertEqual(spec.base_name, "release-notes")
         self.assertTrue(spec.schema_path.exists())
         self.assertTrue(spec.sample_path.exists())
+
+        docs_spec = get_markdown_contract_spec("docs-showcase")
+        self.assertEqual(docs_spec.kind, "docs-showcase")
+        self.assertEqual(docs_spec.base_name, "docs-showcase")
+        self.assertTrue(docs_spec.schema_path.exists())
+        self.assertTrue(docs_spec.sample_path.exists())
 
         readme_spec = get_markdown_contract_spec("readme")
         self.assertEqual(readme_spec.kind, "readme")
@@ -339,6 +346,56 @@ class JsonSchemaCrudTests(unittest.TestCase):
         )
         self.assertEqual(code, 0, stderr)
         self.assertEqual(stdout, readme_path.read_text(encoding="utf-8"))
+
+    def test_docs_showcase_contract_renders_code_fences(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        schema_path = repo_root / "examples" / "docs-showcase.schema.json"
+        data_path = repo_root / "examples" / "docs-showcase.json"
+        showcase_path = repo_root / "examples" / "docs-showcase.md"
+
+        code, stdout, stderr = self.run_cli(
+            "markdown",
+            "--schema",
+            str(schema_path),
+            "--data-file",
+            str(data_path),
+        )
+        self.assertEqual(code, 0, stderr)
+        self.assertEqual(stdout, showcase_path.read_text(encoding="utf-8"))
+        self.assertIn("```mermaid", stdout)
+        self.assertIn("```csharp", stdout)
+        self.assertIn("```json", stdout)
+
+    def test_markdown_contract_scaffold_can_emit_docs_showcase(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            code, stdout, stderr = self.run_cli(
+                "markdown-contract",
+                "--kind",
+                "docs-showcase",
+                "--directory",
+                str(tmp_path),
+                "--with-markdown",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("scaffolded markdown contract", stdout)
+
+            schema_path = tmp_path / "docs-showcase.schema.json"
+            data_path = tmp_path / "docs-showcase.json"
+            markdown_path = tmp_path / "docs-showcase.md"
+            self.assertTrue(schema_path.exists())
+            self.assertTrue(data_path.exists())
+            self.assertTrue(markdown_path.exists())
+
+            code, stdout, stderr = self.run_cli(
+                "markdown",
+                "--schema",
+                str(schema_path),
+                "--data-file",
+                str(data_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertEqual(stdout, markdown_path.read_text(encoding="utf-8"))
 
     def test_interactive_mode_can_create_and_validate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

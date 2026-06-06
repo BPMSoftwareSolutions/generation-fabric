@@ -226,6 +226,24 @@ Why it matters:
 - demonstrates exact round-trip generation from schema plus JSON
 - gives us a real migration pattern for legacy Markdown documents
 
+### 2c. Documentation Showcase
+
+This is the example that pushes deeper Markdown features.
+
+Shape:
+
+- overview and highlights
+- Mermaid diagram fences
+- fenced C# snippets
+- fenced JSON snippets
+- nested repeatable sections
+
+Why it matters:
+
+- proves that language-tagged code fences are contract-driven
+- shows the renderer can cover docs, diagrams, and code examples in one pipeline
+- gives us a richer canonical sample for future documentation work
+
 ### 3. Incident Report
 
 Good example for operational content.

@@ -1,0 +1,41 @@
+{
+  "overview": "This contract demonstrates how the generation fabric can render diagrams, code samples, and structured notes from a schema and JSON payload.",
+  "highlights": [
+    "Mermaid diagram",
+    "C# fenced code",
+    "JSON fenced code",
+    "Nested sections"
+  ],
+  "sections": [
+    {
+      "title": "Pipeline",
+      "summary": "The contract is still deterministic: schema validates JSON, then Markdown is rendered from the structured payload.",
+      "diagram": "graph LR\n  S[Schema] --> J[JSON]\n  J --> M[Markdown]\n  M --> D[Docs]\n",
+      "csharp": "public sealed class Example\n{\n    public string Title { get; init; } = \"Generation Fabric\";\n}\n",
+      "json": {
+        "language": "json",
+        "source": "schema + payload",
+        "deterministic": true
+      },
+      "notes": [
+        "The diagram is emitted as a mermaid fence.",
+        "The C# snippet stays syntax-highlighted.",
+        "The JSON object is emitted as a fenced JSON block."
+      ]
+    },
+    {
+      "title": "Migration",
+      "summary": "Legacy Markdown can be imported, but the contract keeps the generator honest for new material.",
+      "diagram": "graph LR\n  L[Legacy Markdown] --> I[Importer]\n  I --> C[Contract]\n  C --> R[Render]\n",
+      "csharp": "public static string Render() => \"deterministic\";\n",
+      "json": {
+        "migrated": true,
+        "status": "ready"
+      },
+      "notes": [
+        "The importer can bootstrap a contract from existing docs.",
+        "The registry keeps the new kind discoverable."
+      ]
+    }
+  ]
+}

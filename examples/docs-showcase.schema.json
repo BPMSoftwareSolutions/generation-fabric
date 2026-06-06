@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Documentation Showcase",
+  "description": "A schema-driven example that demonstrates Mermaid, C#, JSON, and nested sections.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "overview": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "sections": {
+      "type": "array",
+      "x-markdown": {
+        "kind": "section",
+        "heading": ""
+      },
+      "items": {
+        "type": "object",
+        "x-markdown": {
+          "kind": "section",
+          "heading": ""
+        },
+        "properties": {
+          "title": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "heading",
+              "level": 2
+            }
+          },
+          "summary": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "paragraph"
+            }
+          },
+          "diagram": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "code",
+              "language": "mermaid"
+            }
+          },
+          "csharp": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "code",
+              "language": "csharp"
+            }
+          },
+          "json": {
+            "type": "object",
+            "x-markdown": {
+              "kind": "code",
+              "language": "json"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-markdown": {
+              "kind": "list"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "summary",
+          "diagram",
+          "csharp",
+          "json",
+          "notes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "overview",
+    "highlights",
+    "sections"
+  ]
+}

@@ -38,6 +38,9 @@ This repository is organized so the file names tell the implementation story.
 - `examples/release-notes.schema.json`: canonical schema contract.
 - `examples/release-notes.json`: canonical source data.
 - `examples/release-notes.md`: canonical rendered Markdown output.
+- `examples/docs-showcase.schema.json`: canonical documentation showcase schema.
+- `examples/docs-showcase.json`: canonical documentation showcase source data.
+- `examples/docs-showcase.md`: canonical rendered documentation showcase output.
 - `examples/readme.schema.json`: canonical README contract schema.
 - `examples/readme.json`: canonical README source data.
 - `examples/readme.md`: canonical rendered README output.
