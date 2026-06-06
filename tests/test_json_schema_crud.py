@@ -1,0 +1,255 @@
+from __future__ import annotations
+
+import contextlib
+import io
+import json
+import pathlib
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import json_schema_crud as jsc
+
+
+class JsonSchemaCrudTests(unittest.TestCase):
+    def run_cli(self, *args: str, input_lines: list[str] | None = None) -> tuple[int, str, str]:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            if input_lines is None:
+                code = jsc.main(list(args))
+            else:
+                with patch("builtins.input", side_effect=input_lines):
+                    code = jsc.main(list(args))
+        return code, stdout.getvalue(), stderr.getvalue()
+
+    def test_new_create_validate_and_subschema_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            schema_path = tmp_path / "user.schema.json"
+
+            code, stdout, stderr = self.run_cli(
+                "new",
+                "--output",
+                str(schema_path),
+                "--title",
+                "User",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("created schema", stdout)
+
+            code, _, stderr = self.run_cli(
+                "create",
+                "--file",
+                str(schema_path),
+                "--pointer",
+                "/properties/name",
+                "--value",
+                '{"type":"string"}',
+            )
+            self.assertEqual(code, 0, stderr)
+
+            code, stdout, stderr = self.run_cli("validate", "--file", str(schema_path))
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("schema is valid", stdout)
+
+            code, stdout, stderr = self.run_cli(
+                "validate",
+                "--file",
+                str(schema_path),
+                "--pointer",
+                "/properties/name",
+                "--instance",
+                '"Ada"',
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("schema and instance are valid", stdout)
+
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            self.assertEqual(schema["title"], "User")
+            self.assertEqual(schema["properties"]["name"]["type"], "string")
+
+    def test_infer_generates_schema_from_sample_array(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            sample_path = tmp_path / "sample.json"
+            output_path = tmp_path / "inferred.schema.json"
+
+            sample_path.write_text(
+                json.dumps(
+                    [
+                        {"id": 1, "name": "Ada"},
+                        {"id": 2, "name": "Bob", "email": "bob@example.com"},
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            code, stdout, stderr = self.run_cli(
+                "infer",
+                "--sample-file",
+                str(sample_path),
+                "--output",
+                str(output_path),
+                "--title",
+                "Users",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("inferred schema written", stdout)
+
+            schema = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(schema["type"], "array")
+            self.assertEqual(schema["items"]["type"], "object")
+            self.assertEqual(set(schema["items"]["properties"].keys()), {"email", "id", "name"})
+            self.assertEqual(schema["items"]["required"], ["id", "name"])
+
+            code, stdout, stderr = self.run_cli(
+                "validate",
+                "--file",
+                str(output_path),
+                "--instance-file",
+                str(sample_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("schema and instance are valid", stdout)
+
+    def test_oneof_and_anyof_helpers_attach_combinators(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            schema_path = tmp_path / "combo.schema.json"
+
+            self.run_cli("new", "--output", str(schema_path), "--title", "Combo")
+            self.run_cli(
+                "create",
+                "--file",
+                str(schema_path),
+                "--pointer",
+                "/properties/contact",
+                "--value",
+                "{}",
+            )
+
+            code, _, stderr = self.run_cli(
+                "oneof",
+                "--file",
+                str(schema_path),
+                "--pointer",
+                "/properties/contact",
+                "--variant",
+                '{"type":"string"}',
+                "--variant",
+                '{"type":"null"}',
+            )
+            self.assertEqual(code, 0, stderr)
+
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            self.assertEqual(schema["properties"]["contact"]["oneOf"][1]["type"], "null")
+
+            code, _, stderr = self.run_cli(
+                "anyof",
+                "--file",
+                str(schema_path),
+                "--pointer",
+                "/properties/contact",
+                "--variant",
+                '{"type":"string"}',
+                "--variant",
+                '{"type":"number"}',
+            )
+            self.assertEqual(code, 0, stderr)
+
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            self.assertEqual(schema["properties"]["contact"]["anyOf"][1]["type"], "number")
+
+    def test_markdown_contract_scaffold_and_render(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            contract_dir = tmp_path / "examples"
+            rendered_path = contract_dir / "rendered-release-notes.md"
+            code, stdout, stderr = self.run_cli(
+                "markdown-contract",
+                "--directory",
+                str(contract_dir),
+                "--with-markdown",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("scaffolded markdown contract", stdout)
+
+            schema_path = contract_dir / "release-notes.schema.json"
+            data_path = contract_dir / "release-notes.json"
+            output_path = contract_dir / "release-notes.md"
+            self.assertTrue(schema_path.exists())
+            self.assertTrue(data_path.exists())
+            self.assertTrue(output_path.exists())
+
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            data = json.loads(data_path.read_text(encoding="utf-8"))
+            scaffolded_markdown = output_path.read_text(encoding="utf-8")
+            self.assertEqual(schema["title"], "Release Notes")
+            self.assertEqual(schema["properties"]["sections"]["items"]["x-markdown"]["heading"], "")
+            self.assertEqual(data["sections"][0]["title"], "Renderer")
+
+            code, stdout, stderr = self.run_cli(
+                "markdown",
+                "--schema",
+                str(schema_path),
+                "--data-file",
+                str(data_path),
+                "--output",
+                str(rendered_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("markdown written", stdout)
+
+            rendered = rendered_path.read_text(encoding="utf-8")
+            self.assertEqual(rendered, scaffolded_markdown)
+            self.assertIn("# Release Notes", rendered)
+            self.assertIn("**version**: 1.0.0", rendered)
+            self.assertIn("## Renderer", rendered)
+            self.assertIn("- Validates the schema before rendering", rendered)
+
+    def test_example_contract_files_are_in_sync(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        schema_path = repo_root / "examples" / "release-notes.schema.json"
+        data_path = repo_root / "examples" / "release-notes.json"
+
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        data = json.loads(data_path.read_text(encoding="utf-8"))
+
+        code, stdout, stderr = self.run_cli(
+            "markdown",
+            "--schema",
+            str(schema_path),
+            "--data-file",
+            str(data_path),
+        )
+        self.assertEqual(code, 0, stderr)
+        self.assertEqual(stdout, (repo_root / "examples" / "release-notes.md").read_text(encoding="utf-8"))
+        self.assertEqual(schema["title"], "Release Notes")
+        self.assertEqual(data["sections"][1]["title"], "Quality")
+
+    def test_interactive_mode_can_create_and_validate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            schema_path = tmp_path / "shell.schema.json"
+
+            code, stdout, stderr = self.run_cli(
+                "interactive",
+                input_lines=[
+                    f"new {schema_path} Shell",
+                    'create /properties/flag {"type":"boolean"}',
+                    "validate",
+                    "exit",
+                ],
+            )
+
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("interactive mode ready", stdout)
+            self.assertTrue(schema_path.exists())
+
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            self.assertEqual(schema["properties"]["flag"]["type"], "boolean")
+
+
+if __name__ == "__main__":
+    unittest.main()

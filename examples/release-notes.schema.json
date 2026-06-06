@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Release Notes",
+  "description": "Contract-driven release notes generated from a JSON Schema.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "released_on": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "summary": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "sections": {
+      "type": "array",
+      "x-markdown": {
+        "kind": "section",
+        "heading": ""
+      },
+      "items": {
+        "type": "object",
+        "x-markdown": {
+          "kind": "section",
+          "heading": ""
+        },
+        "properties": {
+          "title": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "heading",
+              "level": 2
+            }
+          },
+          "summary": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "paragraph"
+            }
+          },
+          "bullets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-markdown": {
+              "kind": "list"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "summary",
+          "bullets"
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "released_on",
+    "summary",
+    "highlights",
+    "sections"
+  ]
+}
