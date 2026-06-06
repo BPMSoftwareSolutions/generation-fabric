@@ -29,6 +29,7 @@ This repository is organized so the file names tell the implementation story.
 ## Markdown
 
 - `generation_fabric/markdown/renderer.py`: deterministic Markdown rendering from schema plus JSON data.
+- `generation_fabric/markdown/registry.py`: registry of supported Markdown contract kinds and their canonical assets.
 - `generation_fabric/markdown/contracts.py`: loads canonical Markdown contract assets and scaffolds example files.
 
 ## Example Assets

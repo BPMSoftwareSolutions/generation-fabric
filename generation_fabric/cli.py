@@ -18,6 +18,7 @@ from generation_fabric.markdown.contracts import (
     scaffold_markdown_contract,
 )
 from generation_fabric.markdown.renderer import render_markdown_document
+from generation_fabric.markdown.registry import list_markdown_contract_kinds
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
 from generation_fabric.schema.inference import build_inferred_schema
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -563,7 +564,8 @@ def build_parser() -> argparse.ArgumentParser:
     markdown_contract_parser.add_argument(
         "--kind",
         default=DEFAULT_MARKDOWN_CONTRACT_KIND,
-        help="Contract kind to scaffold; currently only release-notes is supported",
+        choices=list_markdown_contract_kinds(),
+        help="Contract kind to scaffold",
     )
     markdown_contract_parser.add_argument(
         "--directory",

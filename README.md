@@ -15,7 +15,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `generation_fabric/core/` holds shared JSON and IO helpers.
 - `generation_fabric/json_documents/` handles generic JSON tree CRUD.
 - `generation_fabric/schema/` owns schema creation, inference, and validation.
-- `generation_fabric/markdown/` owns Markdown rendering and contract scaffolding.
+- `generation_fabric/markdown/` owns Markdown rendering, the contract registry, and contract scaffolding.
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `tests/` contains end-to-end coverage for the published behaviors.
 

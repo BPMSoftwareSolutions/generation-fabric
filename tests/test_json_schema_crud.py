@@ -9,6 +9,11 @@ import unittest
 from unittest.mock import patch
 
 import json_schema_crud as jsc
+from generation_fabric.markdown.registry import (
+    DEFAULT_MARKDOWN_CONTRACT_KIND,
+    get_markdown_contract_spec,
+    list_markdown_contract_kinds,
+)
 
 
 class JsonSchemaCrudTests(unittest.TestCase):
@@ -227,6 +232,19 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertEqual(stdout, (repo_root / "examples" / "release-notes.md").read_text(encoding="utf-8"))
         self.assertEqual(schema["title"], "Release Notes")
         self.assertEqual(data["sections"][1]["title"], "Quality")
+
+    def test_markdown_contract_registry_is_discoverable(self) -> None:
+        kinds = list_markdown_contract_kinds()
+        self.assertIn(DEFAULT_MARKDOWN_CONTRACT_KIND, kinds)
+
+        spec = get_markdown_contract_spec(DEFAULT_MARKDOWN_CONTRACT_KIND)
+        self.assertEqual(spec.kind, DEFAULT_MARKDOWN_CONTRACT_KIND)
+        self.assertEqual(spec.base_name, "release-notes")
+        self.assertTrue(spec.schema_path.exists())
+        self.assertTrue(spec.sample_path.exists())
+
+        with self.assertRaises(jsc.SchemaError):
+            get_markdown_contract_spec("does-not-exist")
 
     def test_interactive_mode_can_create_and_validate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

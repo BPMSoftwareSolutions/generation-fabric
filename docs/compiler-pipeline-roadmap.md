@@ -144,6 +144,7 @@ Keep the contract templates as first-class artifacts.
 
 Includes:
 
+- registry-backed contract kinds
 - `markdown-contract` scaffolding
 - example schema + sample JSON + generated Markdown
 - canonical patterns that can be copied for new document types
