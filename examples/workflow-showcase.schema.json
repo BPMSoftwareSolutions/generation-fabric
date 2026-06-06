@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workflow Showcase",
+  "description": "A contract-driven example that demonstrates workflow diagrams and ASCII sketches.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "overview": {
+      "type": "string",
+      "x-sample": "This example shows how the generation fabric can express workflow diagrams and ASCII sketches as first-class Markdown content.",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "generation_flow": {
+      "type": "string",
+      "x-sample": "flowchart LR\n  S[Schema] --> J[JSON]\n  J --> R[Renderer]\n  R --> M[Markdown]\n  M --> D[Docs]\n",
+      "x-markdown": {
+        "kind": "code",
+        "language": "mermaid"
+      }
+    },
+    "migration_flow": {
+      "type": "string",
+      "x-sample": "flowchart LR\n  L[Legacy Markdown] --> I[Importer]\n  I --> C[Contract]\n  C --> V[Validate]\n  V --> R[Render]\n",
+      "x-markdown": {
+        "kind": "code",
+        "language": "mermaid"
+      }
+    },
+    "ascii_sketch": {
+      "type": "string",
+      "x-sample": "+----------------------+      +----------------------+\n| Legacy Markdown      | ---> | Generation Fabric    |\n+----------------------+      +----------------------+\n          |                                |\n          v                                v\n   +--------------+                 +--------------+\n   | Schema       |                 | Markdown     |\n   +--------------+                 +--------------+\n",
+      "x-markdown": {
+        "kind": "code",
+        "language": "text"
+      }
+    },
+    "notes": {
+      "type": "array",
+      "x-sample": [
+        "Mermaid can describe the document pipeline.",
+        "ASCII art can communicate the same story in a plain-text fallback.",
+        "The Markdown renderer preserves both forms as fenced blocks."
+      ],
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    }
+  },
+  "required": [
+    "overview",
+    "generation_flow",
+    "migration_flow",
+    "ascii_sketch",
+    "notes"
+  ]
+}

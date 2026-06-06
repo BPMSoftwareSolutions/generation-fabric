@@ -1,0 +1,11 @@
+{
+  "overview": "This example shows how the generation fabric can express workflow diagrams and ASCII sketches as first-class Markdown content.",
+  "generation_flow": "flowchart LR\n  S[Schema] --> J[JSON]\n  J --> R[Renderer]\n  R --> M[Markdown]\n  M --> D[Docs]\n",
+  "migration_flow": "flowchart LR\n  L[Legacy Markdown] --> I[Importer]\n  I --> C[Contract]\n  C --> V[Validate]\n  V --> R[Render]\n",
+  "ascii_sketch": "+----------------------+      +----------------------+\n| Legacy Markdown      | ---> | Generation Fabric    |\n+----------------------+      +----------------------+\n          |                                |\n          v                                v\n   +--------------+                 +--------------+\n   | Schema       |                 | Markdown     |\n   +--------------+                 +--------------+\n",
+  "notes": [
+    "Mermaid can describe the document pipeline.",
+    "ASCII art can communicate the same story in a plain-text fallback.",
+    "The Markdown renderer preserves both forms as fenced blocks."
+  ]
+}

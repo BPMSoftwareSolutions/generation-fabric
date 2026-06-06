@@ -13,6 +13,7 @@ from typing import Any
 from generation_fabric.core.io import load_json_file, load_json_source, parse_value, read_json_file, write_json_file_atomic
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.json_documents.crud import create_node, delete_node, read_node, update_node
+from generation_fabric.json_documents.sample import build_json_sample_from_root
 from generation_fabric.markdown.contracts import (
     DEFAULT_MARKDOWN_CONTRACT_KIND,
     scaffold_markdown_contract,
@@ -131,6 +132,44 @@ def session_combinator(session: SchemaSession, pointer: str, keyword: str, varia
     validate_schema_node(schema)
     session.schema = schema
     autosave_session(session)
+
+
+def json_read_command(args: argparse.Namespace) -> int:
+    """Read a generic JSON document or a node inside it."""
+
+    document = load_json_file(args.file)
+    node = read_node(document, args.pointer)
+    print(json.dumps(node, indent=2, ensure_ascii=False))
+    return 0
+
+
+def json_mutate_command(args: argparse.Namespace, mutation: str) -> int:
+    """Apply a single CRUD mutation to a generic JSON document."""
+
+    path = Path(args.file)
+    document = load_json_file(path)
+
+    value_file = getattr(args, "value_file", "")
+    value_text = getattr(args, "value", "")
+    force_string = getattr(args, "as_string", False)
+
+    if value_file:
+        value = load_json_file(value_file)
+    else:
+        value = parse_value(value_text, force_string=force_string)
+
+    if mutation == "create":
+        document = create_node(document, args.pointer, value)
+    elif mutation == "update":
+        document = update_node(document, args.pointer, value)
+    elif mutation == "delete":
+        document = delete_node(document, args.pointer)
+    else:
+        raise SchemaError(f"unknown mutation: {mutation}")
+
+    write_json_file_atomic(path, document)
+    print(f"{mutation}d: {path} @ {args.pointer or '/'}")
+    return 0
 
 
 def interactive_help() -> None:
@@ -331,6 +370,23 @@ def markdown_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def json_sample_command(args: argparse.Namespace) -> int:
+    """Generate a JSON sample document from a schema contract."""
+
+    schema = read_json_file(Path(args.schema))
+    sample = build_json_sample_from_root(schema, args.pointer)
+
+    output = Path(args.output) if args.output else None
+    if output is not None:
+        if output.exists() and not args.overwrite:
+            raise SchemaError(f"refusing to overwrite existing file: {output}")
+        write_json_file_atomic(output, sample)
+        print(f"json sample written: {output}")
+    else:
+        print(json.dumps(sample, indent=2, ensure_ascii=False))
+    return 0
+
+
 def markdown_contract_command(args: argparse.Namespace) -> int:
     """Scaffold a canonical markdown contract and sample data."""
 
@@ -499,6 +555,44 @@ def build_parser() -> argparse.ArgumentParser:
     delete_parser.add_argument("--pointer", required=True, help="JSON Pointer to delete")
     delete_parser.set_defaults(func=lambda args: mutate_command(args, "delete"))
 
+    json_read_parser = subparsers.add_parser("json-read", help="Read the full JSON document or a node inside it")
+    json_read_parser.add_argument("--file", required=True, help="Existing JSON file")
+    json_read_parser.add_argument(
+        "--pointer",
+        default="",
+        help="JSON Pointer to read, e.g. /properties/name",
+    )
+    json_read_parser.set_defaults(func=json_read_command)
+
+    json_create_parser = subparsers.add_parser("json-create", help="Create a new node in an existing JSON document")
+    json_create_parser.add_argument("--file", required=True, help="Existing JSON file")
+    json_create_parser.add_argument("--pointer", required=True, help="JSON Pointer to create")
+    json_create_parser.add_argument("--value", default="", help="Inline JSON value or plain text")
+    json_create_parser.add_argument("--value-file", default="", help="Load the value from a JSON file")
+    json_create_parser.add_argument(
+        "--as-string",
+        action="store_true",
+        help="Store --value as a literal string instead of parsing JSON",
+    )
+    json_create_parser.set_defaults(func=lambda args: json_mutate_command(args, "create"))
+
+    json_update_parser = subparsers.add_parser("json-update", help="Update an existing node in a JSON document")
+    json_update_parser.add_argument("--file", required=True, help="Existing JSON file")
+    json_update_parser.add_argument("--pointer", required=True, help="JSON Pointer to update")
+    json_update_parser.add_argument("--value", default="", help="Inline JSON value or plain text")
+    json_update_parser.add_argument("--value-file", default="", help="Load the value from a JSON file")
+    json_update_parser.add_argument(
+        "--as-string",
+        action="store_true",
+        help="Store --value as a literal string instead of parsing JSON",
+    )
+    json_update_parser.set_defaults(func=lambda args: json_mutate_command(args, "update"))
+
+    json_delete_parser = subparsers.add_parser("json-delete", help="Delete a node from a JSON document")
+    json_delete_parser.add_argument("--file", required=True, help="Existing JSON file")
+    json_delete_parser.add_argument("--pointer", required=True, help="JSON Pointer to delete")
+    json_delete_parser.set_defaults(func=lambda args: json_mutate_command(args, "delete"))
+
     validate_parser = subparsers.add_parser("validate", help="Validate a schema or a subschema")
     validate_parser.add_argument("--file", required=True, help="Existing schema file")
     validate_parser.add_argument(
@@ -578,6 +672,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing an existing Markdown file",
     )
     markdown_parser.set_defaults(func=markdown_command)
+
+    json_sample_parser = subparsers.add_parser(
+        "json-sample",
+        help="Generate a JSON sample from a schema contract",
+    )
+    json_sample_parser.add_argument("--schema", required=True, help="Path to the JSON Schema contract")
+    json_sample_parser.add_argument(
+        "--pointer",
+        default="",
+        help="Optional JSON Pointer to a subschema inside the contract",
+    )
+    json_sample_parser.add_argument("--output", default="", help="Write the generated JSON sample to a file")
+    json_sample_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing JSON file",
+    )
+    json_sample_parser.set_defaults(func=json_sample_command)
 
     markdown_contract_parser = subparsers.add_parser(
         "markdown-contract",

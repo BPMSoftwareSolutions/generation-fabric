@@ -1,2 +1,1 @@
-"""Generic JSON document operations."""
-
+"""Generic JSON document operations and schema-driven sample generation."""

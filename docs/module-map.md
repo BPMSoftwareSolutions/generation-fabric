@@ -19,6 +19,7 @@ This repository is organized so the file names tell the implementation story.
 ## JSON Documents
 
 - `generation_fabric/json_documents/crud.py`: generic JSON tree read/create/update/delete operations.
+- `generation_fabric/json_documents/sample.py`: schema-driven JSON sample generation helpers.
 
 ## Schema
 
@@ -44,6 +45,9 @@ This repository is organized so the file names tell the implementation story.
 - `examples/readme.schema.json`: canonical README contract schema.
 - `examples/readme.json`: canonical README source data.
 - `examples/readme.md`: canonical rendered README output.
+- `examples/workflow-showcase.schema.json`: canonical workflow showcase schema.
+- `examples/workflow-showcase.json`: canonical workflow showcase source data.
+- `examples/workflow-showcase.md`: canonical rendered workflow showcase output.
 
 ## Tests
 

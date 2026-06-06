@@ -9,9 +9,9 @@ from typing import Any
 
 from generation_fabric.core.io import write_json_file_atomic, write_text_file_atomic
 from generation_fabric.exceptions import SchemaError
+from generation_fabric.json_documents.sample import build_json_sample_document
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
-from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 FENCE_RE = re.compile(r"^(?P<fence>`{3,}|~{3,})(?P<language>[A-Za-z0-9_+-]*)\s*$")
@@ -237,6 +237,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
         return (
             {
                 "type": "string",
+                "x-sample": block.get("text", ""),
                 "x-markdown": {
                     "kind": "heading",
                     "level": int(block.get("level", 1)),
@@ -249,6 +250,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
         return (
             {
                 "type": "string",
+                "x-sample": block.get("text", ""),
                 "x-markdown": {"kind": "paragraph"},
             },
             block.get("text", ""),
@@ -258,6 +260,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
         return (
             {
                 "type": "string",
+                "x-sample": block.get("text", ""),
                 "x-markdown": {"kind": "raw"},
             },
             block.get("text", ""),
@@ -268,6 +271,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
             {
                 "type": "array",
                 "items": {"type": "string"},
+                "x-sample": block.get("items", []),
                 "x-markdown": {"kind": "list"},
             },
             block.get("items", []),
@@ -278,6 +282,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
             {
                 "type": "array",
                 "items": {"type": "string"},
+                "x-sample": block.get("items", []),
                 "x-markdown": {"kind": "ordered-list"},
             },
             block.get("items", []),
@@ -287,6 +292,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
         return (
             {
                 "type": "string",
+                "x-sample": block.get("text", ""),
                 "x-markdown": {"kind": "blockquote"},
             },
             block.get("text", ""),
@@ -296,6 +302,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
         return (
             {
                 "type": "string",
+                "x-sample": block.get("text", ""),
                 "x-markdown": {
                     "kind": "code",
                     "language": block.get("language", ""),
@@ -316,6 +323,7 @@ def _schema_and_value_for_block(block: dict[str, Any]) -> tuple[dict[str, Any], 
                     "required": headers,
                     "additionalProperties": False,
                 },
+                "x-sample": block.get("rows", []),
                 "x-markdown": {"kind": "table"},
             },
             block.get("rows", []),
@@ -345,19 +353,16 @@ def build_markdown_import_contract(
     if description:
         schema["description"] = description
 
-    sample: dict[str, Any] = {}
     counts: dict[str, int] = defaultdict(int)
 
     for block in blocks:
         counts[block["kind"]] += 1
         property_name = _property_name(block["kind"], counts[block["kind"]], block.get("level"))
-        block_schema, block_value = _schema_and_value_for_block(block)
+        block_schema, _block_value = _schema_and_value_for_block(block)
         schema["properties"][property_name] = block_schema
         schema["required"].append(property_name)
-        sample[property_name] = block_value
 
-    validate_schema_node(schema)
-    validate_instance_against_schema(schema, sample)
+    sample = build_json_sample_document(schema)
     return schema, sample
 
 

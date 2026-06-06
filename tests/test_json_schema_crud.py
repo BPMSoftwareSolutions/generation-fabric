@@ -118,6 +118,60 @@ class JsonSchemaCrudTests(unittest.TestCase):
             self.assertEqual(code, 0, stderr)
             self.assertIn("schema and instance are valid", stdout)
 
+    def test_json_document_crud_commands_work_on_generic_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            data_path = tmp_path / "data.json"
+
+            data_path.write_text(
+                json.dumps({"user": {"name": "Ada"}, "items": [1, 2]}),
+                encoding="utf-8",
+            )
+
+            code, stdout, stderr = self.run_cli(
+                "json-read",
+                "--file",
+                str(data_path),
+                "--pointer",
+                "/user/name",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertEqual(stdout.strip(), '"Ada"')
+
+            code, _, stderr = self.run_cli(
+                "json-create",
+                "--file",
+                str(data_path),
+                "--pointer",
+                "/user/email",
+                "--value",
+                '"ada@example.com"',
+            )
+            self.assertEqual(code, 0, stderr)
+
+            code, _, stderr = self.run_cli(
+                "json-update",
+                "--file",
+                str(data_path),
+                "--pointer",
+                "/items/0",
+                "--value",
+                "10",
+            )
+            self.assertEqual(code, 0, stderr)
+
+            code, _, stderr = self.run_cli(
+                "json-delete",
+                "--file",
+                str(data_path),
+                "--pointer",
+                "/user/name",
+            )
+            self.assertEqual(code, 0, stderr)
+
+            document = json.loads(data_path.read_text(encoding="utf-8"))
+            self.assertEqual(document, {"user": {"email": "ada@example.com"}, "items": [10, 2]})
+
     def test_oneof_and_anyof_helpers_attach_combinators(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = pathlib.Path(tmp)
@@ -261,6 +315,7 @@ class JsonSchemaCrudTests(unittest.TestCase):
 
             self.assertEqual(schema["title"], "Legacy Notes")
             self.assertEqual(schema["properties"]["paragraph_1"]["x-markdown"]["kind"], "paragraph")
+            self.assertEqual(schema["properties"]["paragraph_1"]["x-sample"], "This is an intro paragraph.")
             self.assertEqual(schema["properties"]["blockquote_1"]["x-markdown"]["kind"], "blockquote")
             self.assertEqual(schema["properties"]["list_1"]["x-markdown"]["kind"], "list")
             self.assertEqual(schema["properties"]["ordered_list_1"]["x-markdown"]["kind"], "ordered-list")
@@ -283,6 +338,48 @@ class JsonSchemaCrudTests(unittest.TestCase):
             self.assertEqual(code, 0, stderr)
             self.assertEqual(stdout, rendered)
             self.assertEqual(rendered.strip(), source_text.strip())
+
+    def test_json_sample_scaffolds_from_schema_hints(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            schema_path = tmp_path / "hints.schema.json"
+            output_path = tmp_path / "hints.json"
+
+            schema_path.write_text(
+                json.dumps(
+                    {
+                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                        "title": "Hints",
+                        "type": "object",
+                        "properties": {
+                            "email": {"type": "string", "format": "email"},
+                            "status": {"type": "string", "enum": ["draft", "published"]},
+                            "count": {"type": "integer"},
+                            "enabled": {"type": "boolean"},
+                            "tags": {"type": "array", "items": {"type": "string"}},
+                        },
+                        "required": ["email", "status", "count", "enabled", "tags"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            code, stdout, stderr = self.run_cli(
+                "json-sample",
+                "--schema",
+                str(schema_path),
+                "--output",
+                str(output_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("json sample written", stdout)
+
+            sample = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertEqual(sample["email"], "user@example.com")
+            self.assertEqual(sample["status"], "draft")
+            self.assertEqual(sample["count"], 1)
+            self.assertTrue(sample["enabled"])
+            self.assertEqual(sample["tags"], ["sample"])
 
     def test_example_contract_files_are_in_sync(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -365,6 +462,42 @@ class JsonSchemaCrudTests(unittest.TestCase):
         self.assertIn("```mermaid", stdout)
         self.assertIn("```csharp", stdout)
         self.assertIn("```json", stdout)
+
+    def test_json_sample_command_can_generate_the_workflow_showcase(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        schema_path = repo_root / "examples" / "workflow-showcase.schema.json"
+        expected_path = repo_root / "examples" / "workflow-showcase.json"
+        markdown_path = repo_root / "examples" / "workflow-showcase.md"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            output_path = tmp_path / "workflow-showcase.json"
+
+            code, stdout, stderr = self.run_cli(
+                "json-sample",
+                "--schema",
+                str(schema_path),
+                "--output",
+                str(output_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("json sample written", stdout)
+
+            generated = json.loads(output_path.read_text(encoding="utf-8"))
+            expected = json.loads(expected_path.read_text(encoding="utf-8"))
+            self.assertEqual(generated, expected)
+
+            code, stdout, stderr = self.run_cli(
+                "markdown",
+                "--schema",
+                str(schema_path),
+                "--data-file",
+                str(output_path),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertEqual(stdout, markdown_path.read_text(encoding="utf-8"))
+            self.assertIn("```mermaid", stdout)
+            self.assertIn("```text", stdout)
 
     def test_markdown_contract_scaffold_can_emit_docs_showcase(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
