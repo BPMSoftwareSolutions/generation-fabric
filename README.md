@@ -22,7 +22,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
 - `scripts/generate_segment_examples.py` is the portable Python generator for the layout segment examples and inventories.
 - `tests/` contains end-to-end coverage for the published behaviors.
-- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, and document executor.
+- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, object-model observability, and document executor.
 
 If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).
 If you want the implementation plan, see [docs/compiler-pipeline-roadmap.md](docs/compiler-pipeline-roadmap.md).
@@ -161,6 +161,12 @@ Reuse a saved taxonomy file to render the observation Markdown:
 python json_schema_crud.py worker-bee-observe --taxonomy-file generated/planner-taxonomy.json --output generated/planner-observation.md
 ```
 
+Scan Python source into an object-model taxonomy and render a coherence report:
+
+```powershell
+python json_schema_crud.py worker-bee-object-model --source-file generation_fabric/worker_bee/provider.py --output generated/provider.object-model.md
+```
+
 Produce a provider-backed planning proposal before building the packet:
 
 ```powershell
@@ -214,6 +220,7 @@ python json_schema_crud.py interactive
 - `worker-bee-plan`: build a deterministic generation packet from a brief
 - `worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON
 - `worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams
+- `worker-bee-object-model`: scan Python source into an object-model taxonomy and render a coherence report
 - `worker-bee-propose`: build a provider-backed planning proposal from a brief
 - `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
 - `worker-bee-sketch`: generate an ASCII sketch and render every layout target from a brief
@@ -276,6 +283,7 @@ The tests cover:
 - provider-backed worker-bee planning
 - deterministic worker-bee taxonomy extraction
 - code observation and Mermaid sequence diagrams
+- object-model observability and class inventory reporting
 - worker-bee executor and Markdown generation
 - worker-bee learning loop
 

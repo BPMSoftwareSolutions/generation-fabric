@@ -331,6 +331,19 @@
         "language": "powershell"
       }
     },
+    "paragraph_worker_bee_object_model": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_worker_bee_object_model": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
     "paragraph_worker_bee_propose": {
       "type": "string",
       "x-markdown": {
@@ -559,6 +572,8 @@
     "code_worker_bee_taxonomy",
     "paragraph_worker_bee_observe_reuse",
     "code_worker_bee_observe_reuse",
+    "paragraph_worker_bee_object_model",
+    "code_worker_bee_object_model",
     "paragraph_worker_bee_propose",
     "code_worker_bee_propose",
     "paragraph_worker_bee_learn",

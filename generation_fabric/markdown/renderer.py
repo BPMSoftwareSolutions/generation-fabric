@@ -35,6 +35,20 @@ def markdown_inline_text(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
+def markdown_table_cell_text(value: Any) -> str:
+    """Render a table cell value with compact, human-readable semantics."""
+
+    if value is None:
+        return ""
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return ""
+        if all(not isinstance(item, (dict, list, tuple)) for item in value):
+            return ", ".join(markdown_inline_text(item) for item in value)
+        return json.dumps(value, ensure_ascii=False)
+    return markdown_inline_text(value)
+
+
 def markdown_heading(text: Any, level: int) -> str:
     """Render a markdown heading with a clamped heading level."""
 
@@ -100,7 +114,7 @@ def markdown_code_block(value: Any, language: str = "") -> str:
 def markdown_escape_cell(value: Any) -> str:
     """Escape markdown table cell content."""
 
-    text = markdown_inline_text(value)
+    text = markdown_table_cell_text(value)
     return text.replace("|", "\\|").replace("\n", "<br>")
 
 
@@ -242,6 +256,10 @@ def render_markdown_field(field_name: str, schema_node: Any, value: Any, level: 
 
         if isinstance(value, list):
             item_schema = schema_node.get("items", {})
+            item_layout = str(meta.get("item_layout", "")).strip().lower()
+            if item_layout == "table" and isinstance(item_schema, dict) and all(isinstance(item, dict) for item in value):
+                blocks.append(markdown_table(value, item_schema))
+                return blocks
             for index, item in enumerate(value, start=1):
                 item_heading = meta.get("item_heading", f"{field_name} {index}")
                 if isinstance(item_schema, dict) and item_schema:

@@ -29,6 +29,7 @@ from .executor import build_worker_bee_document, write_worker_bee_document
 from .observation import collect_python_function_observations, write_code_observation_document
 from .planner import build_generation_packet
 from .provider import build_provider_backed_generation_packet, propose_worker_bee_plan
+from .object_model import scan_python_object_model, write_object_model_document
 from .taxonomy import write_code_taxonomy_document
 
 DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
@@ -54,6 +55,7 @@ DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "worker-bee-propose",
     "worker-bee-taxonomy",
     "worker-bee-observe",
+    "worker-bee-object-model",
     "worker-bee-generate",
 )
 
@@ -548,6 +550,45 @@ def _worker_bee_observation_case(root: Path) -> WorkerBeeLearningCaseResult:
     )
 
 
+def _worker_bee_object_model_case(root: Path) -> WorkerBeeLearningCaseResult:
+    """Exercise object-model scanning and class-diagram rendering."""
+
+    repo_root = _repo_root()
+    source_path = repo_root / "generation_fabric" / "worker_bee" / "provider.py"
+    markdown_path = root / "provider.object-model.md"
+
+    document = scan_python_object_model([source_path], scope="module")
+    paths = write_object_model_document(
+        document,
+        output=str(markdown_path),
+        title="Object Model: provider",
+        overwrite=True,
+    )
+    markdown = Path(paths.markdown_path).read_text(encoding="utf-8")
+    schema = load_json_file(paths.schema_path)
+    data = load_json_file(paths.data_path)
+
+    if not document.classes:
+        raise SchemaError("object-model scan did not capture any classes")
+    if not data.get("class_inventory"):
+        raise SchemaError("object-model report did not build a class inventory")
+    if not data.get("relationship_inventory"):
+        raise SchemaError("object-model report did not build a relationship inventory")
+    if "classDiagram" not in markdown or "Coherence Checks" not in markdown:
+        raise SchemaError("object-model report did not render a Mermaid class diagram")
+    if schema.get("title") != "Object Model: provider":
+        raise SchemaError("object-model report did not build the expected contract title")
+
+    return WorkerBeeLearningCaseResult(
+        name="worker_bee_object_model",
+        capabilities=("worker-bee-object-model",),
+        passed=True,
+        details="object-model scanning produced a contract-backed class diagram report",
+        lessons=("The worker bee can observe object structure and render a class diagram from the taxonomy.",),
+        artifacts=(str(paths.schema_path), str(paths.data_path), str(paths.markdown_path)),
+    )
+
+
 def _worker_bee_taxonomy_case(root: Path) -> WorkerBeeLearningCaseResult:
     """Exercise deterministic taxonomy extraction for a Python source file."""
 
@@ -695,6 +736,12 @@ def build_default_worker_bee_learning_cases() -> tuple[WorkerBeeLearningCase, ..
             capabilities=("worker-bee-observe",),
             description="Observe a Python file and render sequence diagrams",
             exercise=_worker_bee_observation_case,
+        ),
+        WorkerBeeLearningCase(
+            name="worker_bee_object_model",
+            capabilities=("worker-bee-object-model",),
+            description="Observe Python classes and render an object-model class diagram",
+            exercise=_worker_bee_object_model_case,
         ),
         WorkerBeeLearningCase(
             name="worker_bee_generate",

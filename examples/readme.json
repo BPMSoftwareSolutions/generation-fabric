@@ -17,7 +17,7 @@
     "`scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.",
     "`scripts/generate_segment_examples.py` is the portable Python generator for the layout segment examples and inventories.",
     "`tests/` contains end-to-end coverage for the published behaviors.",
-    "`generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, and document executor."
+    "`generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, object-model observability, and document executor."
   ],
   "raw_1": "If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).\nIf you want the implementation plan, see [docs/compiler-pipeline-roadmap.md](docs/compiler-pipeline-roadmap.md).",
   "heading_h2_2": "Why It Exists",
@@ -70,6 +70,8 @@
   "code_worker_bee_taxonomy": "python json_schema_crud.py worker-bee-taxonomy --source-file generation_fabric/worker_bee/planner.py --output generated/planner-taxonomy.json",
   "paragraph_worker_bee_observe_reuse": "Reuse a saved taxonomy file to render the observation Markdown:",
   "code_worker_bee_observe_reuse": "python json_schema_crud.py worker-bee-observe --taxonomy-file generated/planner-taxonomy.json --output generated/planner-observation.md",
+  "paragraph_worker_bee_object_model": "Scan Python source into an object-model taxonomy and render a coherence report:",
+  "code_worker_bee_object_model": "python json_schema_crud.py worker-bee-object-model --source-file generation_fabric/worker_bee/provider.py --output generated/provider.object-model.md",
   "paragraph_worker_bee_propose": "Produce a provider-backed planning proposal before building the packet:",
   "code_worker_bee_propose": "python json_schema_crud.py worker-bee-propose --brief 'Create a markdown operations note for the generation fabric.' --output reports/worker-bee-proposal.json",
   "paragraph_worker_bee_learn": "Run the worker-bee learning loop to benchmark the full fabric surface:",
@@ -107,6 +109,7 @@
     "`worker-bee-plan`: build a deterministic generation packet from a brief",
     "`worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON",
     "`worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams",
+    "`worker-bee-object-model`: scan Python source into an object-model taxonomy and render a coherence report",
     "`worker-bee-propose`: build a provider-backed planning proposal from a brief",
     "`worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief",
     "`worker-bee-sketch`: generate an ASCII sketch and render every layout target from a brief",
@@ -161,6 +164,7 @@
     "provider-backed worker-bee planning",
     "deterministic worker-bee taxonomy extraction",
     "code observation and Mermaid sequence diagrams",
+    "object-model observability and class inventory reporting",
     "worker-bee executor and Markdown generation",
     "worker-bee learning loop"
   ],

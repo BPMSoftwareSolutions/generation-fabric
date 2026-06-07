@@ -69,6 +69,23 @@ from .learning import (
     build_default_worker_bee_learning_cases,
     run_worker_bee_learning_loop,
 )
+from .object_coherence import audit_object_model_coherence, classify_object_pattern
+from .object_diagram import render_object_model_class_diagram, render_object_model_package_diagrams
+from .object_model import (
+    ObjectModelClass,
+    ObjectModelCoherenceCheck,
+    ObjectModelDiagram,
+    ObjectModelDocument,
+    ObjectModelField,
+    ObjectModelMethod,
+    ObjectModelPatternSignal,
+    ObjectModelPaths,
+    ObjectModelRelationship,
+    build_object_model_document_schema,
+    build_object_model_report_document,
+    scan_python_object_model,
+    write_object_model_document,
+)
 from .strategy import WorkerBeeMigrationStrategy, WorkerBeePhase, WorkerBeeSurface, build_default_worker_bee_strategy
 
 __all__ = [
@@ -89,6 +106,15 @@ __all__ = [
     "CodeTaxonomyDocumentPaths",
     "CodeTaxonomyExecutionPath",
     "CodeTaxonomySymbol",
+    "ObjectModelClass",
+    "ObjectModelCoherenceCheck",
+    "ObjectModelDiagram",
+    "ObjectModelDocument",
+    "ObjectModelField",
+    "ObjectModelMethod",
+    "ObjectModelPatternSignal",
+    "ObjectModelPaths",
+    "ObjectModelRelationship",
     "DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES",
     "WorkerBeeLearningCase",
     "WorkerBeeLearningCaseResult",
@@ -101,6 +127,7 @@ __all__ = [
     "build_worker_bee_sketch",
     "infer_sketch_profile",
     "write_worker_bee_sketch",
+    "audit_object_model_coherence",
     "build_generation_packet",
     "build_ascii_billboard",
     "build_worker_bee_document",
@@ -108,6 +135,8 @@ __all__ = [
     "build_code_observation_document_from_taxonomy",
     "build_code_taxonomy_document",
     "build_code_taxonomy_document_schema",
+    "build_object_model_document_schema",
+    "build_object_model_report_document",
     "build_provider_backed_generation_packet",
     "build_code_observation_document",
     "build_code_observation_document_schema",
@@ -120,11 +149,16 @@ __all__ = [
     "infer_focus",
     "normalize_sketch_phrase",
     "propose_worker_bee_plan",
+    "render_object_model_class_diagram",
+    "render_object_model_package_diagrams",
     "scan_python_source_taxonomy",
+    "scan_python_object_model",
     "resolve_sketch_phrases",
     "run_worker_bee_learning_loop",
     "write_code_observation_document_from_taxonomy",
     "write_code_taxonomy_document",
     "write_code_observation_document",
+    "write_object_model_document",
     "write_worker_bee_document",
+    "classify_object_pattern",
 ]

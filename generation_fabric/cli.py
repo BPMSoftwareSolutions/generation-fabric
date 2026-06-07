@@ -40,9 +40,11 @@ from generation_fabric.worker_bee import (
     write_code_observation_document,
     write_code_taxonomy_document,
     write_code_observation_document_from_taxonomy,
+    scan_python_object_model,
     build_provider_backed_generation_packet,
     propose_worker_bee_plan,
     run_worker_bee_learning_loop,
+    write_object_model_document,
     write_worker_bee_document,
     write_worker_bee_sketch,
 )
@@ -714,6 +716,28 @@ def worker_bee_observe_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def worker_bee_object_model_command(args: argparse.Namespace) -> int:
+    """Scan Python source files and generate an object-model report."""
+
+    source_paths = [Path(path) for path in getattr(args, "source_file", []) or []]
+    source_paths.extend(Path(path) for path in getattr(args, "source_dir", []) or [])
+    if not source_paths:
+        raise SchemaError("worker-bee-object-model needs at least one --source-file or --source-dir")
+
+    scope = args.scope.strip() if getattr(args, "scope", "") else ""
+    if scope and scope not in {"module", "package", "repo"}:
+        raise SchemaError("worker-bee-object-model scope must be module, package, or repo")
+    if not scope:
+        scope = "module" if len(source_paths) == 1 and source_paths[0].is_file() else "package"
+
+    document = scan_python_object_model(source_paths, include_private=args.include_private, scope=scope)
+    paths = write_object_model_document(document, output=args.output, title=args.title, overwrite=args.overwrite)
+    print(f"worker-bee object model written: {paths.markdown_path}")
+    print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
+    print(document.summary)
+    return 0
+
+
 def worker_bee_learn_command(args: argparse.Namespace) -> int:
     """Run the worker-bee learning loop and emit a benchmark report."""
 
@@ -1378,6 +1402,49 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing existing generated files",
     )
     worker_bee_observe_parser.set_defaults(func=worker_bee_observe_command)
+
+    worker_bee_object_model_parser = subparsers.add_parser(
+        "worker-bee-object-model",
+        help="Scan Python source and generate an object-model report",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--source-file",
+        action="append",
+        default=[],
+        help="Path to a Python source file to scan; repeat to add more files",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--source-dir",
+        action="append",
+        default=[],
+        help="Directory of Python source files to scan; repeat to add more directories",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--scope",
+        default="",
+        help="Report scope: module, package, or repo (defaults to module for one file, package otherwise)",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--title",
+        default="",
+        help="Override the generated report title",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--output",
+        default="",
+        help="Markdown output path; sidecar schema and JSON files use the same stem",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--include-private",
+        action="store_true",
+        help="Include private classes and methods in the object model",
+    )
+    worker_bee_object_model_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing existing generated files",
+    )
+    worker_bee_object_model_parser.set_defaults(func=worker_bee_object_model_command)
 
     worker_bee_learn_parser = subparsers.add_parser(
         "worker-bee-learn",

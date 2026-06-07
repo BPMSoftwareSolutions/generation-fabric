@@ -47,6 +47,9 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/worker_bee/provider.py`: provider-backed planning proposal helpers and the deterministic local provider adapter.
 - `generation_fabric/worker_bee/taxonomy.py`: deterministic source-file scan that extracts the reusable code taxonomy before observation or review.
 - `generation_fabric/worker_bee/observation.py`: code-observation helpers that turn Python execution paths into Mermaid sequence-diagram Markdown.
+- `generation_fabric/worker_bee/object_coherence.py`: deterministic object-oriented coherence checks and design-pattern classification for the worker-bee observability layer.
+- `generation_fabric/worker_bee/object_diagram.py`: deterministic Mermaid class-diagram rendering from the object-model taxonomy.
+- `generation_fabric/worker_bee/object_model.py`: deterministic object-model scan and contract-backed report builder for Python source files.
 - `generation_fabric/worker_bee/executor.py`: deterministic executor that turns a packet and sketch prompts into schema, JSON, and Markdown artifacts.
 - `generation_fabric/worker_bee/learning.py`: benchmark-style learning loop that exercises the current fabric capabilities and reports coverage.
 - `generation_fabric/worker_bee/layout_sketch.py`: maps a brief to a segment and value angle, draws an ASCII layout sketch, and writes the sketch, zone taxonomy, box model, rendered targets, and coherence report.
@@ -125,6 +128,7 @@ This repository is organized so the file names tell the implementation story.
 - `tests/test_worker_bee_strategy.py`: coverage for the worker-bee migration strategy scaffold.
 - `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
 - `tests/test_worker_bee_executor.py`: coverage for the worker-bee executor and document generation command.
+- `tests/test_worker_bee_object_model.py`: coverage for object-model scanning, report rendering, and the `worker-bee-object-model` command.
 - `tests/test_layout_ascii.py`: coverage for ASCII sketch parsing, the zone taxonomy contract, HTML rendering, and the `ascii-zones`/`layout-html` commands.
 - `tests/test_layout_box_model.py`: coverage for box-model derivation and the `layout-boxes` command.
 - `tests/test_layout_inventory.py`: coverage for layout reuse inventory reporting and the `layout-inventory` command.
