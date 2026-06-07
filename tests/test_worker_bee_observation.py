@@ -9,6 +9,7 @@ import unittest
 
 import json_schema_crud as jsc
 from generation_fabric.worker_bee.observation import collect_python_function_observations
+from generation_fabric.worker_bee.taxonomy import scan_python_source_taxonomy
 
 
 class WorkerBeeObservationTests(unittest.TestCase):
@@ -31,6 +32,21 @@ class WorkerBeeObservationTests(unittest.TestCase):
         normalize_observation = next(observation for observation in observations if observation.name == "normalize_brief")
         self.assertIn("def normalize_brief", normalize_observation.signature)
         self.assertTrue(all(observation.participants[0] == "Caller" for observation in observations))
+
+    def test_scan_python_source_taxonomy_finds_planner_inventory(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        source_path = repo_root / "generation_fabric" / "worker_bee" / "planner.py"
+
+        taxonomy = scan_python_source_taxonomy(source_path)
+
+        self.assertEqual(taxonomy.shape, "code-taxonomy")
+        self.assertEqual(taxonomy.module_path, "generation_fabric.worker_bee.planner")
+        self.assertTrue(taxonomy.source_hash.startswith("sha256:"))
+        symbol_names = [symbol.name for symbol in taxonomy.symbols]
+        self.assertIn("normalize_brief", symbol_names)
+        self.assertIn("build_generation_packet", symbol_names)
+        self.assertGreaterEqual(len(taxonomy.execution_paths), 1)
+        self.assertTrue(any(path.conditions for path in taxonomy.execution_paths))
 
     def test_worker_bee_observe_command_writes_a_sequence_diagram_document(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -65,6 +81,67 @@ class WorkerBeeObservationTests(unittest.TestCase):
             self.assertEqual(data["shape"], "sequence-diagram")
             self.assertIn("sequenceDiagram", markdown)
             self.assertIn("participant Caller", markdown)
+            self.assertIn("Execution Paths", markdown)
+
+    def test_worker_bee_taxonomy_command_writes_a_taxonomy_document(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        source_path = repo_root / "generation_fabric" / "worker_bee" / "planner.py"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            taxonomy_path = tmp_path / "planner-taxonomy.json"
+
+            code, stdout, stderr = self.run_cli(
+                "worker-bee-taxonomy",
+                "--source-file",
+                str(source_path),
+                "--output",
+                str(taxonomy_path),
+            )
+
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("worker-bee taxonomy written", stdout)
+            self.assertTrue(taxonomy_path.exists())
+
+            schema_path = tmp_path / "planner-taxonomy.schema.json"
+            self.assertTrue(schema_path.exists())
+
+            taxonomy = json.loads(taxonomy_path.read_text(encoding="utf-8"))
+            self.assertEqual(taxonomy["shape"], "code-taxonomy")
+            self.assertEqual(taxonomy["module_path"], "generation_fabric.worker_bee.planner")
+            self.assertIn("build_generation_packet", [symbol["name"] for symbol in taxonomy["symbols"]])
+
+    def test_worker_bee_observe_command_can_reuse_a_saved_taxonomy(self) -> None:
+        repo_root = pathlib.Path(__file__).resolve().parents[1]
+        source_path = repo_root / "generation_fabric" / "worker_bee" / "planner.py"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            taxonomy_path = tmp_path / "planner-taxonomy.json"
+            markdown_path = tmp_path / "planner-observation.md"
+
+            taxonomy_code, _, taxonomy_stderr = self.run_cli(
+                "worker-bee-taxonomy",
+                "--source-file",
+                str(source_path),
+                "--output",
+                str(taxonomy_path),
+            )
+            self.assertEqual(taxonomy_code, 0, taxonomy_stderr)
+
+            code, stdout, stderr = self.run_cli(
+                "worker-bee-observe",
+                "--taxonomy-file",
+                str(taxonomy_path),
+                "--output",
+                str(markdown_path),
+            )
+
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("worker-bee observation written", stdout)
+            self.assertTrue(markdown_path.exists())
+            markdown = markdown_path.read_text(encoding="utf-8")
+            self.assertIn("sequenceDiagram", markdown)
             self.assertIn("Execution Paths", markdown)
 
 

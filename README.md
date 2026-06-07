@@ -19,7 +19,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
 - `tests/` contains end-to-end coverage for the published behaviors.
-- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, and document executor.
+- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, and document executor.
 
 If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).
 If you want the implementation plan, see [docs/compiler-pipeline-roadmap.md](docs/compiler-pipeline-roadmap.md).
@@ -104,6 +104,18 @@ Observe a Python file and render its execution paths as Mermaid sequence diagram
 python json_schema_crud.py worker-bee-observe --source-file generation_fabric/worker_bee/planner.py --output generated/planner-observation.md
 ```
 
+Scan a Python file into reusable taxonomy JSON:
+
+```powershell
+python json_schema_crud.py worker-bee-taxonomy --source-file generation_fabric/worker_bee/planner.py --output generated/planner-taxonomy.json
+```
+
+Reuse a saved taxonomy file to render the observation Markdown:
+
+```powershell
+python json_schema_crud.py worker-bee-observe --taxonomy-file generated/planner-taxonomy.json --output generated/planner-observation.md
+```
+
 Produce a provider-backed planning proposal before building the packet:
 
 ```powershell
@@ -142,6 +154,7 @@ python json_schema_crud.py interactive
 - `markdown-contract`: scaffold a canonical document contract
 - `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
 - `worker-bee-plan`: build a deterministic generation packet from a brief
+- `worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON
 - `worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams
 - `worker-bee-propose`: build a provider-backed planning proposal from a brief
 - `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
@@ -179,6 +192,7 @@ The tests cover:
 - the interactive shell
 - worker-bee strategy and packet planning
 - provider-backed worker-bee planning
+- deterministic worker-bee taxonomy extraction
 - code observation and Mermaid sequence diagrams
 - worker-bee executor and Markdown generation
 - worker-bee learning loop

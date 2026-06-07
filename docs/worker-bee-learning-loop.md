@@ -36,6 +36,7 @@ The default learning catalog exercises:
 - legacy Markdown import
 - the interactive schema shell
 - provider-backed worker-bee planning
+- deterministic worker-bee taxonomy extraction
 - code observation of Python execution paths
 - worker-bee packet planning
 - worker-bee document generation
@@ -52,6 +53,12 @@ To inspect the provider proposal directly:
 
 ```powershell
 python json_schema_crud.py worker-bee-propose --brief "Create a markdown operations note for the generation fabric."
+```
+
+To scan a Python file into reusable taxonomy JSON:
+
+```powershell
+python json_schema_crud.py worker-bee-taxonomy --source-file generation_fabric/worker_bee/planner.py --output generated/planner-taxonomy.json
 ```
 
 To generate a Mermaid-backed code observation:

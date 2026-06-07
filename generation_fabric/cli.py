@@ -24,6 +24,8 @@ from generation_fabric.markdown.registry import list_markdown_contract_kinds
 from generation_fabric.worker_bee import (
     build_generation_packet,
     write_code_observation_document,
+    write_code_taxonomy_document,
+    write_code_observation_document_from_taxonomy,
     build_provider_backed_generation_packet,
     propose_worker_bee_plan,
     run_worker_bee_learning_loop,
@@ -524,17 +526,42 @@ def worker_bee_generate_command(args: argparse.Namespace) -> int:
     return 0
 
 
-def worker_bee_observe_command(args: argparse.Namespace) -> int:
-    """Observe a Python file and render its execution paths as Markdown."""
+def worker_bee_taxonomy_command(args: argparse.Namespace) -> int:
+    """Scan a Python file and emit its deterministic taxonomy contract."""
 
-    paths = write_code_observation_document(
+    paths = write_code_taxonomy_document(
         args.source_file,
         output=args.output,
-        shape=args.shape,
         title=args.title,
         include_private=args.include_private,
         overwrite=args.overwrite,
     )
+    print(f"worker-bee taxonomy written: {paths.data_path}")
+    print(f"generated: {paths.schema_path}, {paths.data_path}")
+    return 0
+
+
+def worker_bee_observe_command(args: argparse.Namespace) -> int:
+    """Observe a Python file and render its execution paths as Markdown."""
+
+    if args.taxonomy_file:
+        taxonomy = load_json_file(args.taxonomy_file)
+        paths = write_code_observation_document_from_taxonomy(
+            taxonomy,
+            output=args.output,
+            shape=args.shape,
+            title=args.title,
+            overwrite=args.overwrite,
+        )
+    else:
+        paths = write_code_observation_document(
+            args.source_file,
+            output=args.output,
+            shape=args.shape,
+            title=args.title,
+            include_private=args.include_private,
+            overwrite=args.overwrite,
+        )
     print(f"worker-bee observation written: {paths.markdown_path}")
     print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
     return 0
@@ -983,14 +1010,51 @@ def build_parser() -> argparse.ArgumentParser:
     )
     worker_bee_generate_parser.set_defaults(func=worker_bee_generate_command)
 
+    worker_bee_taxonomy_parser = subparsers.add_parser(
+        "worker-bee-taxonomy",
+        help="Scan a Python file and generate a deterministic taxonomy contract",
+    )
+    worker_bee_taxonomy_parser.add_argument(
+        "--source-file",
+        required=True,
+        help="Path to the Python source file to scan",
+    )
+    worker_bee_taxonomy_parser.add_argument(
+        "--title",
+        default="",
+        help="Override the generated document title",
+    )
+    worker_bee_taxonomy_parser.add_argument(
+        "--output",
+        default="",
+        help="JSON output path; sidecar schema files use the same stem",
+    )
+    worker_bee_taxonomy_parser.add_argument(
+        "--include-private",
+        action="store_true",
+        help="Include private functions and methods in the taxonomy",
+    )
+    worker_bee_taxonomy_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing existing generated files",
+    )
+    worker_bee_taxonomy_parser.set_defaults(func=worker_bee_taxonomy_command)
+
     worker_bee_observe_parser = subparsers.add_parser(
         "worker-bee-observe",
         help="Observe a Python file and generate a sequence-diagram Markdown contract",
     )
-    worker_bee_observe_parser.add_argument(
+    worker_bee_observe_source_group = worker_bee_observe_parser.add_mutually_exclusive_group(required=True)
+    worker_bee_observe_source_group.add_argument(
         "--source-file",
-        required=True,
+        default="",
         help="Path to the Python source file to observe",
+    )
+    worker_bee_observe_source_group.add_argument(
+        "--taxonomy-file",
+        default="",
+        help="Path to a precomputed taxonomy JSON file",
     )
     worker_bee_observe_parser.add_argument(
         "--shape",

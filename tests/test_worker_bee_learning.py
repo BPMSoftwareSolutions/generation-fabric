@@ -63,6 +63,7 @@ class WorkerBeeLearningTests(unittest.TestCase):
             self.assertEqual(report["capabilities"], list(DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES))
             self.assertIn("worker-bee-generate", report["capabilities"])
             self.assertIn("worker-bee-plan", report["capabilities"])
+            self.assertIn("worker-bee-taxonomy", report["capabilities"])
             self.assertTrue(report["rounds"][0]["artifact_root"])
             self.assertTrue(pathlib.Path(report["rounds"][0]["artifact_root"]).exists())
 

@@ -28,6 +28,7 @@ from .executor import build_worker_bee_document, write_worker_bee_document
 from .observation import collect_python_function_observations, write_code_observation_document
 from .planner import build_generation_packet
 from .provider import build_provider_backed_generation_packet, propose_worker_bee_plan
+from .taxonomy import write_code_taxonomy_document
 
 DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "new",
@@ -50,6 +51,7 @@ DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "interactive",
     "worker-bee-plan",
     "worker-bee-propose",
+    "worker-bee-taxonomy",
     "worker-bee-observe",
     "worker-bee-generate",
 )
@@ -545,6 +547,41 @@ def _worker_bee_observation_case(root: Path) -> WorkerBeeLearningCaseResult:
     )
 
 
+def _worker_bee_taxonomy_case(root: Path) -> WorkerBeeLearningCaseResult:
+    """Exercise deterministic taxonomy extraction for a Python source file."""
+
+    repo_root = _repo_root()
+    source_path = repo_root / "generation_fabric" / "worker_bee" / "planner.py"
+    taxonomy_path = root / "planner-taxonomy.json"
+
+    paths = write_code_taxonomy_document(
+        str(source_path),
+        output=str(taxonomy_path),
+        overwrite=True,
+    )
+    taxonomy = load_json_file(paths.data_path)
+
+    if taxonomy.get("shape") != "code-taxonomy":
+        raise SchemaError("code taxonomy did not preserve the expected shape")
+    if taxonomy.get("module_path") != "generation_fabric.worker_bee.planner":
+        raise SchemaError("code taxonomy did not capture the expected module path")
+    if not str(taxonomy.get("source_hash", "")).startswith("sha256:"):
+        raise SchemaError("code taxonomy did not capture a stable source hash")
+    if not any(symbol.get("name") == "build_generation_packet" for symbol in taxonomy.get("symbols", [])):
+        raise SchemaError("code taxonomy did not capture the expected planner symbol")
+    if not any(path.get("conditions") for path in taxonomy.get("execution_paths", [])):
+        raise SchemaError("code taxonomy did not capture any conditions")
+
+    return WorkerBeeLearningCaseResult(
+        name="worker_bee_taxonomy",
+        capabilities=("worker-bee-taxonomy",),
+        passed=True,
+        details="deterministic taxonomy extraction succeeded",
+        lessons=("The worker bee can precompute a reusable taxonomy before any review pass.",),
+        artifacts=(str(paths.schema_path), str(paths.data_path)),
+    )
+
+
 def _worker_bee_generate_case(root: Path) -> WorkerBeeLearningCaseResult:
     """Exercise worker-bee document generation."""
 
@@ -645,6 +682,12 @@ def build_default_worker_bee_learning_cases() -> tuple[WorkerBeeLearningCase, ..
             capabilities=("worker-bee-propose",),
             description="Build a provider-backed worker-bee planning proposal and packet",
             exercise=_worker_bee_provider_case,
+        ),
+        WorkerBeeLearningCase(
+            name="worker_bee_taxonomy",
+            capabilities=("worker-bee-taxonomy",),
+            description="Extract a deterministic taxonomy from a Python source file",
+            exercise=_worker_bee_taxonomy_case,
         ),
         WorkerBeeLearningCase(
             name="worker_bee_code_observation",

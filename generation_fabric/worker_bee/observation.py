@@ -14,6 +14,8 @@ from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
 
+from .taxonomy import scan_python_source_taxonomy
+
 
 @dataclass(frozen=True)
 class CodeObservationDocumentPaths:
@@ -109,6 +111,12 @@ def _resolve_call_name(node: ast.AST) -> str:
     return ""
 
 
+def _normalize_participant_label(label: str) -> str:
+    """Normalize a taxonomy participant label for Mermaid output."""
+
+    return _normalize_brief(label)
+
+
 class _FunctionFlowCollector(ast.NodeVisitor):
     """Collect ordered flow signals from a function body."""
 
@@ -162,7 +170,7 @@ def _build_mermaid_sequence(function_name: str, participants: tuple[str, ...], f
         if participant == "Caller":
             lines.append(f"{_indent(1)}participant Caller")
         else:
-            alias = participant.replace(".", "_").replace("-", "_")
+            alias = _normalize_participant_label(participant).replace(".", "_").replace("-", "_")
             lines.append(f"{_indent(1)}participant {alias} as {participant}")
 
     function_alias = function_name.replace(".", "_").replace("-", "_")
@@ -223,54 +231,47 @@ def _build_function_observation(
     )
 
 
+def _observation_from_taxonomy_execution_path(path: dict[str, Any]) -> PythonFunctionObservation:
+    """Convert a taxonomy execution path into an observation record."""
+
+    participants = tuple(str(participant) for participant in path.get("participants", []))
+    flow_steps = tuple(str(step) for step in path.get("flow_steps", []))
+    notes = tuple(str(note) for note in path.get("notes", []))
+    return PythonFunctionObservation(
+        name=str(path.get("name", "")),
+        kind=str(path.get("kind", "function")),
+        signature=str(path.get("signature", "")),
+        docstring=str(path.get("docstring", "")),
+        participants=participants,
+        flow_steps=flow_steps,
+        mermaid=_build_mermaid_sequence(str(path.get("name", "")), participants, flow_steps),
+        notes=notes,
+    )
+
+
+def _observations_from_taxonomy_data(taxonomy_data: dict[str, Any]) -> tuple[PythonFunctionObservation, ...]:
+    """Convert a taxonomy document into observation records."""
+
+    execution_paths = taxonomy_data.get("execution_paths", [])
+    if not isinstance(execution_paths, list):
+        raise SchemaError("taxonomy execution_paths must be an array")
+
+    observations = tuple(
+        _observation_from_taxonomy_execution_path(path)
+        for path in execution_paths
+        if isinstance(path, dict)
+    )
+    if not observations:
+        raise SchemaError("no execution paths were found in the taxonomy document")
+    return observations
+
+
 def collect_python_function_observations(source_path: Path, include_private: bool = False) -> tuple[PythonFunctionObservation, ...]:
     """Collect ordered function and method observations from a Python source file."""
 
-    if not source_path.exists():
-        raise SchemaError(f"source file does not exist: {source_path}")
-    if not source_path.is_file():
-        raise SchemaError(f"source path is not a file: {source_path}")
-
-    try:
-        source_text = source_path.read_text(encoding="utf-8")
-    except OSError as exc:
-        raise SchemaError(f"cannot read source file {source_path}: {exc}") from exc
-
-    tree = ast.parse(source_text, filename=str(source_path))
-    observations: list[PythonFunctionObservation] = []
-
-    def should_include(name: str) -> bool:
-        return include_private or not name.startswith("_")
-
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if should_include(node.name):
-                observations.append(
-                    _build_function_observation(
-                        node,
-                        node.name,
-                        "function",
-                    )
-                )
-        elif isinstance(node, ast.ClassDef):
-            if not should_include(node.name):
-                continue
-            for member in node.body:
-                if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and should_include(member.name):
-                    qualified_name = f"{node.name}.{member.name}"
-                    observations.append(
-                        _build_function_observation(
-                            member,
-                            qualified_name,
-                            "method",
-                            class_name=node.name,
-                        )
-                    )
-
-    if not observations:
-        raise SchemaError(f"no public functions or methods were found in {source_path}")
-
-    return tuple(observations)
+    taxonomy = scan_python_source_taxonomy(source_path, include_private=include_private)
+    observations = _observations_from_taxonomy_data(taxonomy.to_dict())
+    return observations
 
 
 def build_code_observation_document_schema(
@@ -400,10 +401,11 @@ def build_code_observation_document(
     """Build the schema, JSON data, and rendered Markdown for a source file."""
 
     source_path = Path(source_file)
-    observations = collect_python_function_observations(source_path, include_private=include_private)
+    taxonomy = scan_python_source_taxonomy(source_path, include_private=include_private)
+    observations = _observations_from_taxonomy_data(taxonomy.to_dict())
     schema = build_code_observation_document_schema(source_path, observations, shape=shape, title=title)
     data = {
-        "source_file": str(source_path),
+        "source_file": taxonomy.source_file,
         "shape": shape,
         "summary": f"Observed {len(observations)} execution path(s) from {source_path.name}.",
         "participants": list(
@@ -420,6 +422,38 @@ def build_code_observation_document(
     return schema, data, rendered
 
 
+def build_code_observation_document_from_taxonomy(
+    taxonomy_data: dict[str, Any],
+    *,
+    shape: str = "sequence-diagram",
+    title: str = "",
+) -> tuple[dict[str, Any], dict[str, Any], str]:
+    """Build the observation contract from a saved taxonomy document."""
+
+    source_file = str(taxonomy_data.get("source_file", "")).strip()
+    if not source_file:
+        raise SchemaError("taxonomy document is missing source_file")
+    source_path = Path(source_file)
+    observations = _observations_from_taxonomy_data(taxonomy_data)
+    schema = build_code_observation_document_schema(source_path, observations, shape=shape, title=title)
+    data = {
+        "source_file": source_file,
+        "shape": shape,
+        "summary": f"Observed {len(observations)} execution path(s) from {source_path.name}.",
+        "participants": list(
+            _unique_preserve_order(participant for observation in observations for participant in observation.participants)
+        ),
+        "execution_paths": [observation.to_dict() for observation in observations],
+        "notes": [
+            "The worker bee turns taxonomy JSON into a contract before rendering Markdown.",
+            "Sequence diagrams make the participants and call order visible at a glance.",
+        ],
+    }
+    validate_instance_against_schema(schema, data)
+    rendered = render_markdown_document(schema, data)
+    return schema, data, rendered
+
+
 def write_code_observation_document(
     source_file: str,
     *,
@@ -428,7 +462,7 @@ def write_code_observation_document(
     title: str = "",
     include_private: bool = False,
     overwrite: bool = False,
-) -> CodeObservationDocumentPaths:
+    ) -> CodeObservationDocumentPaths:
     """Write a code-observation document to disk."""
 
     schema, data, markdown = build_code_observation_document(
@@ -462,11 +496,56 @@ def write_code_observation_document(
     return CodeObservationDocumentPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
 
 
+def write_code_observation_document_from_taxonomy(
+    taxonomy_data: dict[str, Any],
+    *,
+    output: str = "",
+    shape: str = "sequence-diagram",
+    title: str = "",
+    overwrite: bool = False,
+) -> CodeObservationDocumentPaths:
+    """Write a code-observation document from a saved taxonomy document."""
+
+    schema, data, markdown = build_code_observation_document_from_taxonomy(
+        taxonomy_data,
+        shape=shape,
+        title=title,
+    )
+
+    source_file = str(taxonomy_data.get("source_file", "")).strip()
+    if not source_file:
+        raise SchemaError("taxonomy document is missing source_file")
+    source_path = Path(source_file)
+    if output:
+        markdown_path = Path(output)
+        if not markdown_path.suffix:
+            markdown_path = markdown_path.with_suffix(".md")
+    else:
+        markdown_path = Path("generated") / f"{source_path.stem}-observation.md"
+
+    if markdown_path.exists() and not overwrite:
+        raise SchemaError(f"refusing to overwrite existing file: {markdown_path}")
+
+    schema_path = markdown_path.with_name(f"{markdown_path.stem}.schema.json")
+    data_path = markdown_path.with_name(f"{markdown_path.stem}.json")
+
+    for target in (schema_path, data_path):
+        if target.exists() and not overwrite:
+            raise SchemaError(f"refusing to overwrite existing file: {target}")
+
+    write_json_file_atomic(schema_path, schema)
+    write_json_file_atomic(data_path, data)
+    write_text_file_atomic(markdown_path, markdown)
+    return CodeObservationDocumentPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
+
+
 __all__ = [
     "CodeObservationDocumentPaths",
     "PythonFunctionObservation",
+    "build_code_observation_document_from_taxonomy",
     "build_code_observation_document",
     "build_code_observation_document_schema",
     "collect_python_function_observations",
+    "write_code_observation_document_from_taxonomy",
     "write_code_observation_document",
 ]

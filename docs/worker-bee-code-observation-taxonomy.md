@@ -296,6 +296,8 @@ This document describes the richer version of that contract:
 - better reviewer notes
 - room for taxonomy-driven diagrams and badges
 
+The deterministic scan is now available as `worker-bee-taxonomy`, and the saved JSON can be handed back to `worker-bee-observe` with `--taxonomy-file` when you want to skip a re-scan and reuse the precomputed inventory.
+
 ## Design Rule
 
 Keep the observation path contract-backed.
