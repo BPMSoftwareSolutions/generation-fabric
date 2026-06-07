@@ -31,6 +31,7 @@ class WorkerBeeStrategyTests(unittest.TestCase):
                 "planner_layer",
                 "executor_layer",
                 "learning_loop",
+                "code_observation",
                 "ledger_and_verification",
             ],
         )

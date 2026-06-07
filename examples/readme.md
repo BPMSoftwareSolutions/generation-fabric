@@ -98,6 +98,12 @@ Generate a Markdown document from a worker-bee brief:
 python json_schema_crud.py worker-bee-generate --brief 'Generate me a markdown file that has two ASCII sketches' --output generated/billboards.md
 ```
 
+Observe a Python file and render its execution paths as Mermaid sequence diagrams:
+
+```powershell
+python json_schema_crud.py worker-bee-observe --source-file generation_fabric/worker_bee/planner.py --output generated/planner-observation.md
+```
+
 Produce a provider-backed planning proposal before building the packet:
 
 ```powershell
@@ -136,6 +142,7 @@ python json_schema_crud.py interactive
 - `markdown-contract`: scaffold a canonical document contract
 - `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
 - `worker-bee-plan`: build a deterministic generation packet from a brief
+- `worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams
 - `worker-bee-propose`: build a provider-backed planning proposal from a brief
 - `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
 - `worker-bee-learn`: run the benchmark loop and report coverage
@@ -172,6 +179,7 @@ The tests cover:
 - the interactive shell
 - worker-bee strategy and packet planning
 - provider-backed worker-bee planning
+- code observation and Mermaid sequence diagrams
 - worker-bee executor and Markdown generation
 - worker-bee learning loop
 

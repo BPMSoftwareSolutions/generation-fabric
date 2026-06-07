@@ -31,6 +31,14 @@ from .executor import (
     resolve_sketch_phrases,
     write_worker_bee_document,
 )
+from .observation import (
+    CodeObservationDocumentPaths,
+    PythonFunctionObservation,
+    build_code_observation_document,
+    build_code_observation_document_schema,
+    collect_python_function_observations,
+    write_code_observation_document,
+)
 from .learning import (
     DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES,
     WorkerBeeLearningCase,
@@ -53,6 +61,8 @@ __all__ = [
     "WorkerBeePlanProposal",
     "WorkerBeePlanningProvider",
     "DeterministicWorkerBeePlanningProvider",
+    "CodeObservationDocumentPaths",
+    "PythonFunctionObservation",
     "DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES",
     "WorkerBeeLearningCase",
     "WorkerBeeLearningCaseResult",
@@ -64,15 +74,19 @@ __all__ = [
     "build_worker_bee_document",
     "build_worker_bee_document_data",
     "build_provider_backed_generation_packet",
+    "build_code_observation_document",
+    "build_code_observation_document_schema",
     "build_worker_bee_planning_prompt",
     "build_default_worker_bee_learning_cases",
     "build_worker_bee_document_schema",
     "build_default_worker_bee_strategy",
+    "collect_python_function_observations",
     "extract_sketch_phrases",
     "infer_focus",
     "normalize_sketch_phrase",
     "propose_worker_bee_plan",
     "resolve_sketch_phrases",
     "run_worker_bee_learning_loop",
+    "write_code_observation_document",
     "write_worker_bee_document",
 ]

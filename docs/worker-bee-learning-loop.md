@@ -36,6 +36,7 @@ The default learning catalog exercises:
 - legacy Markdown import
 - the interactive schema shell
 - provider-backed worker-bee planning
+- code observation of Python execution paths
 - worker-bee packet planning
 - worker-bee document generation
 
@@ -51,6 +52,12 @@ To inspect the provider proposal directly:
 
 ```powershell
 python json_schema_crud.py worker-bee-propose --brief "Create a markdown operations note for the generation fabric."
+```
+
+To generate a Mermaid-backed code observation:
+
+```powershell
+python json_schema_crud.py worker-bee-observe --source-file generation_fabric/worker_bee/planner.py --output generated/planner-observation.md
 ```
 
 The command emits a JSON report that includes:

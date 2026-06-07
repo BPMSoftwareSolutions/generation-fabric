@@ -95,6 +95,14 @@ def build_default_worker_bee_strategy() -> WorkerBeeMigrationStrategy:
                 ),
             ),
             WorkerBeeSurface(
+                name="code_observation",
+                status="existing",
+                responsibility="Observe Python execution paths and render Mermaid sequence-diagram Markdown",
+                files=(
+                    "generation_fabric/worker_bee/observation.py",
+                ),
+            ),
+            WorkerBeeSurface(
                 name="ledger_and_verification",
                 status="planned",
                 responsibility="Record worker-bee runs, retries, and verification evidence for deterministic replay",

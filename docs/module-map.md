@@ -16,6 +16,7 @@ This repository is organized so the file names tell the implementation story.
 - `docs/compiler-pipeline-roadmap.md`: implementation roadmap for the compiler-style pipeline.
 - `docs/unsupported-markdown-features.md`: manual reference for Markdown features that are not yet modeled by the fabric.
 - `docs/worker-bee-learning-loop.md`: benchmark-style learning loop for exercising the worker-bee surface against the fabric.
+- `docs/worker-bee-code-observation.md`: sequence-diagram shape guidance for observing Python execution paths.
 - `docs/worker-bee-migration-strategy.md`: migration strategy for adding a planner/executor worker-bee boundary on top of the fabric.
 
 ## Core
@@ -40,6 +41,7 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/worker_bee/planner.py`: deterministic packet builder that turns a brief into a worker-bee generation packet.
 - `generation_fabric/worker_bee/prompts.py`: prompt helpers that prepare a provider-facing worker-bee planning prompt.
 - `generation_fabric/worker_bee/provider.py`: provider-backed planning proposal helpers and the deterministic local provider adapter.
+- `generation_fabric/worker_bee/observation.py`: code-observation helpers that turn Python execution paths into Mermaid sequence-diagram Markdown.
 - `generation_fabric/worker_bee/executor.py`: deterministic executor that turns a packet and sketch prompts into schema, JSON, and Markdown artifacts.
 - `generation_fabric/worker_bee/learning.py`: benchmark-style learning loop that exercises the current fabric capabilities and reports coverage.
 

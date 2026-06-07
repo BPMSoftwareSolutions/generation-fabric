@@ -25,6 +25,7 @@ from generation_fabric.schema.inference import build_inferred_schema
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
 
 from .executor import build_worker_bee_document, write_worker_bee_document
+from .observation import collect_python_function_observations, write_code_observation_document
 from .planner import build_generation_packet
 from .provider import build_provider_backed_generation_packet, propose_worker_bee_plan
 
@@ -49,6 +50,7 @@ DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "interactive",
     "worker-bee-plan",
     "worker-bee-propose",
+    "worker-bee-observe",
     "worker-bee-generate",
 )
 
@@ -507,6 +509,42 @@ def _worker_bee_provider_case(root: Path) -> WorkerBeeLearningCaseResult:
     )
 
 
+def _worker_bee_observation_case(root: Path) -> WorkerBeeLearningCaseResult:
+    """Exercise code observation and sequence-diagram rendering."""
+
+    repo_root = _repo_root()
+    source_path = repo_root / "generation_fabric" / "worker_bee" / "planner.py"
+    markdown_path = root / "planner-observation.md"
+
+    observations = collect_python_function_observations(source_path)
+    paths = write_code_observation_document(
+        str(source_path),
+        output=str(markdown_path),
+        overwrite=True,
+    )
+    markdown = Path(paths.markdown_path).read_text(encoding="utf-8")
+    schema = load_json_file(paths.schema_path)
+    data = load_json_file(paths.data_path)
+
+    if not observations:
+        raise SchemaError("code observation did not capture any execution paths")
+    if data.get("shape") != "sequence-diagram":
+        raise SchemaError("code observation did not preserve the requested shape")
+    if "sequenceDiagram" not in markdown or "participant Caller" not in markdown:
+        raise SchemaError("code observation did not render a Mermaid sequence diagram")
+    if schema.get("title") != "Code Observation: planner":
+        raise SchemaError("code observation did not build the expected contract title")
+
+    return WorkerBeeLearningCaseResult(
+        name="worker_bee_code_observation",
+        capabilities=("worker-bee-observe",),
+        passed=True,
+        details="code observation produced a contract-backed sequence diagram document",
+        lessons=("The worker bee can observe Python execution paths and turn them into Mermaid-backed Markdown.",),
+        artifacts=(str(paths.schema_path), str(paths.data_path), str(paths.markdown_path)),
+    )
+
+
 def _worker_bee_generate_case(root: Path) -> WorkerBeeLearningCaseResult:
     """Exercise worker-bee document generation."""
 
@@ -607,6 +645,12 @@ def build_default_worker_bee_learning_cases() -> tuple[WorkerBeeLearningCase, ..
             capabilities=("worker-bee-propose",),
             description="Build a provider-backed worker-bee planning proposal and packet",
             exercise=_worker_bee_provider_case,
+        ),
+        WorkerBeeLearningCase(
+            name="worker_bee_code_observation",
+            capabilities=("worker-bee-observe",),
+            description="Observe a Python file and render sequence diagrams",
+            exercise=_worker_bee_observation_case,
         ),
         WorkerBeeLearningCase(
             name="worker_bee_generate",
