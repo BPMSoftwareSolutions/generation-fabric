@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 564 304" width="564" height="304" role="img" aria-label="Operations Dashboard blueprint">
+  <title>Operations Dashboard blueprint</title>
+  <desc>Component wireframe generated from the web page contract.</desc>
+  <style>
+    .gf-canvas { fill: #ffffff; stroke: #cbd5e1; }
+    .gf-zone { fill: #f8fafc; stroke: #334155; }
+    .gf-label { font-family: monospace; font-size: 12px; fill: #0f172a; }
+    .gf-glyph-input, .gf-glyph-head { fill: #e2e8f0; stroke: #94a3b8; }
+    .gf-glyph-button { fill: #2f6f4f; }
+    .gf-glyph-line, .gf-glyph-axis { stroke: #94a3b8; }
+    .gf-glyph-axis { stroke: #475569; }
+    .gf-glyph-bar { fill: #2f6f4f; }
+    .gf-glyph-series { fill: none; stroke: #2f6f4f; stroke-width: 2; }
+    .gf-glyph-arc { fill: none; stroke: #475569; stroke-width: 2; }
+    .gf-glyph-needle { stroke: #b91c1c; stroke-width: 2; }
+  </style>
+  <rect class="gf-canvas" x="0" y="0" width="564" height="304"/>
+  <g data-zone-id="operations-dashboard-page" data-component-id="component-operations-dashboard" data-component-type="page">
+    <rect class="gf-zone" x="21" y="32" width="522" height="20"/>
+    <text class="gf-label" x="27" y="48">OPERATIONS DASHBOARD [page]</text>
+  </g>
+  <g data-zone-id="filters-form" data-component-id="component-filters" data-component-type="form">
+    <rect class="gf-zone" x="21" y="72" width="243" height="60"/>
+    <text class="gf-label" x="27" y="88">FILTERS [form]</text>
+    <rect class="gf-glyph-input" x="29" y="98" width="167" height="12" rx="3"/>
+  </g>
+  <g data-zone-id="delivery-health-gauge" data-component-id="component-delivery-health" data-component-type="gauge">
+    <rect class="gf-zone" x="273" y="72" width="270" height="60"/>
+    <text class="gf-label" x="279" y="88">DELIVERY HEALTH [gauge]</text>
+    <path class="gf-glyph-arc" d="M 386 120 A 22 22 0 0 1 430 120"/>
+    <line class="gf-glyph-needle" x1="408" y1="120" x2="421" y2="107"/>
+  </g>
+  <g data-zone-id="runs-data-grid" data-component-id="component-runs" data-component-type="data_grid">
+    <rect class="gf-zone" x="21" y="152" width="522" height="60"/>
+    <text class="gf-label" x="27" y="168">RUNS [data_grid]</text>
+    <rect class="gf-glyph-head" x="29" y="178" width="506" height="16"/>
+    <line class="gf-glyph-line" x1="155" y1="178" x2="155" y2="204"/>
+    <line class="gf-glyph-line" x1="282" y1="178" x2="282" y2="204"/>
+    <line class="gf-glyph-line" x1="409" y1="178" x2="409" y2="204"/>
+  </g>
+  <g data-zone-id="success-trend-chart-line" data-component-id="component-success-trend" data-component-type="chart_line">
+    <rect class="gf-zone" x="21" y="232" width="522" height="40"/>
+    <text class="gf-label" x="27" y="248">SUCCESS TREND [chart_line]</text>
+    <line class="gf-glyph-axis" x1="29" y1="258" x2="29" y2="266"/>
+    <line class="gf-glyph-axis" x1="29" y1="266" x2="535" y2="266"/>
+    <polyline class="gf-glyph-series" points="29,264 155,261 282,262 409,260 535,261"/>
+  </g>
+</svg>

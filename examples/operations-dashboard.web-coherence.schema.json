@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Web Coherence Report",
+  "description": "Deterministic component-aware coherence audit of a web page contract.",
+  "type": "object",
+  "properties": {
+    "page": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "score": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "status": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "summary": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "checks_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "remediation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "check",
+          "status",
+          "detail",
+          "remediation"
+        ],
+        "additionalProperties": false
+      },
+      "x-markdown": {
+        "kind": "table"
+      }
+    },
+    "components_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          },
+          "component_type": {
+            "type": "string"
+          },
+          "zone_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "component_id",
+          "component_type",
+          "zone_id",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "x-markdown": {
+        "kind": "table"
+      }
+    }
+  },
+  "required": [
+    "page",
+    "score",
+    "status",
+    "summary",
+    "checks_heading",
+    "checks",
+    "components_heading",
+    "components"
+  ],
+  "additionalProperties": false
+}

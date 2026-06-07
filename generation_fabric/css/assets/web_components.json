@@ -1,0 +1,190 @@
+{
+  "tokens": {
+    "--gf-space-xs": "4px",
+    "--gf-space-sm": "8px",
+    "--gf-space-md": "16px",
+    "--gf-space-lg": "24px",
+    "--gf-color-surface": "#ffffff",
+    "--gf-color-border": "#d8dee9",
+    "--gf-color-text": "#1f2933",
+    "--gf-color-accent": "#2f6f4f",
+    "--gf-color-muted": "#6b7280",
+    "--gf-color-focus": "#2563eb"
+  },
+  "rules": [
+    {
+      "selector": ".gf-web",
+      "declarations": {
+        "margin": "0",
+        "font-family": "system-ui, sans-serif",
+        "color": "var(--gf-color-text)"
+      }
+    },
+    {
+      "selector": ".gf-page-header",
+      "declarations": {
+        "padding": "var(--gf-space-lg)",
+        "border-bottom": "1px solid var(--gf-color-border)"
+      }
+    },
+    {
+      "selector": ".gf-page-title",
+      "declarations": {
+        "margin": "0",
+        "font-size": "1.5rem"
+      }
+    },
+    {
+      "selector": ".gf-form, .gf-data-grid, .gf-chart, .gf-metric, .gf-region",
+      "declarations": {
+        "background": "var(--gf-color-surface)",
+        "border": "1px solid var(--gf-color-border)",
+        "border-radius": "8px",
+        "padding": "var(--gf-space-md)",
+        "margin": "0"
+      }
+    },
+    {
+      "selector": ".gf-form__fields",
+      "declarations": {
+        "display": "grid",
+        "gap": "var(--gf-space-sm)"
+      }
+    },
+    {
+      "selector": ".gf-field",
+      "declarations": {
+        "display": "grid",
+        "gap": "var(--gf-space-xs)"
+      }
+    },
+    {
+      "selector": ".gf-label",
+      "declarations": {
+        "font-size": "0.85rem",
+        "color": "var(--gf-color-muted)"
+      }
+    },
+    {
+      "selector": ".gf-input",
+      "declarations": {
+        "padding": "var(--gf-space-sm)",
+        "border": "1px solid var(--gf-color-border)",
+        "border-radius": "6px",
+        "font": "inherit"
+      }
+    },
+    {
+      "selector": ".gf-input:focus-visible",
+      "declarations": {
+        "outline": "2px solid var(--gf-color-focus)",
+        "outline-offset": "1px"
+      }
+    },
+    {
+      "selector": ".gf-form__actions",
+      "declarations": {
+        "margin-top": "var(--gf-space-md)",
+        "display": "flex",
+        "gap": "var(--gf-space-sm)"
+      }
+    },
+    {
+      "selector": ".gf-button",
+      "declarations": {
+        "padding": "var(--gf-space-sm) var(--gf-space-md)",
+        "border": "1px solid var(--gf-color-accent)",
+        "border-radius": "6px",
+        "background": "var(--gf-color-accent)",
+        "color": "#ffffff",
+        "font": "inherit",
+        "cursor": "pointer"
+      }
+    },
+    {
+      "selector": ".gf-button--ghost",
+      "declarations": {
+        "background": "transparent",
+        "color": "var(--gf-color-accent)"
+      }
+    },
+    {
+      "selector": ".gf-button:focus-visible",
+      "declarations": {
+        "outline": "2px solid var(--gf-color-focus)",
+        "outline-offset": "1px"
+      }
+    },
+    {
+      "selector": ".gf-table",
+      "declarations": {
+        "width": "100%",
+        "border-collapse": "collapse"
+      }
+    },
+    {
+      "selector": ".gf-table th, .gf-table td",
+      "declarations": {
+        "text-align": "left",
+        "padding": "var(--gf-space-sm)",
+        "border-bottom": "1px solid var(--gf-color-border)"
+      }
+    },
+    {
+      "selector": ".gf-table__empty td",
+      "declarations": {
+        "color": "var(--gf-color-muted)",
+        "font-style": "italic"
+      }
+    },
+    {
+      "selector": ".gf-chart__canvas",
+      "declarations": {
+        "min-height": "160px",
+        "border": "1px dashed var(--gf-color-border)",
+        "border-radius": "6px",
+        "background": "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.03) 10px, rgba(0,0,0,0.03) 20px)"
+      }
+    },
+    {
+      "selector": ".gf-metric__value",
+      "declarations": {
+        "margin": "0",
+        "font-size": "2rem",
+        "font-weight": "600"
+      }
+    },
+    {
+      "selector": ".gf-metric__caption",
+      "declarations": {
+        "margin": "0",
+        "color": "var(--gf-color-muted)",
+        "font-size": "0.85rem"
+      }
+    },
+    {
+      "selector": ".gf-is-loading",
+      "declarations": {
+        "opacity": "0.6"
+      }
+    },
+    {
+      "selector": ".gf-is-empty",
+      "declarations": {
+        "color": "var(--gf-color-muted)"
+      }
+    },
+    {
+      "selector": ".gf-is-error",
+      "declarations": {
+        "border-color": "#b91c1c"
+      }
+    },
+    {
+      "selector": ".gf-is-selected",
+      "declarations": {
+        "outline": "2px solid var(--gf-color-accent)"
+      }
+    }
+  ]
+}

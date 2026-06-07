@@ -17,6 +17,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `generation_fabric/schema/` owns schema creation, inference, and validation.
 - `generation_fabric/markdown/` owns Markdown rendering, the contract registry, contract scaffolding, and Markdown import.
 - `generation_fabric/layout/` parses ASCII layout sketches into a governed zone taxonomy, derives nested box models, and audits layout coherence plus inventory lineage.
+- `generation_fabric/layout/component_intent.py` and the web renderers turn ASCII component sketches into a web page contract plus component-aware HTML, CSS, and SVG.
 - `generation_fabric/html/`, `generation_fabric/css/`, and `generation_fabric/svg/` render HTML, CSS, and SVG from the same contract using `x-html`, `x-css`, and `x-svg` annotations.
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
@@ -223,6 +224,13 @@ python json_schema_crud.py interactive
 - `layout-boxes`: derive a nested box model from a zone taxonomy contract
 - `layout-inventory`: compare zone taxonomies and write a reuse inventory report
 - `layout-coherence`: audit a zone taxonomy and write a coherence report
+- `ascii-components`: extract component intent from an ASCII sketch
+- `ascii-web`: build the full web bundle (contract plus HTML, CSS, SVG, and coherence) from an ASCII sketch
+- `layout-web-html`: render component-aware HTML from a web page contract
+- `layout-web-css`: render component-aware CSS from a web page contract
+- `layout-web-svg`: render a component-aware SVG blueprint from a web page contract
+- `layout-web-coherence`: audit a web page contract and write a coherence report
+- `layout-web-repair`: run the deterministic repair cycle on a web page contract
 - `worker-bee-plan`: build a deterministic generation packet from a brief
 - `worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON
 - `worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams
@@ -281,6 +289,8 @@ The tests cover:
 - semantic HTML rendering from a zone taxonomy contract
 - box-model JSON derivation from a zone taxonomy contract
 - box-model CSS and SVG rendering from the same contract
+- ASCII-to-web component intent, web contract, and component-aware HTML, CSS, and SVG
+- web coherence auditing and deterministic contract repair
 - layout coherence auditing
 - segment reuse inventory reporting
 - visual-intent inventory reporting

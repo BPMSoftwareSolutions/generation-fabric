@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Operations Dashboard</title>
+  <link rel="stylesheet" href="operations-dashboard.css">
+</head>
+<body class="gf-web">
+  <header class="gf-page-header" data-zone-id="operations-dashboard-page" data-component-id="component-operations-dashboard" data-component-type="page" aria-label="OPERATIONS DASHBOARD">
+    <h1 class="gf-page-title">OPERATIONS DASHBOARD</h1>
+  </header>
+  <main class="gf-web-page" role="main" data-page-id="operations-dashboard">
+    <form class="gf-form" data-zone-id="filters-form" data-component-id="component-filters" data-component-type="form" role="region" aria-label="FILTERS">
+      <h2 class="gf-form__title">FILTERS</h2>
+      <div class="gf-form__fields">
+        <div class="gf-field">
+          <label class="gf-label" for="component-filters-date">Date</label>
+          <input class="gf-input" id="component-filters-date" name="date" type="date">
+        </div>
+        <div class="gf-field">
+          <label class="gf-label" for="component-filters-status">Status</label>
+          <input class="gf-input" id="component-filters-status" name="status" type="text">
+        </div>
+        <div class="gf-field">
+          <label class="gf-label" for="component-filters-team">Team</label>
+          <input class="gf-input" id="component-filters-team" name="team" type="text">
+        </div>
+      </div>
+      <div class="gf-form__actions">
+        <button class="gf-button" type="submit" data-action="apply_filters">Apply Filters</button>
+      </div>
+    </form>
+    <section class="gf-metric" data-zone-id="delivery-health-gauge" data-component-id="component-delivery-health" data-component-type="gauge" role="region" aria-label="DELIVERY HEALTH" data-value="delivery_health" data-min="0" data-max="100">
+      <h2 class="gf-metric__title">DELIVERY HEALTH</h2>
+      <p class="gf-metric__value" aria-live="polite">&mdash;</p>
+      <p class="gf-metric__caption">Bound to delivery_health</p>
+    </section>
+    <section class="gf-data-grid" data-zone-id="runs-data-grid" data-component-id="component-runs" data-component-type="data_grid" role="region" aria-label="RUNS" data-source="runs[]">
+      <h2 class="gf-data-grid__title">RUNS</h2>
+      <table class="gf-table">
+        <thead><tr><th scope="col">Id</th><th scope="col">Status</th><th scope="col">Owner</th><th scope="col">Duration</th></tr></thead>
+        <tbody>
+          <tr class="gf-table__empty"><td colspan="4">No run records yet</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <figure class="gf-chart" data-zone-id="success-trend-chart-line" data-component-id="component-success-trend" data-component-type="chart_line" role="region" aria-label="SUCCESS TREND" data-chart-type="chart_line" data-x="day" data-y="success_rate">
+      <figcaption class="gf-chart__caption">SUCCESS TREND</figcaption>
+      <div class="gf-chart__canvas" role="img" aria-label="SUCCESS TREND line chart"></div>
+    </figure>
+  </main>
+</body>
+</html>

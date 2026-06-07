@@ -1,0 +1,108 @@
+{
+  "page": "operations-dashboard",
+  "score": "100.0%",
+  "status": "coherent",
+  "summary": "All 11 web coherence checks passed across 5 components.",
+  "checks_heading": "Checks",
+  "checks": [
+    {
+      "check": "zone_component_coverage",
+      "status": "pass",
+      "detail": "every component references an existing zone",
+      "remediation": ""
+    },
+    {
+      "check": "component_ids_unique",
+      "status": "pass",
+      "detail": "component ids are unique",
+      "remediation": ""
+    },
+    {
+      "check": "component_type_supported",
+      "status": "pass",
+      "detail": "all component types are supported",
+      "remediation": ""
+    },
+    {
+      "check": "form_controls_present",
+      "status": "pass",
+      "detail": "forms declare fields and actions",
+      "remediation": ""
+    },
+    {
+      "check": "data_grid_columns_present",
+      "status": "pass",
+      "detail": "data grids declare columns and a data source",
+      "remediation": ""
+    },
+    {
+      "check": "chart_axes_present",
+      "status": "pass",
+      "detail": "charts declare x and y axes",
+      "remediation": ""
+    },
+    {
+      "check": "gauge_range_present",
+      "status": "pass",
+      "detail": "gauges declare value, min, and max",
+      "remediation": ""
+    },
+    {
+      "check": "html_component_traceability",
+      "status": "pass",
+      "detail": "HTML preserves every component id",
+      "remediation": ""
+    },
+    {
+      "check": "css_component_ownership",
+      "status": "pass",
+      "detail": "CSS owns zone placement and component classes",
+      "remediation": ""
+    },
+    {
+      "check": "svg_component_representation",
+      "status": "pass",
+      "detail": "SVG draws every component",
+      "remediation": ""
+    },
+    {
+      "check": "a11y_labels",
+      "status": "pass",
+      "detail": "interactive components carry accessible labels",
+      "remediation": ""
+    }
+  ],
+  "components_heading": "Components",
+  "components": [
+    {
+      "component_id": "component-operations-dashboard",
+      "component_type": "page",
+      "zone_id": "operations-dashboard-page",
+      "label": "OPERATIONS DASHBOARD"
+    },
+    {
+      "component_id": "component-filters",
+      "component_type": "form",
+      "zone_id": "filters-form",
+      "label": "FILTERS"
+    },
+    {
+      "component_id": "component-delivery-health",
+      "component_type": "gauge",
+      "zone_id": "delivery-health-gauge",
+      "label": "DELIVERY HEALTH"
+    },
+    {
+      "component_id": "component-runs",
+      "component_type": "data_grid",
+      "zone_id": "runs-data-grid",
+      "label": "RUNS"
+    },
+    {
+      "component_id": "component-success-trend",
+      "component_type": "chart_line",
+      "zone_id": "success-trend-chart-line",
+      "label": "SUCCESS TREND"
+    }
+  ]
+}

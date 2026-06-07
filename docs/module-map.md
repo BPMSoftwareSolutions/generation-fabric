@@ -69,20 +69,28 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/layout/coherence.py`: deterministic coherence audit that checks a zone taxonomy and its renders, then emits a Markdown report through the Markdown renderer.
 - `generation_fabric/layout/inventory.py`: compares multiple zone taxonomies and writes a layout reuse inventory report.
 - `generation_fabric/layout/visual_inventory.py`: records sketch lineage and visual coherence for the inventory of evolution acceleration.
+- `generation_fabric/layout/component_intent.py`: extracts component intent (forms, data grids, charts, gauges, widgets) from the ASCII component dialect.
+- `generation_fabric/layout/web_contract.py`: folds zones, boxes, and component intent into one normalized web page contract.
+- `generation_fabric/layout/web_coherence.py`: component-aware coherence audit that checks the contract and its HTML/CSS/SVG projections.
+- `generation_fabric/layout/web_repair.py`: deterministic web-contract repair loop that backfills safe defaults and reports the coherence delta.
+- `generation_fabric/layout/web_bundle.py`: end-to-end web bundle orchestration that writes the full contract and render-target sidecar family.
 
 ## HTML
 
 - `generation_fabric/html/renderer.py`: deterministic semantic HTML rendering from a schema contract using the `x-html` annotation namespace.
 - `generation_fabric/html/markdown_page.py`: Markdown-to-HTML projection that preserves fenced Mermaid blocks and wraps contract reports in a standalone HTML page.
 - `generation_fabric/html/observability_page.py`: worker-bee observability wrapper that binds Markdown, JSON sidecars, and playback controls into one HTML projection.
+- `generation_fabric/html/web_renderer.py`: component-aware semantic HTML rendering (forms, tables, charts, gauges) from a web page contract.
 
 ## CSS
 
 - `generation_fabric/css/renderer.py`: deterministic box-model CSS rendering that projects each zone into an ownership rule using the `x-css` annotation namespace.
+- `generation_fabric/css/web_renderer.py`: component-aware CSS rendering that projects the `assets/web_components.json` stylesheet contract plus contract-derived grid placement.
 
 ## SVG
 
 - `generation_fabric/svg/renderer.py`: deterministic SVG rendering that draws each zone from its parsed bounds using the `x-svg` annotation namespace.
+- `generation_fabric/svg/web_renderer.py`: component-aware SVG blueprint rendering that draws a schematic glyph per component family.
 
 ## Example Assets
 
@@ -111,6 +119,13 @@ This repository is organized so the file names tell the implementation story.
 - `examples/value-simulator.css`: canonical box-model CSS rendered from the zone taxonomy.
 - `examples/value-simulator.svg`: canonical SVG drawing rendered from the zone taxonomy.
 - `examples/value-simulator.coherence.md`: canonical coherence report rendered from the zone taxonomy.
+- `examples/operations-dashboard.ascii.md`: canonical ASCII-to-web sketch using the component dialect.
+- `examples/operations-dashboard.components.json`: canonical component intent extracted from the sketch.
+- `examples/operations-dashboard.web.json`: canonical web page contract combining zones, boxes, and components.
+- `examples/operations-dashboard.html`: canonical component-aware HTML rendered from the web contract.
+- `examples/operations-dashboard.css`: canonical component-aware CSS rendered from the web contract.
+- `examples/operations-dashboard.svg`: canonical component-aware SVG blueprint rendered from the web contract.
+- `examples/operations-dashboard.web-coherence.md`: canonical web coherence report rendered from the web contract.
 - `examples/segment-inventory.schema.json`: canonical layout reuse inventory schema.
 - `examples/segment-inventory.json`: canonical layout reuse inventory data.
 - `examples/segment-inventory.md`: canonical layout reuse inventory across the segment examples.

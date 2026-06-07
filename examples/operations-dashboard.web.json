@@ -1,0 +1,483 @@
+{
+  "kind": "web_page_contract",
+  "version": "0.1.0",
+  "page_id": "operations-dashboard",
+  "title": "Operations Dashboard",
+  "source_sketch": {
+    "format": "ascii",
+    "hash": "sha256:a34a25d301c5df3141ba3501b0f19fe26e839b676d21afa79811d8f2c4d30dc2"
+  },
+  "zones": [
+    {
+      "zone_id": "operations-dashboard-page",
+      "label": "OPERATIONS DASHBOARD [page]",
+      "purpose": "",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 0,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 1,
+        "width": 58,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "filters-form",
+      "label": "FILTERS [form]",
+      "purpose": "",
+      "details": [
+        "fields: date,status,team",
+        "action: apply_filters"
+      ],
+      "layout_role": "split_left",
+      "bounds": {
+        "band": 1,
+        "column": 0,
+        "column_count": 2,
+        "x": 1,
+        "y": 3,
+        "width": 27,
+        "height": 3
+      }
+    },
+    {
+      "zone_id": "delivery-health-gauge",
+      "label": "DELIVERY HEALTH [gauge]",
+      "purpose": "",
+      "details": [
+        "value: delivery_health",
+        "min: 0 max: 100"
+      ],
+      "layout_role": "split_right",
+      "bounds": {
+        "band": 1,
+        "column": 1,
+        "column_count": 2,
+        "x": 29,
+        "y": 3,
+        "width": 30,
+        "height": 3
+      }
+    },
+    {
+      "zone_id": "runs-data-grid",
+      "label": "RUNS [data_grid]",
+      "purpose": "",
+      "details": [
+        "data: runs[]",
+        "columns: id,status,owner,duration"
+      ],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 2,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 7,
+        "width": 58,
+        "height": 3
+      }
+    },
+    {
+      "zone_id": "success-trend-chart-line",
+      "label": "SUCCESS TREND [chart_line]",
+      "purpose": "",
+      "details": [
+        "x: day y: success_rate"
+      ],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 3,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 11,
+        "width": 58,
+        "height": 2
+      }
+    }
+  ],
+  "boxes": [
+    {
+      "box_id": "page",
+      "parent_box": "",
+      "layout_type": "stack",
+      "contains": [
+        "band-0",
+        "band-1",
+        "band-2",
+        "band-3"
+      ],
+      "css_class": "layout",
+      "responsive_behavior": {
+        "desktop": "stack",
+        "tablet": "stack",
+        "mobile": "stack"
+      },
+      "alignment_checks": [
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-0",
+      "parent_box": "page",
+      "layout_type": "single_column",
+      "contains": [
+        "operations-dashboard-page"
+      ],
+      "css_class": "band band--row-0",
+      "responsive_behavior": {
+        "desktop": "single_column",
+        "tablet": "single_column",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "operations-dashboard-page",
+      "parent_box": "band-0",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--operations-dashboard-page",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-1",
+      "parent_box": "page",
+      "layout_type": "two_column",
+      "contains": [
+        "filters-form",
+        "delivery-health-gauge"
+      ],
+      "css_class": "band band--row-1",
+      "responsive_behavior": {
+        "desktop": "two_column",
+        "tablet": "stacked",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "filters-form",
+      "parent_box": "band-1",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--filters-form",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "delivery-health-gauge",
+      "parent_box": "band-1",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--delivery-health-gauge",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-2",
+      "parent_box": "page",
+      "layout_type": "single_column",
+      "contains": [
+        "runs-data-grid"
+      ],
+      "css_class": "band band--row-2",
+      "responsive_behavior": {
+        "desktop": "single_column",
+        "tablet": "single_column",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "runs-data-grid",
+      "parent_box": "band-2",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--runs-data-grid",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-3",
+      "parent_box": "page",
+      "layout_type": "single_column",
+      "contains": [
+        "success-trend-chart-line"
+      ],
+      "css_class": "band band--row-3",
+      "responsive_behavior": {
+        "desktop": "single_column",
+        "tablet": "single_column",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "success-trend-chart-line",
+      "parent_box": "band-3",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--success-trend-chart-line",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "component_id": "component-operations-dashboard",
+      "zone_id": "operations-dashboard-page",
+      "component_type": "page",
+      "label": "OPERATIONS DASHBOARD",
+      "role": "main",
+      "variant": "",
+      "data": null,
+      "fields": [],
+      "columns": [],
+      "actions": [],
+      "measures": {},
+      "accessibility": {
+        "aria_label": "OPERATIONS DASHBOARD"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "operations-dashboard-page",
+        "band": 0
+      }
+    },
+    {
+      "component_id": "component-filters",
+      "zone_id": "filters-form",
+      "component_type": "form",
+      "label": "FILTERS",
+      "role": "region",
+      "variant": "",
+      "data": null,
+      "fields": [
+        {
+          "name": "date",
+          "label": "Date",
+          "type": "text"
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "text"
+        },
+        {
+          "name": "team",
+          "label": "Team",
+          "type": "text"
+        }
+      ],
+      "columns": [],
+      "actions": [
+        {
+          "name": "apply_filters",
+          "label": "Apply Filters",
+          "target": ""
+        }
+      ],
+      "measures": {},
+      "accessibility": {
+        "aria_label": "FILTERS"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "filters-form",
+        "band": 1
+      }
+    },
+    {
+      "component_id": "component-delivery-health",
+      "zone_id": "delivery-health-gauge",
+      "component_type": "gauge",
+      "label": "DELIVERY HEALTH",
+      "role": "region",
+      "variant": "",
+      "data": null,
+      "fields": [],
+      "columns": [],
+      "actions": [],
+      "measures": {
+        "value": "delivery_health",
+        "min": "0",
+        "max": "100"
+      },
+      "accessibility": {
+        "aria_label": "DELIVERY HEALTH"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "delivery-health-gauge",
+        "band": 1
+      }
+    },
+    {
+      "component_id": "component-runs",
+      "zone_id": "runs-data-grid",
+      "component_type": "data_grid",
+      "label": "RUNS",
+      "role": "region",
+      "variant": "",
+      "data": {
+        "source": "runs[]",
+        "item_name": "run"
+      },
+      "fields": [],
+      "columns": [
+        {
+          "name": "id",
+          "label": "Id",
+          "type": "text"
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "text"
+        },
+        {
+          "name": "owner",
+          "label": "Owner",
+          "type": "text"
+        },
+        {
+          "name": "duration",
+          "label": "Duration",
+          "type": "text"
+        }
+      ],
+      "actions": [],
+      "measures": {},
+      "accessibility": {
+        "aria_label": "RUNS"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "runs-data-grid",
+        "band": 2
+      }
+    },
+    {
+      "component_id": "component-success-trend",
+      "zone_id": "success-trend-chart-line",
+      "component_type": "chart_line",
+      "label": "SUCCESS TREND",
+      "role": "region",
+      "variant": "",
+      "data": null,
+      "fields": [],
+      "columns": [],
+      "actions": [],
+      "measures": {
+        "x": "day",
+        "y": "success_rate"
+      },
+      "accessibility": {
+        "aria_label": "SUCCESS TREND"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "success-trend-chart-line",
+        "band": 3
+      }
+    }
+  ],
+  "warnings": [],
+  "render_targets": {
+    "html": {
+      "enabled": true,
+      "annotation": "x-html"
+    },
+    "css": {
+      "enabled": true,
+      "annotation": "x-css"
+    },
+    "svg": {
+      "enabled": true,
+      "annotation": "x-svg"
+    }
+  },
+  "coherence": {
+    "required_checks": [
+      "zone_component_coverage",
+      "component_ids_unique",
+      "component_type_supported",
+      "form_controls_present",
+      "data_grid_columns_present",
+      "chart_axes_present",
+      "gauge_range_present",
+      "html_component_traceability",
+      "css_component_ownership",
+      "svg_component_representation",
+      "a11y_labels"
+    ]
+  }
+}

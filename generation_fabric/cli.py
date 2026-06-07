@@ -27,7 +27,15 @@ from generation_fabric.json_documents.sample import build_json_sample_from_root
 from generation_fabric.layout.ascii_sketch import build_layout_zone_schema, build_zone_document
 from generation_fabric.layout.box_model import build_box_model_document
 from generation_fabric.layout.coherence import write_layout_coherence_report
+from generation_fabric.layout.component_intent import build_component_intent_document
 from generation_fabric.layout.inventory import write_layout_inventory_report
+from generation_fabric.layout.web_bundle import write_web_bundle
+from generation_fabric.layout.web_coherence import write_web_coherence_report
+from generation_fabric.layout.web_contract import build_web_page_contract
+from generation_fabric.layout.web_repair import run_web_repair_cycle
+from generation_fabric.html.web_renderer import render_web_html_document
+from generation_fabric.css.web_renderer import render_web_css_document
+from generation_fabric.svg.web_renderer import render_web_svg_document
 from generation_fabric.svg.renderer import render_svg_document
 from generation_fabric.markdown.contracts import (
     DEFAULT_MARKDOWN_CONTRACT_KIND,
@@ -505,6 +513,110 @@ def layout_coherence_command(args: argparse.Namespace) -> int:
     print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
     print(f"{report['summary']} ({report['score']:.1f}% coherence)")
     return 0 if report["passed"] else 1
+
+
+def ascii_components_command(args: argparse.Namespace) -> int:
+    """Extract component intent from an ASCII sketch into a components contract."""
+
+    source = Path(args.source_file)
+    if not source.exists() or not source.is_file():
+        raise SchemaError(f"ASCII sketch file does not exist: {source}")
+    zones_document = build_zone_document(source.read_text(encoding="utf-8"), page_id=args.page_id, title=args.title)
+    document = build_component_intent_document(zones_document)
+
+    output = Path(args.output) if args.output else Path("generated") / f"{document['page_id']}.components.json"
+    if output.exists() and not args.overwrite:
+        raise SchemaError(f"refusing to overwrite existing file: {output}")
+    write_json_file_atomic(output, document)
+    print(f"component intent written: {output}")
+    types = [component["component_type"] for component in document["components"]]
+    print(f"components: {', '.join(types)}")
+    return 0
+
+
+def ascii_web_command(args: argparse.Namespace) -> int:
+    """Build the full web bundle (contract + HTML/CSS/SVG + coherence) from an ASCII sketch."""
+
+    source = Path(args.source_file)
+    if not source.exists() or not source.is_file():
+        raise SchemaError(f"ASCII sketch file does not exist: {source}")
+    zones_document = build_zone_document(source.read_text(encoding="utf-8"), page_id=args.page_id, title=args.title)
+    paths, bundle = write_web_bundle(
+        zones_document,
+        output_dir=args.output_dir,
+        base_name=args.base_name,
+        overwrite=args.overwrite,
+    )
+    print(f"web bundle written to: {args.output_dir or 'generated'}")
+    print(
+        "generated: "
+        f"{paths.components_path}, {paths.contract_path}, {paths.html_path}, "
+        f"{paths.css_path}, {paths.svg_path}, {paths.coherence_path}"
+    )
+    print(f"{bundle.coherence_report['summary']} ({bundle.coherence_report['score']:.1f}%)")
+    return 0 if bundle.coherence_report["passed"] else 1
+
+
+def _render_web_target(args: argparse.Namespace, renderer, label: str) -> int:
+    """Render one web target from a web page contract file."""
+
+    contract = load_json_file(args.contract_file)
+    rendered = renderer(contract)
+    output = Path(args.output) if args.output else None
+    if output is not None:
+        if output.exists() and not args.overwrite:
+            raise SchemaError(f"refusing to overwrite existing file: {output}")
+        write_text_file_atomic(output, rendered)
+        print(f"{label} written: {output}")
+    else:
+        print(rendered, end="")
+    return 0
+
+
+def layout_web_html_command(args: argparse.Namespace) -> int:
+    """Render component-aware HTML from a web page contract."""
+
+    return _render_web_target(args, render_web_html_document, "web html")
+
+
+def layout_web_css_command(args: argparse.Namespace) -> int:
+    """Render component-aware CSS from a web page contract."""
+
+    return _render_web_target(args, render_web_css_document, "web css")
+
+
+def layout_web_svg_command(args: argparse.Namespace) -> int:
+    """Render a component-aware SVG blueprint from a web page contract."""
+
+    return _render_web_target(args, render_web_svg_document, "web svg")
+
+
+def layout_web_coherence_command(args: argparse.Namespace) -> int:
+    """Audit a web page contract and write a coherence report."""
+
+    contract = load_json_file(args.contract_file)
+    paths, report = write_web_coherence_report(contract, output=args.output, overwrite=args.overwrite)
+    print(f"web coherence report written: {paths.markdown_path}")
+    print(f"{report['summary']} ({report['score']:.1f}%)")
+    return 0 if report["passed"] else 1
+
+
+def layout_web_repair_command(args: argparse.Namespace) -> int:
+    """Run the deterministic repair cycle on a web page contract."""
+
+    contract = load_json_file(args.contract_file)
+    cycle = run_web_repair_cycle(contract)
+    if args.output:
+        output = Path(args.output)
+        if output.exists() and not args.overwrite:
+            raise SchemaError(f"refusing to overwrite existing file: {output}")
+        write_json_file_atomic(output, cycle["contract"])
+        print(f"repaired contract written: {output}")
+    print(f"repairs applied: {len(cycle['repairs'])}")
+    for repair in cycle["repairs"]:
+        print(f"  - {repair}")
+    print(f"coherence {cycle['before_score']:.1f}% -> {cycle['after_score']:.1f}%")
+    return 0
 
 
 def json_sample_command(args: argparse.Namespace) -> int:
@@ -1150,6 +1262,58 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing an existing report file",
     )
     layout_coherence_parser.set_defaults(func=layout_coherence_command)
+
+    ascii_components_parser = subparsers.add_parser(
+        "ascii-components",
+        help="Extract component intent from an ASCII sketch into a components contract",
+    )
+    ascii_components_parser.add_argument("--source-file", required=True, help="Path to the ASCII layout sketch")
+    ascii_components_parser.add_argument("--page-id", default="", help="Stable page identifier")
+    ascii_components_parser.add_argument("--title", default="", help="Human-readable page title")
+    ascii_components_parser.add_argument("--output", default="", help="Write the component intent JSON to a file")
+    ascii_components_parser.add_argument("--overwrite", action="store_true", help="Allow replacing an existing file")
+    ascii_components_parser.set_defaults(func=ascii_components_command)
+
+    ascii_web_parser = subparsers.add_parser(
+        "ascii-web",
+        help="Build the full web bundle (contract + HTML/CSS/SVG + coherence) from an ASCII sketch",
+    )
+    ascii_web_parser.add_argument("--source-file", required=True, help="Path to the ASCII layout sketch")
+    ascii_web_parser.add_argument("--page-id", default="", help="Stable page identifier")
+    ascii_web_parser.add_argument("--title", default="", help="Human-readable page title")
+    ascii_web_parser.add_argument("--output-dir", default="generated", help="Directory for the generated artifacts")
+    ascii_web_parser.add_argument("--base-name", default="", help="Override the filename prefix (defaults to page id)")
+    ascii_web_parser.add_argument("--overwrite", action="store_true", help="Allow replacing existing files")
+    ascii_web_parser.set_defaults(func=ascii_web_command)
+
+    for command, handler, target_help in (
+        ("layout-web-html", layout_web_html_command, "component-aware HTML"),
+        ("layout-web-css", layout_web_css_command, "component-aware CSS"),
+        ("layout-web-svg", layout_web_svg_command, "a component-aware SVG blueprint"),
+    ):
+        web_target_parser = subparsers.add_parser(command, help=f"Render {target_help} from a web page contract")
+        web_target_parser.add_argument("--contract-file", required=True, help="Path to a page.web.json contract")
+        web_target_parser.add_argument("--output", default="", help="Write the rendered output to a file")
+        web_target_parser.add_argument("--overwrite", action="store_true", help="Allow replacing an existing file")
+        web_target_parser.set_defaults(func=handler)
+
+    layout_web_coherence_parser = subparsers.add_parser(
+        "layout-web-coherence",
+        help="Audit a web page contract and write a coherence report",
+    )
+    layout_web_coherence_parser.add_argument("--contract-file", required=True, help="Path to a page.web.json contract")
+    layout_web_coherence_parser.add_argument("--output", default="", help="Write the coherence report to a file")
+    layout_web_coherence_parser.add_argument("--overwrite", action="store_true", help="Allow replacing an existing file")
+    layout_web_coherence_parser.set_defaults(func=layout_web_coherence_command)
+
+    layout_web_repair_parser = subparsers.add_parser(
+        "layout-web-repair",
+        help="Run the deterministic repair cycle on a web page contract",
+    )
+    layout_web_repair_parser.add_argument("--contract-file", required=True, help="Path to a page.web.json contract")
+    layout_web_repair_parser.add_argument("--output", default="", help="Write the repaired contract to a file")
+    layout_web_repair_parser.add_argument("--overwrite", action="store_true", help="Allow replacing an existing file")
+    layout_web_repair_parser.set_defaults(func=layout_web_repair_command)
 
     json_sample_parser = subparsers.add_parser(
         "json-sample",
