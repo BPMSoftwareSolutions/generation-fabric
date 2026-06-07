@@ -188,6 +188,32 @@
         "language": "powershell"
       }
     },
+    "paragraph_layout_ascii": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_ascii": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_layout_html": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_html": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
     "paragraph_worker_bee": {
       "type": "string",
       "x-markdown": {
@@ -323,6 +349,27 @@
         "kind": "paragraph"
       }
     },
+    "paragraph_layout_example": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "list_layout_example": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "paragraph_layout_example_2": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
     "heading_h2_6": {
       "type": "string",
       "x-markdown": {
@@ -416,6 +463,10 @@
     "code_7",
     "paragraph_14",
     "code_8",
+    "paragraph_layout_ascii",
+    "code_layout_ascii",
+    "paragraph_layout_html",
+    "code_layout_html",
     "paragraph_worker_bee",
     "code_worker_bee",
     "paragraph_worker_bee_observe",
@@ -436,6 +487,9 @@
     "paragraph_16",
     "list_4",
     "paragraph_17",
+    "paragraph_layout_example",
+    "list_layout_example",
+    "paragraph_layout_example_2",
     "heading_h2_6",
     "paragraph_18",
     "code_10",

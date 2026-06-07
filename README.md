@@ -16,6 +16,8 @@ That lets us keep each responsibility isolated while still composing them into o
 - `generation_fabric/json_documents/` handles generic JSON tree CRUD and schema-driven sample generation.
 - `generation_fabric/schema/` owns schema creation, inference, and validation.
 - `generation_fabric/markdown/` owns Markdown rendering, the contract registry, contract scaffolding, and Markdown import.
+- `generation_fabric/layout/` parses ASCII layout sketches into a governed zone taxonomy contract.
+- `generation_fabric/html/` renders semantic HTML from a contract using `x-html` annotations.
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
 - `tests/` contains end-to-end coverage for the published behaviors.
@@ -92,6 +94,18 @@ Import a legacy Markdown file into a schema plus JSON contract:
 python json_schema_crud.py markdown-import --file legacy.md --directory generated --with-markdown
 ```
 
+Parse an ASCII layout sketch into a governed zone taxonomy contract:
+
+```powershell
+python json_schema_crud.py ascii-zones --source-file examples/value-simulator.ascii.md --page-id value-simulator --output examples/value-simulator.zones.json
+```
+
+Render semantic HTML from a zone taxonomy contract:
+
+```powershell
+python json_schema_crud.py layout-html --data-file examples/value-simulator.zones.json --output examples/value-simulator.html
+```
+
 Generate a Markdown document from a worker-bee brief:
 
 ```powershell
@@ -153,6 +167,8 @@ python json_schema_crud.py interactive
 - `markdown`: render Markdown from a schema plus JSON data
 - `markdown-contract`: scaffold a canonical document contract
 - `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
+- `ascii-zones`: parse an ASCII layout sketch into a zone taxonomy contract
+- `layout-html`: render semantic HTML from a zone taxonomy contract
 - `worker-bee-plan`: build a deterministic generation packet from a brief
 - `worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON
 - `worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams
@@ -170,6 +186,15 @@ The repository includes a release-notes contract that demonstrates the full pipe
 - [examples/release-notes.md](examples/release-notes.md)
 
 Those files serve as a golden example for how the contract, content, and rendered output should line up.
+
+The repository also ships an ASCII-first layout example that proves the sketch-to-HTML pipeline:
+
+- [examples/value-simulator.ascii.md](examples/value-simulator.ascii.md)
+- [examples/value-simulator.zones.json](examples/value-simulator.zones.json)
+- [examples/value-simulator.html](examples/value-simulator.html)
+- [examples/layout-zone.schema.json](examples/layout-zone.schema.json)
+
+The ASCII sketch is parsed into a governed zone taxonomy, and that single contract renders to semantic HTML. ASCII is the first authority-bearing design artifact; HTML is a derived render of the same contract.
 
 ## Testing
 
@@ -189,6 +214,8 @@ The tests cover:
 - `oneOf` and `anyOf`
 - Markdown rendering
 - contract scaffolding
+- ASCII layout sketch parsing and zone taxonomy
+- semantic HTML rendering from a zone taxonomy contract
 - the interactive shell
 - worker-bee strategy and packet planning
 - provider-backed worker-bee planning

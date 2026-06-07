@@ -10,10 +10,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from generation_fabric.core.io import load_json_file, load_json_source, parse_value, read_json_file, write_json_file_atomic
+from generation_fabric.core.io import (
+    load_json_file,
+    load_json_source,
+    parse_value,
+    read_json_file,
+    write_json_file_atomic,
+    write_text_file_atomic,
+)
 from generation_fabric.exceptions import SchemaError
+from generation_fabric.html.renderer import render_html_document
 from generation_fabric.json_documents.crud import create_node, delete_node, read_node, update_node
 from generation_fabric.json_documents.sample import build_json_sample_from_root
+from generation_fabric.layout.ascii_sketch import build_layout_zone_schema, build_zone_document
 from generation_fabric.markdown.contracts import (
     DEFAULT_MARKDOWN_CONTRACT_KIND,
     scaffold_markdown_contract,
@@ -375,6 +384,46 @@ def markdown_command(args: argparse.Namespace) -> int:
 
         write_text_file_atomic(output, rendered)
         print(f"markdown written: {output}")
+    else:
+        print(rendered, end="")
+    return 0
+
+
+def ascii_zones_command(args: argparse.Namespace) -> int:
+    """Parse an ASCII layout sketch into a zone taxonomy contract."""
+
+    source = Path(args.source_file)
+    if not source.exists():
+        raise SchemaError(f"ASCII sketch file does not exist: {source}")
+    if not source.is_file():
+        raise SchemaError(f"ASCII sketch path is not a file: {source}")
+
+    text = source.read_text(encoding="utf-8")
+    document = build_zone_document(text, page_id=args.page_id, title=args.title)
+
+    output = Path(args.output) if args.output else Path("generated") / f"{document['page_id']}.zones.json"
+    if output.exists() and not args.overwrite:
+        raise SchemaError(f"refusing to overwrite existing file: {output}")
+
+    write_json_file_atomic(output, document)
+    print(f"layout zones written: {output}")
+    print(f"detected {len(document['zones'])} zones")
+    return 0
+
+
+def layout_html_command(args: argparse.Namespace) -> int:
+    """Render semantic HTML from a zone taxonomy contract and JSON data."""
+
+    schema = read_json_file(Path(args.schema)) if args.schema else build_layout_zone_schema()
+    data = load_json_file(args.data_file) if args.data_file else load_json_source(args.data)
+    rendered = render_html_document(schema, data)
+
+    output = Path(args.output) if args.output else None
+    if output is not None:
+        if output.exists() and not args.overwrite:
+            raise SchemaError(f"refusing to overwrite existing file: {output}")
+        write_text_file_atomic(output, rendered)
+        print(f"html written: {output}")
     else:
         print(rendered, end="")
     return 0
@@ -832,6 +881,40 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing an existing Markdown file",
     )
     markdown_parser.set_defaults(func=markdown_command)
+
+    ascii_zones_parser = subparsers.add_parser(
+        "ascii-zones",
+        help="Parse an ASCII layout sketch into a zone taxonomy contract",
+    )
+    ascii_zones_parser.add_argument("--source-file", required=True, help="Path to the ASCII layout sketch")
+    ascii_zones_parser.add_argument("--page-id", default="", help="Stable page identifier for the zone document")
+    ascii_zones_parser.add_argument("--title", default="", help="Human-readable title for the page")
+    ascii_zones_parser.add_argument("--output", default="", help="Write the zone taxonomy JSON to a file")
+    ascii_zones_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing zones file",
+    )
+    ascii_zones_parser.set_defaults(func=ascii_zones_command)
+
+    layout_html_parser = subparsers.add_parser(
+        "layout-html",
+        help="Render semantic HTML from a zone taxonomy contract and JSON data",
+    )
+    layout_html_parser.add_argument(
+        "--schema",
+        default="",
+        help="Path to the zone taxonomy schema (defaults to the canonical layout-zone contract)",
+    )
+    layout_html_parser.add_argument("--data", default="", help="Inline zone taxonomy JSON to render")
+    layout_html_parser.add_argument("--data-file", default="", help="Path to a zones JSON file to render")
+    layout_html_parser.add_argument("--output", default="", help="Write rendered HTML to a file")
+    layout_html_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing HTML file",
+    )
+    layout_html_parser.set_defaults(func=layout_html_command)
 
     json_sample_parser = subparsers.add_parser(
         "json-sample",

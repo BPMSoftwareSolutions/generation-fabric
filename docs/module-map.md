@@ -54,6 +54,14 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/markdown/contracts.py`: loads canonical Markdown contract assets and scaffolds example files.
 - `generation_fabric/markdown/importer.py`: imports legacy Markdown into a schema plus JSON contract.
 
+## Layout
+
+- `generation_fabric/layout/ascii_sketch.py`: parses an ASCII layout sketch into a governed zone taxonomy document and owns the canonical `x-html`-annotated zone contract.
+
+## HTML
+
+- `generation_fabric/html/renderer.py`: deterministic semantic HTML rendering from a schema contract using the `x-html` annotation namespace.
+
 ## Example Assets
 
 - `examples/release-notes.schema.json`: canonical schema contract.
@@ -74,6 +82,10 @@ This repository is organized so the file names tell the implementation story.
 - `examples/raw-sections-showcase.schema.json`: canonical raw-sections showcase schema.
 - `examples/raw-sections-showcase.json`: canonical raw-sections showcase source data.
 - `examples/raw-sections-showcase.md`: canonical rendered raw-sections showcase output.
+- `examples/value-simulator.ascii.md`: canonical ASCII layout sketch input.
+- `examples/value-simulator.zones.json`: canonical zone taxonomy parsed from the sketch.
+- `examples/value-simulator.html`: canonical semantic HTML rendered from the zone taxonomy.
+- `examples/layout-zone.schema.json`: canonical zone taxonomy contract with `x-html` annotations.
 
 ## Scripts
 
@@ -86,3 +98,4 @@ This repository is organized so the file names tell the implementation story.
 - `tests/test_worker_bee_strategy.py`: coverage for the worker-bee migration strategy scaffold.
 - `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
 - `tests/test_worker_bee_executor.py`: coverage for the worker-bee executor and document generation command.
+- `tests/test_layout_ascii.py`: coverage for ASCII sketch parsing, the zone taxonomy contract, HTML rendering, and the `ascii-zones`/`layout-html` commands.

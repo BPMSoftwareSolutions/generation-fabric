@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layout Zone Taxonomy",
+  "description": "Zone taxonomy parsed from an ASCII layout sketch. Each zone is a value-carrying region that renders to a semantic HTML section.",
+  "type": "object",
+  "x-html": {
+    "kind": "document",
+    "tag": "main",
+    "class": "layout"
+  },
+  "properties": {
+    "page_id": {
+      "type": "string",
+      "x-html": {
+        "kind": "attribute",
+        "attribute": "data-page-id"
+      }
+    },
+    "title": {
+      "type": "string",
+      "x-html": {
+        "kind": "heading",
+        "level": 1
+      }
+    },
+    "source_sketch": {
+      "type": "string",
+      "x-html": {
+        "kind": "ignore"
+      }
+    },
+    "zones": {
+      "type": "array",
+      "x-html": {
+        "kind": "zone-list"
+      },
+      "items": {
+        "type": "object",
+        "x-html": {
+          "kind": "zone",
+          "tag": "section"
+        },
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "x-html": {
+              "kind": "attribute",
+              "attribute": "data-zone-id"
+            }
+          },
+          "label": {
+            "type": "string",
+            "x-html": {
+              "kind": "heading",
+              "level": 2
+            }
+          },
+          "purpose": {
+            "type": "string",
+            "x-html": {
+              "kind": "text"
+            }
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-html": {
+              "kind": "list"
+            }
+          },
+          "layout_role": {
+            "type": "string",
+            "x-html": {
+              "kind": "attribute",
+              "attribute": "data-layout-role"
+            }
+          },
+          "value_role": {
+            "type": "string",
+            "x-html": {
+              "kind": "attribute",
+              "attribute": "data-value-role"
+            }
+          },
+          "data_surface": {
+            "type": "string",
+            "x-html": {
+              "kind": "attribute",
+              "attribute": "data-surface"
+            }
+          },
+          "claim_posture": {
+            "type": "string",
+            "x-html": {
+              "kind": "attribute",
+              "attribute": "data-claim-posture"
+            }
+          },
+          "bounds": {
+            "type": "object",
+            "x-html": {
+              "kind": "ignore"
+            },
+            "properties": {
+              "band": {
+                "type": "integer"
+              },
+              "column": {
+                "type": "integer"
+              },
+              "column_count": {
+                "type": "integer"
+              },
+              "x": {
+                "type": "integer"
+              },
+              "y": {
+                "type": "integer"
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "zone_id",
+          "label"
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": [
+    "page_id",
+    "zones"
+  ],
+  "additionalProperties": true
+}
