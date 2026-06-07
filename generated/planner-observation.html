@@ -40,10 +40,9 @@ body {
 }
 
 .observability-page {
-  display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
+  display: block;
+  max-width: 980px;
+  margin: 0 auto;
   padding: 1rem;
 }
 
@@ -66,11 +65,7 @@ body {
 }
 
 .execution-panel {
-  position: sticky;
-  top: 1rem;
-  align-self: start;
-  max-height: calc(100vh - 2rem);
-  overflow: auto;
+  margin-bottom: 1rem;
   padding: 1rem;
 }
 
@@ -398,17 +393,6 @@ body {
 
 .error-step {
   border-left-color: var(--error);
-}
-
-@media (max-width: 1080px) {
-  .observability-page {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .execution-panel {
-    position: static;
-    max-height: none;
-  }
 }
 
 @media (max-width: 720px) {

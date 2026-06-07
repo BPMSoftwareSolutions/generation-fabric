@@ -1,0 +1,98 @@
+{
+  "page_id": "operations-dashboard",
+  "title": "Operations Dashboard",
+  "source_sketch": "+----------------------------------------------------------+\n| OPERATIONS DASHBOARD [page]                              |\n+---------------------------+------------------------------+\n| FILTERS [form]            | DELIVERY HEALTH [gauge]      |\n| fields: date,status,team  | value: delivery_health       |\n| action: apply_filters     | min: 0 max: 100              |\n+---------------------------+------------------------------+\n| RUNS [data_grid]                                         |\n| data: runs[]                                             |\n| columns: id,status,owner,duration                        |\n+----------------------------------------------------------+\n| SUCCESS TREND [chart_line]                               |\n| x: day y: success_rate                                   |\n+----------------------------------------------------------+",
+  "zones": [
+    {
+      "zone_id": "operations-dashboard-page",
+      "label": "OPERATIONS DASHBOARD [page]",
+      "purpose": "",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 0,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 1,
+        "width": 58,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "filters-form",
+      "label": "FILTERS [form]",
+      "purpose": "",
+      "details": [
+        "fields: date,status,team",
+        "action: apply_filters"
+      ],
+      "layout_role": "split_left",
+      "bounds": {
+        "band": 1,
+        "column": 0,
+        "column_count": 2,
+        "x": 1,
+        "y": 3,
+        "width": 27,
+        "height": 3
+      }
+    },
+    {
+      "zone_id": "delivery-health-gauge",
+      "label": "DELIVERY HEALTH [gauge]",
+      "purpose": "",
+      "details": [
+        "value: delivery_health",
+        "min: 0 max: 100"
+      ],
+      "layout_role": "split_right",
+      "bounds": {
+        "band": 1,
+        "column": 1,
+        "column_count": 2,
+        "x": 29,
+        "y": 3,
+        "width": 30,
+        "height": 3
+      }
+    },
+    {
+      "zone_id": "runs-data-grid",
+      "label": "RUNS [data_grid]",
+      "purpose": "",
+      "details": [
+        "data: runs[]",
+        "columns: id,status,owner,duration"
+      ],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 2,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 7,
+        "width": 58,
+        "height": 3
+      }
+    },
+    {
+      "zone_id": "success-trend-chart-line",
+      "label": "SUCCESS TREND [chart_line]",
+      "purpose": "",
+      "details": [
+        "x: day y: success_rate"
+      ],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 3,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 11,
+        "width": 58,
+        "height": 2
+      }
+    }
+  ]
+}

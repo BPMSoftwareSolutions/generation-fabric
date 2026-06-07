@@ -1,0 +1,170 @@
+{
+  "page_id": "operations-dashboard",
+  "title": "Operations Dashboard",
+  "components": [
+    {
+      "component_id": "component-operations-dashboard",
+      "zone_id": "operations-dashboard-page",
+      "component_type": "page",
+      "label": "OPERATIONS DASHBOARD",
+      "role": "main",
+      "variant": "",
+      "data": null,
+      "fields": [],
+      "columns": [],
+      "actions": [],
+      "measures": {},
+      "accessibility": {
+        "aria_label": "OPERATIONS DASHBOARD"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "operations-dashboard-page",
+        "band": 0
+      }
+    },
+    {
+      "component_id": "component-filters",
+      "zone_id": "filters-form",
+      "component_type": "form",
+      "label": "FILTERS",
+      "role": "region",
+      "variant": "",
+      "data": null,
+      "fields": [
+        {
+          "name": "date",
+          "label": "Date",
+          "type": "text"
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "text"
+        },
+        {
+          "name": "team",
+          "label": "Team",
+          "type": "text"
+        }
+      ],
+      "columns": [],
+      "actions": [
+        {
+          "name": "apply_filters",
+          "label": "Apply Filters",
+          "target": ""
+        }
+      ],
+      "measures": {},
+      "accessibility": {
+        "aria_label": "FILTERS"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "filters-form",
+        "band": 1
+      }
+    },
+    {
+      "component_id": "component-delivery-health",
+      "zone_id": "delivery-health-gauge",
+      "component_type": "gauge",
+      "label": "DELIVERY HEALTH",
+      "role": "region",
+      "variant": "",
+      "data": null,
+      "fields": [],
+      "columns": [],
+      "actions": [],
+      "measures": {
+        "value": "delivery_health",
+        "min": "0",
+        "max": "100"
+      },
+      "accessibility": {
+        "aria_label": "DELIVERY HEALTH"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "delivery-health-gauge",
+        "band": 1
+      }
+    },
+    {
+      "component_id": "component-runs",
+      "zone_id": "runs-data-grid",
+      "component_type": "data_grid",
+      "label": "RUNS",
+      "role": "region",
+      "variant": "",
+      "data": {
+        "source": "runs[]",
+        "item_name": "run"
+      },
+      "fields": [],
+      "columns": [
+        {
+          "name": "id",
+          "label": "Id",
+          "type": "text"
+        },
+        {
+          "name": "status",
+          "label": "Status",
+          "type": "text"
+        },
+        {
+          "name": "owner",
+          "label": "Owner",
+          "type": "text"
+        },
+        {
+          "name": "duration",
+          "label": "Duration",
+          "type": "text"
+        }
+      ],
+      "actions": [],
+      "measures": {},
+      "accessibility": {
+        "aria_label": "RUNS"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "runs-data-grid",
+        "band": 2
+      }
+    },
+    {
+      "component_id": "component-success-trend",
+      "zone_id": "success-trend-chart-line",
+      "component_type": "chart_line",
+      "label": "SUCCESS TREND",
+      "role": "region",
+      "variant": "",
+      "data": null,
+      "fields": [],
+      "columns": [],
+      "actions": [],
+      "measures": {
+        "x": "day",
+        "y": "success_rate"
+      },
+      "accessibility": {
+        "aria_label": "SUCCESS TREND"
+      },
+      "warnings": [],
+      "evidence": {
+        "source": "ascii",
+        "zone_id": "success-trend-chart-line",
+        "band": 3
+      }
+    }
+  ],
+  "warnings": []
+}
