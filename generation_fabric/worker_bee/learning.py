@@ -5,7 +5,7 @@ from __future__ import annotations
 from argparse import Namespace
 from collections import OrderedDict
 from contextlib import redirect_stderr, redirect_stdout
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from io import StringIO
 import json
 from pathlib import Path
@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 from typing import Any, Callable, Iterable
 from unittest.mock import patch
 
+from generation_fabric.core.serialization import to_jsonable_dataclass
 from generation_fabric.core.io import load_json_file, write_json_file_atomic, write_text_file_atomic
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.json_documents.crud import create_node, delete_node, read_node, update_node
@@ -118,7 +119,7 @@ class WorkerBeeLearningReport:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the report into JSON-friendly data."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
 def _repo_root() -> Path:

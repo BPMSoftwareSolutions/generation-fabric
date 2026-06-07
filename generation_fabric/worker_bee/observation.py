@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import ast
-import json
 from pathlib import Path
 from typing import Any, Iterable
 
-from generation_fabric.core.io import write_json_file_atomic, write_text_file_atomic
+from generation_fabric.core.artifacts import ContractArtifact, SidecarPaths, resolve_sidecar_paths, write_contract_artifact
+from generation_fabric.core.serialization import to_jsonable_dataclass
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
@@ -17,13 +17,7 @@ from generation_fabric.schema.validation import validate_instance_against_schema
 from .taxonomy import _call_label_from_identifier, scan_python_source_taxonomy
 
 
-@dataclass(frozen=True)
-class CodeObservationDocumentPaths:
-    """Describe the files produced by the code observation worker bee."""
-
-    schema_path: Path
-    data_path: Path
-    markdown_path: Path
+CodeObservationDocumentPaths = SidecarPaths
 
 
 @dataclass(frozen=True)
@@ -49,7 +43,7 @@ class PythonFunctionObservation:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the observation into JSON-friendly data."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
 def _normalize_brief(text: str) -> str:
@@ -679,7 +673,7 @@ def write_code_observation_document(
     title: str = "",
     include_private: bool = False,
     overwrite: bool = False,
-    ) -> CodeObservationDocumentPaths:
+) -> CodeObservationDocumentPaths:
     """Write a code-observation document to disk."""
 
     schema, data, markdown = build_code_observation_document(
@@ -690,27 +684,11 @@ def write_code_observation_document(
     )
 
     source_path = Path(source_file)
-    if output:
-        markdown_path = Path(output)
-        if not markdown_path.suffix:
-            markdown_path = markdown_path.with_suffix(".md")
-    else:
-        markdown_path = Path("generated") / f"{source_path.stem}-observation.md"
-
-    if markdown_path.exists() and not overwrite:
-        raise SchemaError(f"refusing to overwrite existing file: {markdown_path}")
-
-    schema_path = markdown_path.with_name(f"{markdown_path.stem}.schema.json")
-    data_path = markdown_path.with_name(f"{markdown_path.stem}.json")
-
-    for target in (schema_path, data_path):
-        if target.exists() and not overwrite:
-            raise SchemaError(f"refusing to overwrite existing file: {target}")
-
-    write_json_file_atomic(schema_path, schema)
-    write_json_file_atomic(data_path, data)
-    write_text_file_atomic(markdown_path, markdown)
-    return CodeObservationDocumentPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
+    default_path = Path("generated") / f"{source_path.stem}-observation.md"
+    paths = resolve_sidecar_paths(output, default_path)
+    artifact = ContractArtifact(schema=schema, data=data, primary_text=markdown)
+    write_contract_artifact(paths, artifact, overwrite=overwrite)
+    return CodeObservationDocumentPaths(schema_path=paths.schema_path, data_path=paths.data_path, primary_path=paths.primary_path)
 
 
 def write_code_observation_document_from_taxonomy(
@@ -733,27 +711,11 @@ def write_code_observation_document_from_taxonomy(
     if not source_file:
         raise SchemaError("taxonomy document is missing source_file")
     source_path = Path(source_file)
-    if output:
-        markdown_path = Path(output)
-        if not markdown_path.suffix:
-            markdown_path = markdown_path.with_suffix(".md")
-    else:
-        markdown_path = Path("generated") / f"{source_path.stem}-observation.md"
-
-    if markdown_path.exists() and not overwrite:
-        raise SchemaError(f"refusing to overwrite existing file: {markdown_path}")
-
-    schema_path = markdown_path.with_name(f"{markdown_path.stem}.schema.json")
-    data_path = markdown_path.with_name(f"{markdown_path.stem}.json")
-
-    for target in (schema_path, data_path):
-        if target.exists() and not overwrite:
-            raise SchemaError(f"refusing to overwrite existing file: {target}")
-
-    write_json_file_atomic(schema_path, schema)
-    write_json_file_atomic(data_path, data)
-    write_text_file_atomic(markdown_path, markdown)
-    return CodeObservationDocumentPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
+    default_path = Path("generated") / f"{source_path.stem}-observation.md"
+    paths = resolve_sidecar_paths(output, default_path)
+    artifact = ContractArtifact(schema=schema, data=data, primary_text=markdown)
+    write_contract_artifact(paths, artifact, overwrite=overwrite)
+    return CodeObservationDocumentPaths(schema_path=paths.schema_path, data_path=paths.data_path, primary_path=paths.primary_path)
 
 
 __all__ = [

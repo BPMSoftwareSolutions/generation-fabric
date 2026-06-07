@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from hashlib import sha256
-import json
 import re
 from typing import Any
 
+from generation_fabric.core.serialization import to_jsonable_dataclass
 from generation_fabric.exceptions import SchemaError
 
 from .strategy import WorkerBeeMigrationStrategy, build_default_worker_bee_strategy
@@ -60,7 +60,7 @@ class WorkerBeeGenerationPacket:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the packet into a JSON-friendly structure."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
 def normalize_brief(brief: str) -> str:

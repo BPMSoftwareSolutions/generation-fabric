@@ -23,8 +23,10 @@ This repository is organized so the file names tell the implementation story.
 
 ## Core
 
+- `generation_fabric/core/artifacts.py`: shared sidecar path models and artifact writers for schema, JSON, and rendered outputs.
 - `generation_fabric/core/io.py`: atomic JSON/text IO and JSON loading helpers.
 - `generation_fabric/core/pointer.py`: JSON Pointer parsing and traversal helpers.
+- `generation_fabric/core/serialization.py`: shared JSON-friendly dataclass serialization helper.
 
 ## JSON Documents
 

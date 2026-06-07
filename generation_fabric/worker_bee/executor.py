@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
 from pathlib import Path
 from typing import Any, Sequence
 
-from generation_fabric.core.io import write_json_file_atomic, write_text_file_atomic
+from generation_fabric.core.artifacts import ContractArtifact, SidecarPaths, resolve_sidecar_paths, write_contract_artifact
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
@@ -16,13 +15,7 @@ from generation_fabric.schema.validation import validate_instance_against_schema
 from .planner import WorkerBeeGenerationPacket, build_generation_packet, normalize_brief, slugify_text
 
 
-@dataclass(frozen=True)
-class WorkerBeeDocumentPaths:
-    """Describe the files produced by the worker-bee executor."""
-
-    schema_path: Path
-    data_path: Path
-    markdown_path: Path
+WorkerBeeDocumentPaths = SidecarPaths
 
 
 def normalize_sketch_phrase(phrase: str) -> str:
@@ -296,10 +289,12 @@ def _resolve_output_path(output: str, packet: WorkerBeeGenerationPacket) -> Path
 def _derived_sidecar_paths(markdown_path: Path) -> WorkerBeeDocumentPaths:
     """Derive the schema and JSON sidecar paths for a markdown output."""
 
-    stem = markdown_path.stem
-    schema_path = markdown_path.with_name(f"{stem}.schema.json")
-    data_path = markdown_path.with_name(f"{stem}.json")
-    return WorkerBeeDocumentPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
+    resolved = resolve_sidecar_paths("", markdown_path)
+    return WorkerBeeDocumentPaths(
+        schema_path=resolved.schema_path,
+        data_path=resolved.data_path,
+        primary_path=resolved.primary_path,
+    )
 
 
 def write_worker_bee_document(
@@ -322,13 +317,6 @@ def write_worker_bee_document(
 
     markdown_path = _resolve_output_path(output, packet)
     paths = _derived_sidecar_paths(markdown_path)
-
-    for target in (paths.schema_path, paths.data_path, paths.markdown_path):
-        if target.exists() and not overwrite:
-            raise SchemaError(f"refusing to overwrite existing file: {target}")
-
-    write_json_file_atomic(paths.schema_path, schema)
-    write_json_file_atomic(paths.data_path, data)
-    write_text_file_atomic(paths.markdown_path, markdown)
+    artifact = ContractArtifact(schema=schema, data=data, primary_text=markdown)
+    write_contract_artifact(paths, artifact, overwrite=overwrite)
     return paths
-

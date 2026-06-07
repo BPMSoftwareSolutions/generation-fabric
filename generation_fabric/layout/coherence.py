@@ -9,11 +9,10 @@ the existing Markdown renderer. The fabric audits itself with its own pipeline.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from generation_fabric.core.io import write_json_file_atomic, write_text_file_atomic
+from generation_fabric.core.artifacts import ContractArtifact, SidecarPaths, resolve_sidecar_paths, write_contract_artifact
 from generation_fabric.css.renderer import render_css_document
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.html.renderer import render_html_document
@@ -25,13 +24,7 @@ from generation_fabric.schema.validation import validate_instance_against_schema
 from generation_fabric.svg.renderer import render_svg_document
 
 
-@dataclass(frozen=True)
-class CoherenceReportPaths:
-    """Describe the files produced by the coherence audit."""
-
-    schema_path: Path
-    data_path: Path
-    markdown_path: Path
+CoherenceReportPaths = SidecarPaths
 
 
 def _check(name: str, passed: bool, detail: str) -> dict[str, Any]:
@@ -226,17 +219,8 @@ def write_layout_coherence_report(
     markdown = render_markdown_document(report_schema, report_data)
 
     markdown_path = _resolve_report_path(output, report.get("page_id", ""))
-    stem = markdown_path.stem
-    schema_path = markdown_path.with_name(f"{stem}.schema.json")
-    data_path = markdown_path.with_name(f"{stem}.json")
-
-    for target in (schema_path, data_path, markdown_path):
-        if target.exists() and not overwrite:
-            raise SchemaError(f"refusing to overwrite existing file: {target}")
-
-    write_json_file_atomic(schema_path, report_schema)
-    write_json_file_atomic(data_path, report_data)
-    write_text_file_atomic(markdown_path, markdown)
-
-    paths = CoherenceReportPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
+    paths = resolve_sidecar_paths("", markdown_path)
+    artifact = ContractArtifact(schema=report_schema, data=report_data, primary_text=markdown)
+    write_contract_artifact(paths, artifact, overwrite=overwrite)
+    paths = CoherenceReportPaths(schema_path=paths.schema_path, data_path=paths.data_path, primary_path=paths.primary_path)
     return paths, report

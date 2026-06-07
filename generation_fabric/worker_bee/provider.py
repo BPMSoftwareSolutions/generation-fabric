@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from generation_fabric.core.serialization import to_jsonable_dataclass
 from generation_fabric.exceptions import SchemaError
 
 from .planner import build_generation_packet, infer_focus, normalize_brief, slugify_text, summarize_brief
@@ -28,7 +29,7 @@ class WorkerBeePlanProposal:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the proposal into JSON-friendly data."""
 
-        return asdict(self)
+        return to_jsonable_dataclass(self)
 
 
 class WorkerBeePlanningProvider(Protocol):
@@ -119,4 +120,3 @@ __all__ = [
     "build_provider_backed_generation_packet",
     "propose_worker_bee_plan",
 ]
-

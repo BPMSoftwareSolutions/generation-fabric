@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from hashlib import sha256
 import ast
-import json
 import re
 from pathlib import Path
 from typing import Any, Iterable
 
-from generation_fabric.core.io import write_json_file_atomic
+from generation_fabric.core.artifacts import SchemaDataPaths, SchemaDataArtifact, resolve_schema_data_paths, write_schema_data_artifact
+from generation_fabric.core.serialization import to_jsonable_dataclass
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -29,7 +29,7 @@ class CodeTaxonomyCondition:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the condition into JSON-friendly data."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
 @dataclass(frozen=True)
@@ -57,7 +57,7 @@ class CodeTaxonomySymbol:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the symbol into JSON-friendly data."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
 @dataclass(frozen=True)
@@ -89,7 +89,7 @@ class CodeTaxonomyExecutionPath:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the execution path into JSON-friendly data."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
 @dataclass(frozen=True)
@@ -109,15 +109,10 @@ class CodeTaxonomyDocument:
     def to_dict(self) -> dict[str, Any]:
         """Serialize the taxonomy into JSON-friendly data."""
 
-        return json.loads(json.dumps(asdict(self), ensure_ascii=False))
+        return to_jsonable_dataclass(self)
 
 
-@dataclass(frozen=True)
-class CodeTaxonomyDocumentPaths:
-    """Describe the files produced by the taxonomy worker bee."""
-
-    schema_path: Path
-    data_path: Path
+CodeTaxonomyDocumentPaths = SchemaDataPaths
 
 
 def _repo_root() -> Path:
@@ -323,6 +318,9 @@ def _role_label_from_identifier(identifier: str) -> str:
 
     if not identifier:
         return identifier
+
+    if identifier == "to_jsonable_dataclass":
+        return "Dataclass Serializer"
 
     if "." in identifier:
         owner, member = identifier.rsplit(".", 1)
@@ -1227,23 +1225,10 @@ def write_code_taxonomy_document(
     )
 
     source_path = Path(source_file)
-    if output:
-        data_path = Path(output)
-        if not data_path.suffix:
-            data_path = data_path.with_suffix(".json")
-    else:
-        data_path = Path("generated") / f"{source_path.stem}-taxonomy.json"
-
-    if data_path.exists() and not overwrite:
-        raise SchemaError(f"refusing to overwrite existing file: {data_path}")
-
-    schema_path = data_path.with_name(f"{data_path.stem}.schema.json")
-    if schema_path.exists() and not overwrite:
-        raise SchemaError(f"refusing to overwrite existing file: {schema_path}")
-
-    write_json_file_atomic(schema_path, schema)
-    write_json_file_atomic(data_path, data)
-    return CodeTaxonomyDocumentPaths(schema_path=schema_path, data_path=data_path)
+    default_path = Path("generated") / f"{source_path.stem}-taxonomy.json"
+    paths = resolve_schema_data_paths(output, default_path)
+    write_schema_data_artifact(paths, SchemaDataArtifact(schema=schema, data=data), overwrite=overwrite)
+    return CodeTaxonomyDocumentPaths(schema_path=paths.schema_path, data_path=paths.data_path)
 
 
 __all__ = [

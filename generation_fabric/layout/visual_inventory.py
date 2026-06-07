@@ -10,24 +10,17 @@ derived artifact.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from generation_fabric.core.io import write_json_file_atomic, write_text_file_atomic
+from generation_fabric.core.artifacts import ContractArtifact, SidecarPaths, resolve_sidecar_paths, write_contract_artifact
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
 
 
-@dataclass(frozen=True)
-class VisualIntentInventoryPaths:
-    """Describe the files produced by the visual-intent inventory."""
-
-    schema_path: Path
-    data_path: Path
-    markdown_path: Path
+VisualIntentInventoryPaths = SidecarPaths
 
 
 def _normalize_text(value: Any) -> str:
@@ -277,17 +270,8 @@ def write_visual_intent_inventory_report(
     markdown = render_markdown_document(report_schema, report_data)
 
     markdown_path = _resolve_inventory_path(output)
-    stem = markdown_path.stem
-    schema_path = markdown_path.with_name(f"{stem}.schema.json")
-    data_path = markdown_path.with_name(f"{stem}.json")
-
-    for target in (schema_path, data_path, markdown_path):
-        if target.exists() and not overwrite:
-            raise SchemaError(f"refusing to overwrite existing file: {target}")
-
-    write_json_file_atomic(schema_path, report_schema)
-    write_json_file_atomic(data_path, report_data)
-    write_text_file_atomic(markdown_path, markdown)
-
-    paths = VisualIntentInventoryPaths(schema_path=schema_path, data_path=data_path, markdown_path=markdown_path)
+    paths = resolve_sidecar_paths("", markdown_path)
+    artifact = ContractArtifact(schema=report_schema, data=report_data, primary_text=markdown)
+    write_contract_artifact(paths, artifact, overwrite=overwrite)
+    paths = VisualIntentInventoryPaths(schema_path=paths.schema_path, data_path=paths.data_path, primary_path=paths.primary_path)
     return paths, inventory
