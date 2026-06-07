@@ -18,6 +18,7 @@ from generation_fabric.css.renderer import render_css_document
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.html.renderer import render_html_document
 from generation_fabric.layout.ascii_sketch import find_zone_list
+from generation_fabric.layout.box_model import build_box_model_document, leaf_boxes
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -94,6 +95,15 @@ def audit_layout_coherence(schema_node: dict[str, Any], data: Any) -> dict[str, 
     svg = render_svg_document(schema_node, data)
     missing_in_svg = [zid for zid in zone_ids if zid and f'data-zone-id="{zid}"' not in svg]
     checks.append(_check("svg_preserves_zones", not missing_in_svg, "every zone draws an SVG box" if not missing_in_svg else f"zones missing from SVG: {', '.join(missing_in_svg)}"))
+
+    box_model = build_box_model_document(data)
+    surfaces = leaf_boxes(box_model)
+    surface_ids = {str(box.get("box_id", "")) for box in surfaces}
+    missing_boxes = [zid for zid in zone_ids if zid and zid not in surface_ids]
+    checks.append(_check("box_model_covers_zones", not missing_boxes, "every zone maps to a box-model surface" if not missing_boxes else f"zones missing a box: {', '.join(missing_boxes)}"))
+
+    unnamed_surfaces = [str(box.get("box_id", "")) for box in surfaces if not str(box.get("css_class", "")).startswith("surface")]
+    checks.append(_check("box_surfaces_named", not unnamed_surfaces, "every surface box owns a named CSS class" if not unnamed_surfaces else f"surfaces missing a class: {', '.join(unnamed_surfaces)}"))
 
     passed_count = sum(1 for check in checks if check["status"] == "pass")
     total = len(checks)

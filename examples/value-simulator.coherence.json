@@ -2,7 +2,7 @@
   "page": "value-simulator",
   "score": "100.0%",
   "status": "coherent",
-  "summary": "10/10 coherence checks passed across 7 zones.",
+  "summary": "12/12 coherence checks passed across 7 zones.",
   "checks_heading": "Checks",
   "checks": [
     {
@@ -54,6 +54,16 @@
       "check": "svg_preserves_zones",
       "status": "pass",
       "detail": "every zone draws an SVG box"
+    },
+    {
+      "check": "box_model_covers_zones",
+      "status": "pass",
+      "detail": "every zone maps to a box-model surface"
+    },
+    {
+      "check": "box_surfaces_named",
+      "status": "pass",
+      "detail": "every surface box owns a named CSS class"
     }
   ],
   "zones_heading": "Zones",

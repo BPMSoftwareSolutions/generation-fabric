@@ -2,7 +2,7 @@
 
 Deterministic coherence audit of a layout zone taxonomy.
 
-**page**: value-simulator
+**page**: msp-consultancy-delivery-acceleration
 
 **score**: 100.0%
 
@@ -31,10 +31,10 @@ Deterministic coherence audit of a layout zone taxonomy.
 
 | zone_id | layout_role | label |
 | --- | --- | --- |
-| hero | full_width | HERO: Estimate the value of governed AI engineering |
-| segment-picker | split_left | SEGMENT PICKER |
+| hero | full_width | HERO: Estimate the value of faster governed delivery |
+| segment | split_left | SEGMENT: MSP / cons... |
 | value-simulator | split_right | VALUE SIMULATOR |
-| formula-assumptions | full_width | FORMULA + ASSUMPTIONS |
+| formula-assumptions | full_width | FORMULA + ASSUMPTIONS: Timeline compression, learning reuse |
 | market-citations | split_left | MARKET CITATIONS |
 | loc-evidence-chain | split_right | LOC EVIDENCE CHAIN |
-| limitations-transformation-review-cta | full_width | LIMITATIONS + TRANSFORMATION REVIEW CTA |
+| limitations-book-transformation-review | full_width | LIMITATIONS + BOOK TRANSFORMATION REVIEW |

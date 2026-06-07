@@ -80,8 +80,11 @@ class CoherenceAuditTests(unittest.TestCase):
         report = audit_layout_coherence(self.schema, self.data)
         self.assertTrue(report["passed"])
         self.assertEqual(report["score"], 100.0)
-        self.assertEqual(len(report["checks"]), 10)
+        self.assertEqual(len(report["checks"]), 12)
         self.assertTrue(all(check["status"] == "pass" for check in report["checks"]))
+        check_names = {check["check"] for check in report["checks"]}
+        self.assertIn("box_model_covers_zones", check_names)
+        self.assertIn("box_surfaces_named", check_names)
 
     def test_duplicate_zone_ids_fail_the_audit(self) -> None:
         broken = copy.deepcopy(self.data)

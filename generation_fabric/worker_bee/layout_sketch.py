@@ -19,6 +19,7 @@ from generation_fabric.css.renderer import render_css_document
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.html.renderer import render_html_document
 from generation_fabric.layout.ascii_sketch import build_layout_zone_schema, build_zone_document
+from generation_fabric.layout.box_model import build_box_model_document
 from generation_fabric.layout.coherence import audit_layout_coherence, build_coherence_report_document
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.svg.renderer import render_svg_document
@@ -69,6 +70,7 @@ class WorkerBeeSketchPaths:
 
     sketch_path: Path
     zones_path: Path
+    boxes_path: Path
     html_path: Path
     css_path: Path
     svg_path: Path
@@ -84,6 +86,7 @@ class WorkerBeeSketchBundle:
     value_angle_label: str
     sketch: str
     document: dict[str, Any]
+    box_model: dict[str, Any]
     html: str
     css: str
     svg: str
@@ -213,6 +216,7 @@ def build_worker_bee_sketch(brief: str, *, page_id: str = "", title: str = "") -
 
     document = build_zone_document(sketch, page_id=resolved_page_id, title=resolved_title)
     schema = build_layout_zone_schema()
+    box_model = build_box_model_document(document)
 
     html = render_html_document(schema, document)
     css = render_css_document(schema, document)
@@ -228,6 +232,7 @@ def build_worker_bee_sketch(brief: str, *, page_id: str = "", title: str = "") -
         value_angle_label=value_headline,
         sketch=sketch,
         document=document,
+        box_model=box_model,
         html=html,
         css=css,
         svg=svg,
@@ -255,6 +260,7 @@ def write_worker_bee_sketch(
     paths = WorkerBeeSketchPaths(
         sketch_path=target_dir / f"{base}.ascii.md",
         zones_path=target_dir / f"{base}.zones.json",
+        boxes_path=target_dir / f"{base}.boxes.json",
         html_path=target_dir / f"{base}.html",
         css_path=target_dir / f"{base}.css",
         svg_path=target_dir / f"{base}.svg",
@@ -264,6 +270,7 @@ def write_worker_bee_sketch(
     for target in (
         paths.sketch_path,
         paths.zones_path,
+        paths.boxes_path,
         paths.html_path,
         paths.css_path,
         paths.svg_path,
@@ -274,6 +281,7 @@ def write_worker_bee_sketch(
 
     write_text_file_atomic(paths.sketch_path, bundle.sketch)
     write_json_file_atomic(paths.zones_path, bundle.document)
+    write_json_file_atomic(paths.boxes_path, bundle.box_model)
     write_text_file_atomic(paths.html_path, bundle.html)
     write_text_file_atomic(paths.css_path, bundle.css)
     write_text_file_atomic(paths.svg_path, bundle.svg)

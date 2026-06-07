@@ -1,0 +1,245 @@
+{
+  "page_id": "msp-consultancy-delivery-acceleration",
+  "title": "Estimate the value of faster governed delivery",
+  "boxes": [
+    {
+      "box_id": "page",
+      "parent_box": "",
+      "layout_type": "stack",
+      "contains": [
+        "band-0",
+        "band-1",
+        "band-2",
+        "band-3",
+        "band-4"
+      ],
+      "css_class": "layout",
+      "responsive_behavior": {
+        "desktop": "stack",
+        "tablet": "stack",
+        "mobile": "stack"
+      },
+      "alignment_checks": [
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-0",
+      "parent_box": "page",
+      "layout_type": "single_column",
+      "contains": [
+        "hero"
+      ],
+      "css_class": "band band--row-0",
+      "responsive_behavior": {
+        "desktop": "single_column",
+        "tablet": "single_column",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "hero",
+      "parent_box": "band-0",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--hero",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-1",
+      "parent_box": "page",
+      "layout_type": "two_column",
+      "contains": [
+        "segment",
+        "value-simulator"
+      ],
+      "css_class": "band band--row-1",
+      "responsive_behavior": {
+        "desktop": "two_column",
+        "tablet": "stacked",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "segment",
+      "parent_box": "band-1",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--segment",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "value-simulator",
+      "parent_box": "band-1",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--value-simulator",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-2",
+      "parent_box": "page",
+      "layout_type": "single_column",
+      "contains": [
+        "formula-assumptions"
+      ],
+      "css_class": "band band--row-2",
+      "responsive_behavior": {
+        "desktop": "single_column",
+        "tablet": "single_column",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "formula-assumptions",
+      "parent_box": "band-2",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--formula-assumptions",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-3",
+      "parent_box": "page",
+      "layout_type": "two_column",
+      "contains": [
+        "market-citations",
+        "loc-evidence-chain"
+      ],
+      "css_class": "band band--row-3",
+      "responsive_behavior": {
+        "desktop": "two_column",
+        "tablet": "stacked",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "market-citations",
+      "parent_box": "band-3",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--market-citations",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "loc-evidence-chain",
+      "parent_box": "band-3",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--loc-evidence-chain",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "band-4",
+      "parent_box": "page",
+      "layout_type": "single_column",
+      "contains": [
+        "limitations-book-transformation-review"
+      ],
+      "css_class": "band band--row-4",
+      "responsive_behavior": {
+        "desktop": "single_column",
+        "tablet": "single_column",
+        "mobile": "single_column"
+      },
+      "alignment_checks": [
+        "uses_spacing_tokens",
+        "preserves_reading_order"
+      ]
+    },
+    {
+      "box_id": "limitations-book-transformation-review",
+      "parent_box": "band-4",
+      "layout_type": "surface",
+      "contains": [],
+      "css_class": "surface surface--limitations-book-transformation-review",
+      "responsive_behavior": {
+        "desktop": "full",
+        "tablet": "full",
+        "mobile": "full"
+      },
+      "alignment_checks": [
+        "has_named_surface_class",
+        "uses_spacing_tokens",
+        "does_not_use_inline_style",
+        "preserves_reading_order"
+      ]
+    }
+  ]
+}

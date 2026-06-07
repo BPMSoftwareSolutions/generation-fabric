@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layout Reuse Inventory",
+  "description": "Zone reuse across multiple layout taxonomies, for design reuse before code reuse.",
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "structural_reuse": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "pages_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "zones_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "zone_id": {
+            "type": "string"
+          },
+          "reuse_class": {
+            "type": "string"
+          },
+          "page_count": {
+            "type": "string"
+          },
+          "content_variants": {
+            "type": "string"
+          },
+          "layout_role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "reuse_class",
+          "page_count",
+          "content_variants",
+          "layout_role"
+        ],
+        "additionalProperties": false
+      },
+      "x-markdown": {
+        "kind": "table"
+      }
+    },
+    "reuse_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "reuse_candidates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    },
+    "specific_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "page_specific": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-markdown": {
+        "kind": "list"
+      }
+    }
+  },
+  "required": [
+    "summary",
+    "structural_reuse",
+    "pages_heading",
+    "pages",
+    "zones_heading",
+    "zones",
+    "reuse_heading",
+    "reuse_candidates",
+    "specific_heading",
+    "page_specific"
+  ],
+  "additionalProperties": false
+}

@@ -44,6 +44,7 @@ class WorkerBeeSketchBundleTests(unittest.TestCase):
         self.assertEqual(bundle.page_id, "msp-consultancy-delivery-acceleration")
         self.assertEqual(bundle.segment_label, "MSP / consultancy")
         self.assertEqual(len(bundle.document["zones"]), 7)
+        self.assertEqual(len(bundle.box_model["boxes"]), 13)
         self.assertIn('<section data-zone-id="hero"', bundle.html)
         self.assertIn('[data-zone-id="hero"]', bundle.css)
         self.assertIn("<svg ", bundle.svg)
@@ -56,6 +57,7 @@ class WorkerBeeSketchBundleTests(unittest.TestCase):
         second = build_worker_bee_sketch(MSP_BRIEF)
         self.assertEqual(first.sketch, second.sketch)
         self.assertEqual(first.document, second.document)
+        self.assertEqual(first.box_model, second.box_model)
         self.assertEqual(first.css, second.css)
         self.assertEqual(first.svg, second.svg)
 
@@ -80,7 +82,7 @@ class WorkerBeeSketchCliTests(unittest.TestCase):
             self.assertEqual(code, 0, stderr)
             self.assertIn("100.0% coherence", stdout)
             base = "msp-consultancy-delivery-acceleration"
-            for suffix in (".ascii.md", ".zones.json", ".html", ".css", ".svg", ".coherence.md"):
+            for suffix in (".ascii.md", ".zones.json", ".boxes.json", ".html", ".css", ".svg", ".coherence.md"):
                 self.assertTrue((pathlib.Path(tmp) / (base + suffix)).exists(), suffix)
 
     def test_command_refuses_to_overwrite(self) -> None:

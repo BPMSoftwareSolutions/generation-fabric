@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Visual Intent Inventory",
+  "description": "Inventory of sketch lineage and visual coherence for ASCII-first governance.",
+  "type": "object",
+  "properties": {
+    "summary": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "coverage_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "total_items": {
+          "type": "string",
+          "x-markdown": {
+            "kind": "paragraph",
+            "label": true
+          }
+        },
+        "sketch_required": {
+          "type": "string",
+          "x-markdown": {
+            "kind": "paragraph",
+            "label": true
+          }
+        },
+        "approved": {
+          "type": "string",
+          "x-markdown": {
+            "kind": "paragraph",
+            "label": true
+          }
+        },
+        "drifted": {
+          "type": "string",
+          "x-markdown": {
+            "kind": "paragraph",
+            "label": true
+          }
+        },
+        "sketch_coverage": {
+          "type": "string",
+          "x-markdown": {
+            "kind": "paragraph",
+            "label": true
+          }
+        }
+      },
+      "required": [
+        "total_items",
+        "sketch_required",
+        "approved",
+        "drifted",
+        "sketch_coverage"
+      ],
+      "x-markdown": {
+        "kind": "section",
+        "heading": "Coverage Metrics"
+      }
+    },
+    "items_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "paragraph",
+              "label": true
+            }
+          },
+          "title": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "paragraph",
+              "label": true
+            }
+          },
+          "segment_label": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "paragraph",
+              "label": true
+            }
+          },
+          "value_angle_label": {
+            "type": "string",
+            "x-markdown": {
+              "kind": "paragraph",
+              "label": true
+            }
+          },
+          "visualization": {
+            "type": "object",
+            "properties": {
+              "ascii_sketch_required": {
+                "type": "boolean",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              },
+              "ascii_sketch_path": {
+                "type": "string",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              },
+              "sketch_type": {
+                "type": "string",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              },
+              "sketch_status": {
+                "type": "string",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              },
+              "zone_taxonomy_path": {
+                "type": "string",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              },
+              "box_model_path": {
+                "type": "string",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              },
+              "visual_coherence_status": {
+                "type": "string",
+                "x-markdown": {
+                  "kind": "paragraph",
+                  "label": true
+                }
+              }
+            },
+            "required": [
+              "ascii_sketch_required",
+              "ascii_sketch_path",
+              "sketch_type",
+              "sketch_status",
+              "zone_taxonomy_path",
+              "box_model_path",
+              "visual_coherence_status"
+            ],
+            "x-markdown": {
+              "kind": "section",
+              "heading": "Visualization"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-markdown": {
+              "kind": "list"
+            }
+          }
+        },
+        "required": [
+          "page_id",
+          "title",
+          "segment_label",
+          "value_angle_label",
+          "visualization",
+          "notes"
+        ],
+        "x-markdown": {
+          "kind": "section"
+        }
+      },
+      "x-markdown": {
+        "kind": "section",
+        "heading": "Inventory Items",
+        "item_heading": "Inventory Item"
+      }
+    }
+  },
+  "required": [
+    "summary",
+    "coverage_heading",
+    "coverage",
+    "items_heading",
+    "items"
+  ],
+  "additionalProperties": false
+}

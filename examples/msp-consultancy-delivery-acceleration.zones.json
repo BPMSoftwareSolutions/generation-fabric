@@ -1,0 +1,123 @@
+{
+  "page_id": "msp-consultancy-delivery-acceleration",
+  "title": "Estimate the value of faster governed delivery",
+  "source_sketch": "┌────────────────────────────────────────────────────────────┐\n│ HERO: Estimate the value of faster governed delivery       │\n├───────────────────────┬────────────────────────────────────┤\n│ SEGMENT: MSP / cons...│ VALUE SIMULATOR                    │\n│ Repeatable delivery...│ Inputs + delivery time saved       │\n├───────────────────────┴────────────────────────────────────┤\n│ FORMULA + ASSUMPTIONS: Timeline compression, learning reuse│\n├───────────────────────┬────────────────────────────────────┤\n│ MARKET CITATIONS      │ LOC EVIDENCE CHAIN                 │\n├───────────────────────┴────────────────────────────────────┤\n│ LIMITATIONS + BOOK TRANSFORMATION REVIEW                   │\n└────────────────────────────────────────────────────────────┘",
+  "zones": [
+    {
+      "zone_id": "hero",
+      "label": "HERO: Estimate the value of faster governed delivery",
+      "purpose": "Estimate the value of faster governed delivery",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 0,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 1,
+        "width": 60,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "segment",
+      "label": "SEGMENT: MSP / cons...",
+      "purpose": "MSP / cons...",
+      "details": [
+        "Repeatable delivery..."
+      ],
+      "layout_role": "split_left",
+      "bounds": {
+        "band": 1,
+        "column": 0,
+        "column_count": 2,
+        "x": 1,
+        "y": 3,
+        "width": 23,
+        "height": 2
+      }
+    },
+    {
+      "zone_id": "value-simulator",
+      "label": "VALUE SIMULATOR",
+      "purpose": "",
+      "details": [
+        "Inputs + delivery time saved"
+      ],
+      "layout_role": "split_right",
+      "bounds": {
+        "band": 1,
+        "column": 1,
+        "column_count": 2,
+        "x": 25,
+        "y": 3,
+        "width": 36,
+        "height": 2
+      }
+    },
+    {
+      "zone_id": "formula-assumptions",
+      "label": "FORMULA + ASSUMPTIONS: Timeline compression, learning reuse",
+      "purpose": "Timeline compression, learning reuse",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 2,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 6,
+        "width": 60,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "market-citations",
+      "label": "MARKET CITATIONS",
+      "purpose": "",
+      "details": [],
+      "layout_role": "split_left",
+      "bounds": {
+        "band": 3,
+        "column": 0,
+        "column_count": 2,
+        "x": 1,
+        "y": 8,
+        "width": 23,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "loc-evidence-chain",
+      "label": "LOC EVIDENCE CHAIN",
+      "purpose": "",
+      "details": [],
+      "layout_role": "split_right",
+      "bounds": {
+        "band": 3,
+        "column": 1,
+        "column_count": 2,
+        "x": 25,
+        "y": 8,
+        "width": 36,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "limitations-book-transformation-review",
+      "label": "LIMITATIONS + BOOK TRANSFORMATION REVIEW",
+      "purpose": "",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 4,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 10,
+        "width": 60,
+        "height": 1
+      }
+    }
+  ]
+}

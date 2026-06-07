@@ -240,6 +240,19 @@
         "language": "powershell"
       }
     },
+    "paragraph_layout_boxes": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_boxes": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
     "paragraph_layout_coherence": {
       "type": "string",
       "x-markdown": {
@@ -247,6 +260,19 @@
       }
     },
     "code_layout_coherence": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_layout_inventory": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_inventory": {
       "type": "string",
       "x-markdown": {
         "kind": "code",

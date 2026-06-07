@@ -24,7 +24,9 @@ from generation_fabric.html.renderer import render_html_document
 from generation_fabric.json_documents.crud import create_node, delete_node, read_node, update_node
 from generation_fabric.json_documents.sample import build_json_sample_from_root
 from generation_fabric.layout.ascii_sketch import build_layout_zone_schema, build_zone_document
+from generation_fabric.layout.box_model import build_box_model_document
 from generation_fabric.layout.coherence import write_layout_coherence_report
+from generation_fabric.layout.inventory import write_layout_inventory_report
 from generation_fabric.svg.renderer import render_svg_document
 from generation_fabric.markdown.contracts import (
     DEFAULT_MARKDOWN_CONTRACT_KIND,
@@ -449,6 +451,40 @@ def layout_svg_command(args: argparse.Namespace) -> int:
     """Render an SVG drawing from a zone taxonomy contract and JSON data."""
 
     return _render_layout_target(args, render_svg_document, "svg")
+
+
+def layout_inventory_command(args: argparse.Namespace) -> int:
+    """Compare zone taxonomies and write a reuse inventory report."""
+
+    documents: list[tuple[str, dict[str, Any]]] = []
+    for data_file in args.data_file:
+        document = load_json_file(data_file)
+        name = str(document.get("page_id", "")) or Path(data_file).stem
+        documents.append((name, document))
+    if not documents:
+        raise SchemaError("layout-inventory needs at least one --data-file")
+
+    paths, inventory = write_layout_inventory_report(documents, output=args.output, overwrite=args.overwrite)
+    print(f"layout inventory report written: {paths.markdown_path}")
+    print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
+    print(inventory["summary"])
+    return 0
+
+
+def layout_boxes_command(args: argparse.Namespace) -> int:
+    """Derive a nested box model from a zone taxonomy document."""
+
+    zones_document = load_json_file(args.data_file)
+    document = build_box_model_document(zones_document)
+
+    output = Path(args.output) if args.output else Path("generated") / f"{document['page_id']}.boxes.json"
+    if output.exists() and not args.overwrite:
+        raise SchemaError(f"refusing to overwrite existing file: {output}")
+
+    write_json_file_atomic(output, document)
+    print(f"box model written: {output}")
+    print(f"derived {len(document['boxes'])} boxes")
+    return 0
 
 
 def layout_coherence_command(args: argparse.Namespace) -> int:
@@ -1015,6 +1051,38 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing an existing SVG file",
     )
     layout_svg_parser.set_defaults(func=layout_svg_command)
+
+    layout_inventory_parser = subparsers.add_parser(
+        "layout-inventory",
+        help="Compare zone taxonomies and write a reuse inventory report",
+    )
+    layout_inventory_parser.add_argument(
+        "--data-file",
+        action="append",
+        default=[],
+        required=True,
+        help="Path to a zones JSON file; repeat to compare multiple pages",
+    )
+    layout_inventory_parser.add_argument("--output", default="", help="Write the inventory report to a file")
+    layout_inventory_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing report file",
+    )
+    layout_inventory_parser.set_defaults(func=layout_inventory_command)
+
+    layout_boxes_parser = subparsers.add_parser(
+        "layout-boxes",
+        help="Derive a nested box model from a zone taxonomy document",
+    )
+    layout_boxes_parser.add_argument("--data-file", required=True, help="Path to a zones JSON file")
+    layout_boxes_parser.add_argument("--output", default="", help="Write the box model JSON to a file")
+    layout_boxes_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing box model file",
+    )
+    layout_boxes_parser.set_defaults(func=layout_boxes_command)
 
     layout_coherence_parser = subparsers.add_parser(
         "layout-coherence",

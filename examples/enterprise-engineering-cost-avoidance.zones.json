@@ -1,0 +1,123 @@
+{
+  "page_id": "enterprise-engineering-cost-avoidance",
+  "title": "Estimate the value of avoided repeated work",
+  "source_sketch": "┌────────────────────────────────────────────────────────────┐\n│ HERO: Estimate the value of avoided repeated work          │\n├───────────────────────┬────────────────────────────────────┤\n│ SEGMENT: Enterprise...│ VALUE SIMULATOR                    │\n│ Delivery accelerati...│ Inputs + annual value opportunity  │\n├───────────────────────┴────────────────────────────────────┤\n│ FORMULA + ASSUMPTIONS: Savings levers, assumptions, fina...│\n├───────────────────────┬────────────────────────────────────┤\n│ MARKET CITATIONS      │ LOC EVIDENCE CHAIN                 │\n├───────────────────────┴────────────────────────────────────┤\n│ LIMITATIONS + BOOK TRANSFORMATION REVIEW                   │\n└────────────────────────────────────────────────────────────┘",
+  "zones": [
+    {
+      "zone_id": "hero",
+      "label": "HERO: Estimate the value of avoided repeated work",
+      "purpose": "Estimate the value of avoided repeated work",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 0,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 1,
+        "width": 60,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "segment",
+      "label": "SEGMENT: Enterprise...",
+      "purpose": "Enterprise...",
+      "details": [
+        "Delivery accelerati..."
+      ],
+      "layout_role": "split_left",
+      "bounds": {
+        "band": 1,
+        "column": 0,
+        "column_count": 2,
+        "x": 1,
+        "y": 3,
+        "width": 23,
+        "height": 2
+      }
+    },
+    {
+      "zone_id": "value-simulator",
+      "label": "VALUE SIMULATOR",
+      "purpose": "",
+      "details": [
+        "Inputs + annual value opportunity"
+      ],
+      "layout_role": "split_right",
+      "bounds": {
+        "band": 1,
+        "column": 1,
+        "column_count": 2,
+        "x": 25,
+        "y": 3,
+        "width": 36,
+        "height": 2
+      }
+    },
+    {
+      "zone_id": "formula-assumptions",
+      "label": "FORMULA + ASSUMPTIONS: Savings levers, assumptions, fina...",
+      "purpose": "Savings levers, assumptions, fina...",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 2,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 6,
+        "width": 60,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "market-citations",
+      "label": "MARKET CITATIONS",
+      "purpose": "",
+      "details": [],
+      "layout_role": "split_left",
+      "bounds": {
+        "band": 3,
+        "column": 0,
+        "column_count": 2,
+        "x": 1,
+        "y": 8,
+        "width": 23,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "loc-evidence-chain",
+      "label": "LOC EVIDENCE CHAIN",
+      "purpose": "",
+      "details": [],
+      "layout_role": "split_right",
+      "bounds": {
+        "band": 3,
+        "column": 1,
+        "column_count": 2,
+        "x": 25,
+        "y": 8,
+        "width": 36,
+        "height": 1
+      }
+    },
+    {
+      "zone_id": "limitations-book-transformation-review",
+      "label": "LIMITATIONS + BOOK TRANSFORMATION REVIEW",
+      "purpose": "",
+      "details": [],
+      "layout_role": "full_width",
+      "bounds": {
+        "band": 4,
+        "column": 0,
+        "column_count": 1,
+        "x": 1,
+        "y": 10,
+        "width": 60,
+        "height": 1
+      }
+    }
+  ]
+}

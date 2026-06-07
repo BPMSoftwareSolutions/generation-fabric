@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 582 264" width="582" height="264" role="img" aria-label="Estimate the value of avoided repeated work layout sketch">
+  <style>
+    .canvas { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; }
+    .zone { fill: #f8fafc; stroke: #334155; stroke-width: 1; }
+    .zone--full_width { fill: #eef2ff; }
+    .zone--split_left { fill: #ecfeff; }
+    .zone--split_right { fill: #f0fdf4; }
+    .zone--grid_cell { fill: #fef9c3; }
+    .zone-label { font-family: monospace; font-size: 12px; fill: #0f172a; }
+  </style>
+  <rect class="canvas" x="0" y="0" width="582" height="264"/>
+  <g data-zone-id="hero">
+    <rect class="zone zone--full_width" x="21" y="32" width="540" height="20"/>
+    <text class="zone-label" x="27" y="48">HERO: Estimate the value of avoided repeated work</text>
+  </g>
+  <g data-zone-id="segment">
+    <rect class="zone zone--split_left" x="21" y="72" width="207" height="40"/>
+    <text class="zone-label" x="27" y="88">SEGMENT: Enterprise...</text>
+  </g>
+  <g data-zone-id="value-simulator">
+    <rect class="zone zone--split_right" x="237" y="72" width="324" height="40"/>
+    <text class="zone-label" x="243" y="88">VALUE SIMULATOR</text>
+  </g>
+  <g data-zone-id="formula-assumptions">
+    <rect class="zone zone--full_width" x="21" y="132" width="540" height="20"/>
+    <text class="zone-label" x="27" y="148">FORMULA + ASSUMPTIONS: Savings levers, assumptions, fina...</text>
+  </g>
+  <g data-zone-id="market-citations">
+    <rect class="zone zone--split_left" x="21" y="172" width="207" height="20"/>
+    <text class="zone-label" x="27" y="188">MARKET CITATIONS</text>
+  </g>
+  <g data-zone-id="loc-evidence-chain">
+    <rect class="zone zone--split_right" x="237" y="172" width="324" height="20"/>
+    <text class="zone-label" x="243" y="188">LOC EVIDENCE CHAIN</text>
+  </g>
+  <g data-zone-id="limitations-book-transformation-review">
+    <rect class="zone zone--full_width" x="21" y="212" width="540" height="20"/>
+    <text class="zone-label" x="27" y="228">LIMITATIONS + BOOK TRANSFORMATION REVIEW</text>
+  </g>
+</svg>

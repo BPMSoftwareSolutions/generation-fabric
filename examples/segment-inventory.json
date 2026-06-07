@@ -1,0 +1,76 @@
+{
+  "summary": "3 pages compared. 7 of 7 zones are shared across all pages, 0 common, 0 page-specific. 3 zones carry page-specific content.",
+  "structural_reuse": "100.0%",
+  "pages_heading": "Compared Pages",
+  "pages": [
+    "enterprise-engineering-cost-avoidance",
+    "msp-consultancy-delivery-acceleration",
+    "ai-platform-compute-discipline"
+  ],
+  "zones_heading": "Zone Inventory",
+  "zones": [
+    {
+      "zone_id": "hero",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "3",
+      "layout_role": "full_width"
+    },
+    {
+      "zone_id": "segment",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "3",
+      "layout_role": "split_left"
+    },
+    {
+      "zone_id": "value-simulator",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "1",
+      "layout_role": "split_right"
+    },
+    {
+      "zone_id": "formula-assumptions",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "3",
+      "layout_role": "full_width"
+    },
+    {
+      "zone_id": "market-citations",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "1",
+      "layout_role": "split_left"
+    },
+    {
+      "zone_id": "loc-evidence-chain",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "1",
+      "layout_role": "split_right"
+    },
+    {
+      "zone_id": "limitations-book-transformation-review",
+      "reuse_class": "shared",
+      "page_count": "3",
+      "content_variants": "1",
+      "layout_role": "full_width"
+    }
+  ],
+  "reuse_heading": "Reuse Candidates",
+  "reuse_candidates": [
+    "hero",
+    "segment",
+    "value-simulator",
+    "formula-assumptions",
+    "market-citations",
+    "loc-evidence-chain",
+    "limitations-book-transformation-review"
+  ],
+  "specific_heading": "Page-Specific Zones",
+  "page_specific": [
+    "(none)"
+  ]
+}

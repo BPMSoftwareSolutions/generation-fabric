@@ -1,0 +1,71 @@
+{
+  "summary": "3 inventory item(s) reviewed. 3 approved sketches, 0 needing attention, 100.0% sketch coverage.",
+  "coverage_heading": "Coverage Metrics",
+  "coverage": {
+    "total_items": "3",
+    "sketch_required": "3",
+    "approved": "3",
+    "drifted": "0",
+    "sketch_coverage": "100.0%"
+  },
+  "items_heading": "Inventory Items",
+  "items": [
+    {
+      "page_id": "enterprise-engineering-cost-avoidance",
+      "title": "Estimate the value of avoided repeated work",
+      "segment_label": "Enterprise engineering",
+      "value_angle_label": "Estimate the value of avoided repeated work",
+      "visualization": {
+        "ascii_sketch_required": true,
+        "ascii_sketch_path": "examples/enterprise-engineering-cost-avoidance.ascii.md",
+        "sketch_type": "layout_flow",
+        "sketch_status": "approved",
+        "zone_taxonomy_path": "examples/enterprise-engineering-cost-avoidance.zones.json",
+        "box_model_path": "examples/enterprise-engineering-cost-avoidance.boxes.json",
+        "visual_coherence_status": "aligned"
+      },
+      "notes": [
+        "Coherence score: 100.0%",
+        "The sketch, zone taxonomy, box model, and coherence report are derived from one brief."
+      ]
+    },
+    {
+      "page_id": "msp-consultancy-delivery-acceleration",
+      "title": "Estimate the value of faster governed delivery",
+      "segment_label": "MSP / consultancy",
+      "value_angle_label": "Estimate the value of faster governed delivery",
+      "visualization": {
+        "ascii_sketch_required": true,
+        "ascii_sketch_path": "examples/msp-consultancy-delivery-acceleration.ascii.md",
+        "sketch_type": "layout_flow",
+        "sketch_status": "approved",
+        "zone_taxonomy_path": "examples/msp-consultancy-delivery-acceleration.zones.json",
+        "box_model_path": "examples/msp-consultancy-delivery-acceleration.boxes.json",
+        "visual_coherence_status": "aligned"
+      },
+      "notes": [
+        "Coherence score: 100.0%",
+        "The sketch, zone taxonomy, box model, and coherence report are derived from one brief."
+      ]
+    },
+    {
+      "page_id": "ai-platform-compute-discipline",
+      "title": "Estimate the value of disciplined compute",
+      "segment_label": "AI platform team",
+      "value_angle_label": "Estimate the value of disciplined compute",
+      "visualization": {
+        "ascii_sketch_required": true,
+        "ascii_sketch_path": "examples/ai-platform-compute-discipline.ascii.md",
+        "sketch_type": "layout_flow",
+        "sketch_status": "approved",
+        "zone_taxonomy_path": "examples/ai-platform-compute-discipline.zones.json",
+        "box_model_path": "examples/ai-platform-compute-discipline.boxes.json",
+        "visual_coherence_status": "aligned"
+      },
+      "notes": [
+        "Coherence score: 100.0%",
+        "The sketch, zone taxonomy, box model, and coherence report are derived from one brief."
+      ]
+    }
+  ]
+}
