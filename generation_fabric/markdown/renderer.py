@@ -56,9 +56,9 @@ def markdown_raw(value: Any) -> str:
     """Render a raw Markdown block without normalization."""
 
     if isinstance(value, str):
-        return value.rstrip()
+        return value
     if isinstance(value, list):
-        return "\n".join(str(item) for item in value).rstrip()
+        return "\n".join(str(item) for item in value)
     return markdown_inline_text(value)
 
 
@@ -291,5 +291,5 @@ def render_markdown_document(schema_node: dict[str, Any], data: Any) -> str:
     else:
         blocks.extend(render_markdown_field(schema_node.get("title", "Document"), schema_node, data, 2 if title else 1))
 
-    rendered = "\n\n".join(block for block in blocks if block).rstrip()
+    rendered = "\n\n".join(block for block in blocks if block)
     return f"{rendered}\n"

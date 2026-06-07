@@ -17,6 +17,7 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 FENCE_RE = re.compile(r"^(?P<fence>`{3,}|~{3,})(?P<language>[A-Za-z0-9_+-]*)\s*$")
 UNORDERED_LIST_RE = re.compile(r"^\s*[-+*]\s+(.*\S?)\s*$")
 ORDERED_LIST_RE = re.compile(r"^\s*\d+\.\s+(.*\S?)\s*$")
+INDENTED_LIST_RE = re.compile(r"^[ \t]+(?:[-+*]|\d+\.)\s+(.*\S?)\s*$")
 
 
 def _normalize_title(value: str) -> str:
@@ -69,6 +70,37 @@ def _is_block_start(lines: list[str], index: int) -> bool:
     return _looks_like_table_start(lines, index)
 
 
+def _collect_list_block(lines: list[str], index: int) -> tuple[list[str], bool, int]:
+    """Collect the contiguous lines that belong to a Markdown list block."""
+
+    block_lines: list[str] = []
+    ordered = bool(ORDERED_LIST_RE.match(lines[index]))
+
+    while index < len(lines):
+        candidate = lines[index]
+        stripped = candidate.strip()
+        if not stripped:
+            break
+        if HEADING_RE.match(candidate):
+            break
+        if FENCE_RE.match(stripped):
+            break
+        if _looks_like_table_start(lines, index):
+            break
+        if not (UNORDERED_LIST_RE.match(candidate) or ORDERED_LIST_RE.match(candidate) or candidate.startswith((" ", "\t"))):
+            break
+        block_lines.append(candidate)
+        index += 1
+
+    return block_lines, ordered, index
+
+
+def _list_block_is_nested(block_lines: list[str]) -> bool:
+    """Return True when a list block contains nested or indented list items."""
+
+    return any(INDENTED_LIST_RE.match(line) for line in block_lines)
+
+
 def _parse_markdown_blocks(text: str) -> tuple[str, list[dict[str, Any]]]:
     """Parse a Markdown document into a title and an ordered block list."""
 
@@ -84,8 +116,8 @@ def _parse_markdown_blocks(text: str) -> tuple[str, list[dict[str, Any]]]:
         nonlocal paragraph_lines, seen_content
         if not paragraph_lines:
             return
-        paragraph = "\n".join(part.rstrip() for part in paragraph_lines).rstrip()
-        is_raw = len(paragraph_lines) > 1
+        paragraph = "\n".join(paragraph_lines)
+        is_raw = len(paragraph_lines) > 1 or any(part != part.rstrip() for part in paragraph_lines)
         paragraph_lines = []
         if paragraph:
             blocks.append({"kind": "raw" if is_raw else "paragraph", "text": paragraph})
@@ -163,35 +195,46 @@ def _parse_markdown_blocks(text: str) -> tuple[str, list[dict[str, Any]]]:
         unordered_match = UNORDERED_LIST_RE.match(line)
         ordered_match = ORDERED_LIST_RE.match(line)
         if unordered_match or ordered_match:
-            flush_paragraph()
-            ordered = bool(ordered_match)
+            block_lines, ordered, new_index = _collect_list_block(lines, index)
+            if paragraph_lines:
+                combined = "\n".join([*paragraph_lines, *block_lines])
+                blocks.append({"kind": "raw", "text": combined, "x-markdown": {"kind": "raw"}})
+                paragraph_lines = []
+                seen_content = True
+                index = new_index
+                continue
+
+            if _list_block_is_nested(block_lines):
+                blocks.append({"kind": "raw", "text": "\n".join(block_lines), "x-markdown": {"kind": "raw"}})
+                seen_content = True
+                index = new_index
+                continue
+
             items: list[str] = []
-            while index < len(lines):
-                candidate = lines[index]
+            block_index = 0
+            while block_index < len(block_lines):
+                candidate = block_lines[block_index]
                 current_match = ORDERED_LIST_RE.match(candidate) if ordered else UNORDERED_LIST_RE.match(candidate)
                 if not current_match:
                     break
                 item_text = current_match.group(1).strip()
-                index += 1
+                block_index += 1
                 continuation: list[str] = []
-                while index < len(lines):
-                    continuation_line = lines[index]
+                while block_index < len(block_lines):
+                    continuation_line = block_lines[block_index]
                     if not continuation_line.strip():
-                        break
-                    if _is_block_start(lines, index):
                         break
                     if continuation_line.startswith(" ") or continuation_line.startswith("\t"):
                         continuation.append(continuation_line.strip())
-                        index += 1
+                        block_index += 1
                         continue
                     break
                 if continuation:
                     item_text = " ".join([item_text, *continuation]).strip()
                 items.append(item_text)
-                if index < len(lines) and not lines[index].strip():
-                    break
             blocks.append({"kind": "ordered-list" if ordered else "list", "ordered": ordered, "items": items})
             seen_content = True
+            index = new_index
             continue
 
         if line.lstrip().startswith(">"):
@@ -207,7 +250,7 @@ def _parse_markdown_blocks(text: str) -> tuple[str, list[dict[str, Any]]]:
             seen_content = True
             continue
 
-        paragraph_lines.append(stripped)
+        paragraph_lines.append(line)
         seen_content = True
         index += 1
 

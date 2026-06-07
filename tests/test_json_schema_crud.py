@@ -341,6 +341,79 @@ class JsonSchemaCrudTests(unittest.TestCase):
             self.assertEqual(stdout, rendered)
             self.assertEqual(rendered.strip(), source_text.strip())
 
+    def test_markdown_import_preserves_tight_labels_and_nested_lists(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            source_path = tmp_path / "plan.md"
+            output_dir = tmp_path / "generated"
+            source_text = (
+                "# Ops Core Governance - Ops Manager Lifecycle Snapshot Strategy: Implementation Plan\n\n"
+                "Status: ready for implementation handoff - research-verified  \n"
+                "Date: 2026-06-02  \n"
+                "Program: Live Operational Cognition  \n"
+                "Owner: Architecture Lead  \n\n"
+                "Source doctrine:\n"
+                "- `docs/live-operational-cognition/Deep Research/Warehouse Ops Manager Substrate Policy.md`\n"
+                "- `docs/live-operational-cognition/Deep Research/The Ops Manager Life Cycle.md`\n"
+                "- `docs/live-operational-cognition/Ops Core Governance Principle.md`\n\n"
+                "Related implementation substrate:\n"
+                "- `docs/live-operational-cognition/learning-loops-automatic-fabric-building-implementation-plan.md`\n"
+                "- `docs/live-operational-cognition/Implementation Plans/document-slide-projection-implementation-roadmap.md`\n\n"
+                "### OPS-LIFE-2: Ops Manager Snapshot Builder\n\n"
+                "Purpose: keep manager lifecycle snapshots warm without heavy hot-path reads.\n\n"
+                "Work:\n\n"
+                "- Build `ops_manager_snapshot_builder.py` or package service.\n"
+                "- Inputs:\n"
+                "  - `LatestMemoryProjectionService`\n"
+                "  - `AssistantTurnSnapshotService`\n"
+                "  - project continuation service\n"
+                "  - session governance store\n"
+                "  - governance routing service\n"
+                "  - learning-loop turn authority table\n"
+                "  - warehouse actor/session stores\n"
+                "- Outputs:\n"
+                "  - `memory_load`\n"
+                "  - `project_resume`\n"
+                "  - `agent_start`\n"
+                "  - `turn_authority`\n"
+                "  - `assistant_turn`\n"
+                "  - `learning_loop_status`\n"
+                "  - `governance_obligations`\n"
+                "  - `manager_operations`\n"
+                "- Compute:\n"
+                "  - `freshness_status`\n"
+                "  - `source_watermark_json`\n"
+                "  - `payload_hash`\n"
+                "  - `expires_at`\n"
+                "- Supersede old snapshots for the same lifecycle/scope/type.\n"
+            )
+            source_path.write_text(source_text, encoding="utf-8")
+
+            code, stdout, stderr = self.run_cli(
+                "markdown-import",
+                "--file",
+                str(source_path),
+                "--directory",
+                str(output_dir),
+                "--with-markdown",
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertIn("imported markdown contract", stdout)
+
+            markdown_path = output_dir / "plan.md"
+            rendered = markdown_path.read_text(encoding="utf-8")
+            self.assertEqual(rendered, source_text)
+
+            code, stdout, stderr = self.run_cli(
+                "markdown",
+                "--schema",
+                str(output_dir / "plan.schema.json"),
+                "--data-file",
+                str(output_dir / "plan.json"),
+            )
+            self.assertEqual(code, 0, stderr)
+            self.assertEqual(stdout, source_text)
+
     def test_json_sample_scaffolds_from_schema_hints(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = pathlib.Path(tmp)
