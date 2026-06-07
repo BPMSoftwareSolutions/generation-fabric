@@ -56,7 +56,11 @@ The initial scaffold has three responsibilities:
 
 The first concrete runtime-facing module is `generation_fabric/worker_bee/planner.py`, which turns a brief into a deterministic generation packet.
 
+The next layer is `generation_fabric/worker_bee/executor.py`, which turns that packet and any sketch prompts into schema, JSON, and Markdown artifacts without hand-stitching the file contents.
+
 The `worker-bee-plan` CLI command writes that packet to JSON, or prints it to stdout, so the planning contract is visible before the executor exists.
+
+The `worker-bee-generate` CLI command executes the full brief-to-document path and writes the contract-backed Markdown output plus its sidecar schema and JSON files.
 
 The current package does not need to be the full runtime yet. It needs to make the architecture concrete and testable.
 
@@ -80,6 +84,7 @@ The current package does not need to be the full runtime yet. It needs to make t
 - take an approved plan
 - call the existing fabric primitives
 - write only the minimal deterministic output
+- turn a brief into the generated document contract and markdown artifact
 
 ### Phase 4: Add verification and replay
 
@@ -108,6 +113,7 @@ We know the migration is working when:
 - the worker-bee strategy has its own package and docs
 - the planner can produce a structured packet from a brief
 - the packet can be emitted from the CLI without hand-stitching
+- the executor can write schema, JSON, and Markdown artifacts from that packet
 - the executor can reuse the existing fabric primitives
 - the generated output is deterministic and testable
 - a future provider swap does not change the file contract

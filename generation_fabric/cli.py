@@ -21,7 +21,7 @@ from generation_fabric.markdown.contracts import (
 from generation_fabric.markdown.importer import scaffold_markdown_import
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.markdown.registry import list_markdown_contract_kinds
-from generation_fabric.worker_bee import build_generation_packet
+from generation_fabric.worker_bee import build_generation_packet, write_worker_bee_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
 from generation_fabric.schema.inference import build_inferred_schema
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -449,6 +449,17 @@ def load_worker_bee_brief(args: argparse.Namespace) -> str:
     return brief
 
 
+def load_worker_bee_sketches(args: argparse.Namespace) -> list[str]:
+    """Normalize explicit sketch prompts from the CLI."""
+
+    sketches = []
+    for sketch in getattr(args, "sketch", []) or []:
+        sketch = sketch.strip()
+        if sketch:
+            sketches.append(sketch)
+    return sketches
+
+
 def worker_bee_plan_command(args: argparse.Namespace) -> int:
     """Build a deterministic worker-bee packet from a brief."""
 
@@ -464,6 +475,24 @@ def worker_bee_plan_command(args: argparse.Namespace) -> int:
         print(f"worker-bee packet written: {output_path}")
     else:
         print(json.dumps(packet_dict, indent=2, ensure_ascii=False))
+    return 0
+
+
+def worker_bee_generate_command(args: argparse.Namespace) -> int:
+    """Generate a Markdown document, schema, and JSON data from a brief."""
+
+    brief = load_worker_bee_brief(args)
+    sketches = load_worker_bee_sketches(args)
+    paths = write_worker_bee_document(
+        brief,
+        output=args.output,
+        explicit_sketches=sketches or None,
+        base_name=args.base_name,
+        title=args.title,
+        overwrite=args.overwrite,
+    )
+    print(f"worker-bee document written: {paths.markdown_path}")
+    print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
     return 0
 
 
@@ -825,6 +854,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing an existing packet file",
     )
     worker_bee_plan_parser.set_defaults(func=worker_bee_plan_command)
+
+    worker_bee_generate_parser = subparsers.add_parser(
+        "worker-bee-generate",
+        help="Generate Markdown, schema, and JSON artifacts from a brief",
+    )
+    worker_bee_generate_brief_group = worker_bee_generate_parser.add_mutually_exclusive_group(required=True)
+    worker_bee_generate_brief_group.add_argument("--brief", default="", help="Inline natural-language brief")
+    worker_bee_generate_brief_group.add_argument("--brief-file", default="", help="Path to a text file with the brief")
+    worker_bee_generate_parser.add_argument(
+        "--output",
+        default="",
+        help="Markdown output path; sidecar schema and JSON files use the same stem",
+    )
+    worker_bee_generate_parser.add_argument(
+        "--base-name",
+        default="",
+        help="Override the generated base-name slug",
+    )
+    worker_bee_generate_parser.add_argument(
+        "--title",
+        default="",
+        help="Override the generated document title",
+    )
+    worker_bee_generate_parser.add_argument(
+        "--sketch",
+        action="append",
+        default=[],
+        help="Explicit sketch prompt; repeat to add more sketches",
+    )
+    worker_bee_generate_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing existing generated files",
+    )
+    worker_bee_generate_parser.set_defaults(func=worker_bee_generate_command)
 
     interactive_parser = subparsers.add_parser("interactive", help="Start a tiny interactive shell")
     interactive_parser.add_argument("--file", default="", help="Optional schema file to load at startup")

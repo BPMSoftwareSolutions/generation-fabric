@@ -19,7 +19,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
 - `tests/` contains end-to-end coverage for the published behaviors.
-- `generation_fabric/worker_bee/` owns the migration strategy scaffold and the deterministic packet planner.
+- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, and document executor.
 
 If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).
 If you want the implementation plan, see [docs/compiler-pipeline-roadmap.md](docs/compiler-pipeline-roadmap.md).
@@ -92,6 +92,12 @@ Import a legacy Markdown file into a schema plus JSON contract:
 python json_schema_crud.py markdown-import --file legacy.md --directory generated --with-markdown
 ```
 
+Generate a Markdown document from a worker-bee brief:
+
+```powershell
+python json_schema_crud.py worker-bee-generate --brief 'Generate me a markdown file that has two ASCII sketches' --output generated/billboards.md
+```
+
 Start the interactive schema shell:
 
 ```powershell
@@ -117,8 +123,9 @@ python json_schema_crud.py interactive
 - `markdown`: render Markdown from a schema plus JSON data
 - `markdown-contract`: scaffold a canonical document contract
 - `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
-- `interactive`: use the tiny schema shell for quick experiments
 - `worker-bee-plan`: build a deterministic generation packet from a brief
+- `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
+- `interactive`: use the tiny schema shell for quick experiments
 
 ## Canonical Example
 
@@ -150,6 +157,7 @@ The tests cover:
 - contract scaffolding
 - the interactive shell
 - worker-bee strategy and packet planning
+- worker-bee executor and Markdown generation
 
 ## Design Principle
 

@@ -37,6 +37,7 @@ This repository is organized so the file names tell the implementation story.
 
 - `generation_fabric/worker_bee/strategy.py`: migration strategy scaffold that describes the worker-bee planner, executor, and verification phases.
 - `generation_fabric/worker_bee/planner.py`: deterministic packet builder that turns a brief into a worker-bee generation packet.
+- `generation_fabric/worker_bee/executor.py`: deterministic executor that turns a packet and sketch prompts into schema, JSON, and Markdown artifacts.
 
 ## Markdown
 
@@ -76,3 +77,4 @@ This repository is organized so the file names tell the implementation story.
 - `tests/test_json_schema_crud.py`: CLI-level and end-to-end coverage for schema, inference, scaffolding, and Markdown generation.
 - `tests/test_worker_bee_strategy.py`: coverage for the worker-bee migration strategy scaffold.
 - `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
+- `tests/test_worker_bee_executor.py`: coverage for the worker-bee executor and document generation command.
