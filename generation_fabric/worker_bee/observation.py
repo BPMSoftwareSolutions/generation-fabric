@@ -122,6 +122,16 @@ def _normalize_participant_label(label: str) -> str:
     return _normalize_brief(label)
 
 
+def _mermaid_alias(label: str) -> str:
+    """Build a Mermaid-safe alias from a display label."""
+
+    alias = _normalize_participant_label(label).replace(".", "_").replace("-", "_")
+    alias = "".join(character if character.isalnum() or character == "_" else "_" for character in alias)
+    while "__" in alias:
+        alias = alias.replace("__", "_")
+    return alias.strip("_") or "participant"
+
+
 class _FunctionFlowCollector(ast.NodeVisitor):
     """Collect ordered flow signals from a function body."""
 
@@ -167,23 +177,33 @@ def _unique_preserve_order(values: Iterable[str]) -> tuple[str, ...]:
     return tuple(seen.keys())
 
 
-def _build_mermaid_sequence(function_name: str, participants: tuple[str, ...], flow_steps: tuple[str, ...]) -> str:
+def _build_mermaid_sequence(
+    function_name: str,
+    participants: tuple[str, ...],
+    flow_steps: tuple[str, ...],
+    *,
+    function_label: str = "",
+) -> str:
     """Build a simple Mermaid sequence diagram for an observed function."""
 
     lines = ["sequenceDiagram"]
+    participant_aliases: dict[str, str] = {}
     for participant in participants:
         if participant == "Caller":
             lines.append(f"{_indent(1)}participant Caller")
+            participant_aliases[participant] = "Caller"
         else:
-            alias = _normalize_participant_label(participant).replace(".", "_").replace("-", "_")
+            alias = _mermaid_alias(participant)
+            participant_aliases[participant] = alias
             lines.append(f"{_indent(1)}participant {alias} as {participant}")
 
-    function_alias = function_name.replace(".", "_").replace("-", "_")
+    resolved_function_label = _normalize_participant_label(function_label or function_name)
+    function_alias = participant_aliases.get(resolved_function_label, _mermaid_alias(resolved_function_label))
     lines.append(f"{_indent(1)}Caller->>{function_alias}: invoke")
     for step in flow_steps:
         if step.startswith("call "):
             target = step.removeprefix("call ").strip()
-            target_alias = target.replace(".", "_").replace("-", "_")
+            target_alias = participant_aliases.get(target, _mermaid_alias(target))
             lines.append(f"{_indent(1)}{function_alias}->>{target_alias}: {target}")
         elif step.startswith("branch: "):
             branch = step.removeprefix("branch: ").strip()
@@ -231,7 +251,7 @@ def _build_function_observation(
         docstring=docstring,
         participants=participants,
         flow_steps=tuple(flow_steps),
-        mermaid=_build_mermaid_sequence(qualified_name, participants, tuple(collector.flow_steps)),
+        mermaid=_build_mermaid_sequence(qualified_name, participants, tuple(collector.flow_steps), function_label=role),
         notes=tuple(notes),
     )
 
@@ -254,7 +274,12 @@ def _observation_from_taxonomy_execution_path(path: dict[str, Any]) -> PythonFun
         responsibility=str(path.get("responsibility", "")),
         participants=participants,
         flow_steps=flow_steps,
-        mermaid=_build_mermaid_sequence(str(path.get("name", "")), participants, flow_steps),
+        mermaid=_build_mermaid_sequence(
+            str(path.get("name", "")),
+            participants,
+            flow_steps,
+            function_label=str(path.get("role", "")),
+        ),
         notes=notes,
     )
 

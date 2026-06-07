@@ -150,6 +150,45 @@ BUILTIN_CALL_NAMES = {
     "tuple",
 }
 
+ROLE_PREFIXES = {
+    "build": "Builder",
+    "collect": "Collector",
+    "create": "Creator",
+    "delete": "Deleter",
+    "derive": "Deriver",
+    "detect": "Detector",
+    "explain": "Explainer",
+    "format": "Formatter",
+    "generate": "Generator",
+    "infer": "Inference",
+    "load": "Loader",
+    "normalize": "Normalizer",
+    "parse": "Parser",
+    "read": "Reader",
+    "render": "Renderer",
+    "scan": "Scanner",
+    "serialize": "Serializer",
+    "slugify": "Slugifier",
+    "summarize": "Summarizer",
+    "update": "Updater",
+    "validate": "Validator",
+    "write": "Writer",
+}
+
+MODULE_ROLE_LABELS = {
+    "ast": "AST",
+    "collections": "Collections",
+    "contextlib": "Context",
+    "dataclasses": "Dataclass",
+    "hashlib": "Hashing",
+    "io": "IO",
+    "json": "JSON",
+    "pathlib": "Path",
+    "re": "Regex",
+    "tempfile": "Temporary File",
+    "typing": "Typing",
+}
+
 
 def _display_source_path(source_path: Path) -> str:
     """Return a stable repository-relative display path when possible."""
@@ -201,6 +240,51 @@ def _humanize_identifier(identifier: str) -> str:
     text = re.sub(r"(?<=[A-Z])(?=[A-Z][a-z])", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text.title() if text else identifier
+
+
+def _role_label_from_identifier(identifier: str) -> str:
+    """Render a noun-like participant label from an identifier."""
+
+    if not identifier:
+        return identifier
+
+    if "." in identifier:
+        owner, member = identifier.rsplit(".", 1)
+        owner_label = MODULE_ROLE_LABELS.get(owner.split(".", 1)[0], _humanize_identifier(owner))
+        member_key = member.lower()
+        if owner.split(".", 1)[0] == "json":
+            if member_key == "loads":
+                return "JSON Loader"
+            if member_key == "dumps":
+                return "JSON Dumper"
+        if owner.split(".", 1)[0] == "re":
+            return "Regex Engine"
+        if owner.split(".", 1)[0] == "ast":
+            return "AST Tool"
+        if owner.split(".", 1)[0] == "dataclasses" and member_key == "asdict":
+            return "Dataclass Serializer"
+        if member_key == "to_dict":
+            return f"{owner_label} Serializer"
+        if member_key in ROLE_PREFIXES:
+            return f"{owner_label} {ROLE_PREFIXES[member_key]}"
+        return f"{owner_label} {_humanize_identifier(member)}"
+
+    parts = identifier.split("_")
+    if not parts:
+        return _humanize_identifier(identifier)
+    prefix = parts[0].lower()
+    if identifier == "asdict":
+        return "Dataclass Serializer"
+    if prefix in ROLE_PREFIXES and len(parts) > 1:
+        remainder = _humanize_identifier("_".join(parts[1:]))
+        return f"{remainder} {ROLE_PREFIXES[prefix]}"
+    return _humanize_identifier(identifier)
+
+
+def _call_label_from_identifier(identifier: str) -> str:
+    """Render a readable call label for flow steps and participants."""
+
+    return _role_label_from_identifier(identifier)
 
 
 def _sanitize_mermaid_alias(value: str) -> str:
@@ -535,7 +619,7 @@ def _build_symbol_from_node(
     decorators = _collect_decorators(node)
     line_start, line_end = _line_span(node)
     label = _humanize_identifier(qualified_name)
-    role = _humanize_identifier(qualified_name)
+    role = _role_label_from_identifier(qualified_name)
     responsibility = _first_sentence(docstring) or f"Observed {kind} declaration in the source file"
     anchor = _anchor(source_path, node)
     if collector is None:
@@ -599,20 +683,20 @@ def _build_execution_path_from_node(
     branch_markers = _unique_preserve_order(collector.branch_markers)
     call_targets = _unique_preserve_order(collector.calls)
     participants = _unique_preserve_order(
-        ("Caller", _humanize_identifier(qualified_name), *(_humanize_identifier(call) for call in call_targets))
+        ("Caller", _role_label_from_identifier(qualified_name), *(_call_label_from_identifier(call) for call in call_targets))
     )
-    flow_steps: list[str] = [f"invoke {_humanize_identifier(qualified_name)}"]
+    flow_steps: list[str] = [f"invoke {_call_label_from_identifier(qualified_name)}"]
     if parent_class:
-        flow_steps.append(f"owner {_humanize_identifier(parent_class)}")
+        flow_steps.append(f"owner {_role_label_from_identifier(parent_class)}")
     flow_steps.extend(
-        f"call {_humanize_identifier(step.removeprefix('call ').strip())}" if step.startswith("call ") else step
+        f"call {_call_label_from_identifier(step.removeprefix('call ').strip())}" if step.startswith("call ") else step
         for step in collector.flow_steps
     )
     if not call_targets:
         flow_steps.append("no helper calls observed")
     flow_steps.append("return")
     label = _humanize_identifier(qualified_name)
-    role = _humanize_identifier(qualified_name)
+    role = _role_label_from_identifier(qualified_name)
     responsibility = _first_sentence(docstring) or f"Observed {kind} execution path in the source file"
     anchor = _anchor(source_path, node)
     notes = _collect_execution_path_notes(kind, docstring, branch_markers, tuple(collector.return_points), tuple(collector.conditions))
