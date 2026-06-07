@@ -88,6 +88,8 @@ class WorkerBeeObservationTests(unittest.TestCase):
             self.assertIn("Executions", markdown)
             self.assertIn("State Changes", markdown)
             self.assertIn("Returns", markdown)
+            self.assertIn("JSON_Loader-->>Worker_Bee_Generation_Packet_Serializer: return", markdown)
+            self.assertIn("Dataclass_Serializer-->>Worker_Bee_Generation_Packet_Serializer: return", markdown)
 
     def test_worker_bee_taxonomy_command_writes_a_taxonomy_document(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -152,6 +154,8 @@ class WorkerBeeObservationTests(unittest.TestCase):
             self.assertIn("Executions", markdown)
             self.assertIn("State Changes", markdown)
             self.assertIn("Returns", markdown)
+            self.assertIn("JSON_Loader-->>Worker_Bee_Generation_Packet_Serializer: return", markdown)
+            self.assertIn("Dataclass_Serializer-->>Worker_Bee_Generation_Packet_Serializer: return", markdown)
 
 
 if __name__ == "__main__":

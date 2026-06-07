@@ -202,7 +202,7 @@ def _build_mermaid_sequence(
     resolved_function_label = _normalize_participant_label(function_label or function_name)
     function_alias = participant_aliases.get(resolved_function_label, _mermaid_alias(resolved_function_label))
     lines.append(f"{_indent(1)}Caller->>{function_alias}: invoke")
-    return_emitted = False
+    pending_return_value = ""
     for step in flow_steps:
         if step.startswith("trigger "):
             target = step.removeprefix("trigger ").strip()
@@ -211,6 +211,7 @@ def _build_mermaid_sequence(
             if target_alias == function_alias:
                 continue
             lines.append(f"{_indent(1)}{function_alias}->>{target_alias}: trigger")
+            lines.append(f"{_indent(1)}{target_alias}-->>{function_alias}: return")
         elif step.startswith("data "):
             payload = step.removeprefix("data ").strip()
             if ": " in payload:
@@ -223,6 +224,7 @@ def _build_mermaid_sequence(
                 continue
             label = f"data: {message}" if message else "data"
             lines.append(f"{_indent(1)}{function_alias}->>{target_alias}: {label}")
+            lines.append(f"{_indent(1)}{target_alias}-->>{function_alias}: return")
         elif step.startswith("mutation "):
             mutation = step.removeprefix("mutation ").strip()
             lines.append(f"{_indent(1)}note over {function_alias}: mutation observed - {mutation}")
@@ -230,13 +232,10 @@ def _build_mermaid_sequence(
             branch = step.removeprefix("branch: ").strip()
             lines.append(f"{_indent(1)}note over {function_alias}: {branch} branch observed")
         elif step.startswith("return "):
-            value = step.removeprefix("return ").strip()
-            if value:
-                lines.append(f"{_indent(1)}{function_alias}-->>Caller: return {value}")
-            else:
-                lines.append(f"{_indent(1)}{function_alias}-->>Caller: return")
-            return_emitted = True
-    if not return_emitted:
+            pending_return_value = step.removeprefix("return ").strip()
+    if pending_return_value:
+        lines.append(f"{_indent(1)}{function_alias}-->>Caller: return {pending_return_value}")
+    else:
         lines.append(f"{_indent(1)}{function_alias}-->>Caller: return")
     return "\n".join(lines)
 
