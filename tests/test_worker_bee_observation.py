@@ -78,10 +78,13 @@ class WorkerBeeObservationTests(unittest.TestCase):
             markdown = markdown_path.read_text(encoding="utf-8")
 
             self.assertEqual(schema["title"], "Code Observation: planner")
-            self.assertEqual(data["shape"], "sequence-diagram")
+            self.assertIn("overview", data)
+            self.assertIn("inventory", data)
+            self.assertIn("executions", data)
             self.assertIn("sequenceDiagram", markdown)
-            self.assertIn("participant Caller", markdown)
-            self.assertIn("Execution Paths", markdown)
+            self.assertIn("Overview", markdown)
+            self.assertIn("Code Inventory", markdown)
+            self.assertIn("Executions", markdown)
 
     def test_worker_bee_taxonomy_command_writes_a_taxonomy_document(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -142,7 +145,8 @@ class WorkerBeeObservationTests(unittest.TestCase):
             self.assertTrue(markdown_path.exists())
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("sequenceDiagram", markdown)
-            self.assertIn("Execution Paths", markdown)
+            self.assertIn("Code Inventory", markdown)
+            self.assertIn("Executions", markdown)
 
 
 if __name__ == "__main__":

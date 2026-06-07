@@ -530,16 +530,16 @@ def _worker_bee_observation_case(root: Path) -> WorkerBeeLearningCaseResult:
 
     if not observations:
         raise SchemaError("code observation did not capture any execution paths")
-    if data.get("shape") != "sequence-diagram":
+    if data.get("overview", {}).get("shape") != "sequence-diagram":
         raise SchemaError("code observation did not preserve the requested shape")
-    if "sequenceDiagram" not in markdown or "participant Caller" not in markdown:
+    if "sequenceDiagram" not in markdown or "Code Inventory" not in markdown:
         raise SchemaError("code observation did not render a Mermaid sequence diagram")
     if schema.get("title") != "Code Observation: planner":
         raise SchemaError("code observation did not build the expected contract title")
 
     return WorkerBeeLearningCaseResult(
         name="worker_bee_code_observation",
-        capabilities=("worker-bee-observe",),
+        capabilities=("worker-bee-observe", "worker-bee-taxonomy"),
         passed=True,
         details="code observation produced a contract-backed sequence diagram document",
         lessons=("The worker bee can observe Python execution paths and turn them into Mermaid-backed Markdown.",),

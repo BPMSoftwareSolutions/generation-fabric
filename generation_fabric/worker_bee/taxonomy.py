@@ -129,6 +129,28 @@ def _normalize_brief(text: str) -> str:
     return " ".join(text.split()).strip()
 
 
+BUILTIN_CALL_NAMES = {
+    "all",
+    "any",
+    "bool",
+    "bytes",
+    "dict",
+    "enumerate",
+    "float",
+    "int",
+    "len",
+    "list",
+    "max",
+    "min",
+    "range",
+    "set",
+    "sorted",
+    "str",
+    "sum",
+    "tuple",
+}
+
+
 def _display_source_path(source_path: Path) -> str:
     """Return a stable repository-relative display path when possible."""
 
@@ -176,8 +198,18 @@ def _humanize_identifier(identifier: str) -> str:
 
     text = identifier.replace(".", " ").replace("_", " ").replace("-", " ")
     text = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", text)
+    text = re.sub(r"(?<=[A-Z])(?=[A-Z][a-z])", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text.title() if text else identifier
+
+
+def _sanitize_mermaid_alias(value: str) -> str:
+    """Build a Mermaid-safe alias from a human-readable label."""
+
+    alias = value.replace(".", "_").replace("-", "_")
+    alias = re.sub(r"[^0-9A-Za-z_]+", "_", alias)
+    alias = re.sub(r"_+", "_", alias).strip("_")
+    return alias or "participant"
 
 
 def _anchor(source_path: Path, node: ast.AST) -> str:
@@ -257,11 +289,56 @@ def _resolve_call_name(node: ast.AST) -> str:
     if isinstance(node, ast.Name):
         return node.id
     if isinstance(node, ast.Attribute):
+        if isinstance(node.value, ast.Call):
+            return ""
         parent = _resolve_call_name(node.value)
         return f"{parent}.{node.attr}" if parent else node.attr
-    if isinstance(node, ast.Call):
-        return _resolve_call_name(node.func)
     return ""
+
+
+def _collect_import_aliases(tree: ast.AST) -> tuple[str, ...]:
+    """Collect imported names that can be treated as meaningful dependencies."""
+
+    aliases: list[str] = []
+    for node in getattr(tree, "body", []):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                aliases.append(alias.asname or alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                aliases.append(alias.asname or alias.name)
+    return _unique_preserve_order(aliases)
+
+
+def _collect_local_symbol_names(tree: ast.AST) -> tuple[str, ...]:
+    """Collect top-level declaration names from a Python module."""
+
+    names: list[str] = []
+    for node in getattr(tree, "body", []):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            names.append(node.name)
+    return _unique_preserve_order(names)
+
+
+def _is_meaningful_call_target(name: str, local_symbols: Iterable[str], import_aliases: Iterable[str]) -> bool:
+    """Return True when a call target should appear in the taxonomy."""
+
+    if not name:
+        return False
+    base = name.split(".", 1)[0]
+    if base in BUILTIN_CALL_NAMES:
+        return False
+    if base.endswith("Error") or base.endswith("Exception"):
+        return False
+    local_set = set(local_symbols)
+    import_set = set(import_aliases)
+    if name in local_set:
+        return True
+    if base in local_set:
+        return True
+    if base in import_set:
+        return True
+    return False
 
 
 def _unique_preserve_order(values: Iterable[str]) -> tuple[str, ...]:
@@ -290,8 +367,10 @@ def _collect_conditions_text(source_text: str, node: ast.AST) -> str:
 class _TaxonomyFlowCollector(ast.NodeVisitor):
     """Collect ordered flow signals from a function body."""
 
-    def __init__(self, source_text: str) -> None:
+    def __init__(self, source_text: str, local_symbols: Iterable[str], import_aliases: Iterable[str]) -> None:
         self.source_text = source_text
+        self.local_symbols = set(local_symbols)
+        self.import_aliases = set(import_aliases)
         self.calls: list[str] = []
         self.flow_steps: list[str] = []
         self.branch_markers: list[str] = []
@@ -312,7 +391,7 @@ class _TaxonomyFlowCollector(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> Any:  # noqa: N802
         name = _resolve_call_name(node.func)
-        if name:
+        if _is_meaningful_call_target(name, self.local_symbols, self.import_aliases):
             self.calls.append(name)
             self.flow_steps.append(f"call {name}")
         self.generic_visit(node)
@@ -433,6 +512,8 @@ def _collect_execution_path_notes(
 def _build_symbol_from_node(
     source_path: Path,
     source_text: str,
+    local_symbols: Iterable[str],
+    import_aliases: Iterable[str],
     node: ast.AST,
     qualified_name: str,
     kind: str,
@@ -444,7 +525,7 @@ def _build_symbol_from_node(
         collector = None
         signature = _format_class_signature(node, qualified_name)
     else:
-        collector = _TaxonomyFlowCollector(source_text)
+        collector = _TaxonomyFlowCollector(source_text, local_symbols, import_aliases)
         assert isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         for statement in node.body:
             collector.visit(statement)
@@ -454,7 +535,7 @@ def _build_symbol_from_node(
     decorators = _collect_decorators(node)
     line_start, line_end = _line_span(node)
     label = _humanize_identifier(qualified_name)
-    role = _humanize_identifier(node.name if hasattr(node, "name") else qualified_name.split(".")[-1])
+    role = _humanize_identifier(qualified_name)
     responsibility = _first_sentence(docstring) or f"Observed {kind} declaration in the source file"
     anchor = _anchor(source_path, node)
     if collector is None:
@@ -498,6 +579,8 @@ def _build_symbol_from_node(
 def _build_execution_path_from_node(
     source_path: Path,
     source_text: str,
+    local_symbols: Iterable[str],
+    import_aliases: Iterable[str],
     node: ast.AST,
     qualified_name: str,
     kind: str,
@@ -505,7 +588,7 @@ def _build_execution_path_from_node(
 ) -> CodeTaxonomyExecutionPath:
     """Build a taxonomy execution path from a function or method node."""
 
-    collector = _TaxonomyFlowCollector(source_text)
+    collector = _TaxonomyFlowCollector(source_text, local_symbols, import_aliases)
     assert isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     for statement in node.body:
         collector.visit(statement)
@@ -518,15 +601,18 @@ def _build_execution_path_from_node(
     participants = _unique_preserve_order(
         ("Caller", _humanize_identifier(qualified_name), *(_humanize_identifier(call) for call in call_targets))
     )
-    flow_steps: list[str] = [f"invoke {qualified_name}"]
+    flow_steps: list[str] = [f"invoke {_humanize_identifier(qualified_name)}"]
     if parent_class:
-        flow_steps.append(f"owner {parent_class}")
-    flow_steps.extend(collector.flow_steps)
+        flow_steps.append(f"owner {_humanize_identifier(parent_class)}")
+    flow_steps.extend(
+        f"call {_humanize_identifier(step.removeprefix('call ').strip())}" if step.startswith("call ") else step
+        for step in collector.flow_steps
+    )
     if not call_targets:
         flow_steps.append("no helper calls observed")
     flow_steps.append("return")
     label = _humanize_identifier(qualified_name)
-    role = _humanize_identifier(node.name)
+    role = _humanize_identifier(qualified_name)
     responsibility = _first_sentence(docstring) or f"Observed {kind} execution path in the source file"
     anchor = _anchor(source_path, node)
     notes = _collect_execution_path_notes(kind, docstring, branch_markers, tuple(collector.return_points), tuple(collector.conditions))
@@ -571,6 +657,9 @@ def scan_python_source_taxonomy(source_path: Path, include_private: bool = False
     except SyntaxError as exc:
         raise SchemaError(f"source file is not valid Python: {source_path}: {exc}") from exc
 
+    local_symbols = _collect_local_symbol_names(tree)
+    import_aliases = _collect_import_aliases(tree)
+
     def should_include(name: str) -> bool:
         return include_private or not name.startswith("_")
 
@@ -586,6 +675,8 @@ def scan_python_source_taxonomy(source_path: Path, include_private: bool = False
                 _build_symbol_from_node(
                     source_path,
                     source_text,
+                    local_symbols,
+                    import_aliases,
                     node,
                     qualified_name,
                     "class",
@@ -598,6 +689,8 @@ def scan_python_source_taxonomy(source_path: Path, include_private: bool = False
                         _build_symbol_from_node(
                             source_path,
                             source_text,
+                            local_symbols,
+                            import_aliases,
                             member,
                             qualified_name,
                             "method",
@@ -608,6 +701,8 @@ def scan_python_source_taxonomy(source_path: Path, include_private: bool = False
                         _build_execution_path_from_node(
                             source_path,
                             source_text,
+                            local_symbols,
+                            import_aliases,
                             member,
                             qualified_name,
                             "method",
@@ -620,6 +715,8 @@ def scan_python_source_taxonomy(source_path: Path, include_private: bool = False
                     _build_symbol_from_node(
                         source_path,
                         source_text,
+                        local_symbols,
+                        import_aliases,
                         node,
                         node.name,
                         "function",
@@ -629,6 +726,8 @@ def scan_python_source_taxonomy(source_path: Path, include_private: bool = False
                     _build_execution_path_from_node(
                         source_path,
                         source_text,
+                        local_symbols,
+                        import_aliases,
                         node,
                         node.name,
                         "function",

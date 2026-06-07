@@ -34,10 +34,15 @@ class PythonFunctionObservation:
     kind: str
     signature: str
     docstring: str
-    participants: tuple[str, ...]
-    flow_steps: tuple[str, ...]
-    mermaid: str
-    notes: tuple[str, ...]
+    anchor: str = ""
+    line_start: int = 0
+    line_end: int = 0
+    role: str = ""
+    responsibility: str = ""
+    participants: tuple[str, ...] = ()
+    flow_steps: tuple[str, ...] = ()
+    mermaid: str = ""
+    notes: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the observation into JSON-friendly data."""
@@ -242,6 +247,11 @@ def _observation_from_taxonomy_execution_path(path: dict[str, Any]) -> PythonFun
         kind=str(path.get("kind", "function")),
         signature=str(path.get("signature", "")),
         docstring=str(path.get("docstring", "")),
+        anchor=str(path.get("anchor", "")),
+        line_start=int(path.get("line_start", 0) or 0),
+        line_end=int(path.get("line_end", 0) or 0),
+        role=str(path.get("role", "")),
+        responsibility=str(path.get("responsibility", "")),
         participants=participants,
         flow_steps=flow_steps,
         mermaid=_build_mermaid_sequence(str(path.get("name", "")), participants, flow_steps),
@@ -266,6 +276,69 @@ def _observations_from_taxonomy_data(taxonomy_data: dict[str, Any]) -> tuple[Pyt
     return observations
 
 
+def _symbol_inventory_rows(taxonomy_data: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    """Build a concise code inventory table from taxonomy symbol records."""
+
+    symbols = taxonomy_data.get("symbols", [])
+    if not isinstance(symbols, list):
+        raise SchemaError("taxonomy symbols must be an array")
+
+    rows: list[dict[str, Any]] = []
+    for symbol in symbols:
+        if not isinstance(symbol, dict):
+            continue
+        rows.append(
+            {
+                "label": str(symbol.get("label", symbol.get("name", ""))),
+                "kind": str(symbol.get("kind", "")),
+                "role": str(symbol.get("role", "")),
+                "responsibility": str(symbol.get("responsibility", "")),
+                "anchor": str(symbol.get("anchor", "")),
+                "line_start": int(symbol.get("line_start", 0) or 0),
+                "line_end": int(symbol.get("line_end", 0) or 0),
+            }
+        )
+    return tuple(rows)
+
+
+def _build_observation_overview(
+    taxonomy_data: dict[str, Any],
+    source_path: Path,
+    observations: tuple[PythonFunctionObservation, ...],
+    *,
+    shape: str,
+) -> dict[str, Any]:
+    """Build the overview block for a code-observation document."""
+
+    return {
+        "source_file": str(taxonomy_data.get("source_file", str(source_path))),
+        "module_path": str(taxonomy_data.get("module_path", "")),
+        "source_hash": str(taxonomy_data.get("source_hash", "")),
+        "shape": shape,
+        "summary": f"Observed {len(observations)} execution(s) in {source_path.name} and projected them into Mermaid sequence diagrams.",
+    }
+
+
+def _build_observation_document_payload(
+    taxonomy_data: dict[str, Any],
+    source_path: Path,
+    observations: tuple[PythonFunctionObservation, ...],
+    *,
+    shape: str,
+) -> dict[str, Any]:
+    """Build the JSON payload for a code-observation document."""
+
+    return {
+        "overview": _build_observation_overview(taxonomy_data, source_path, observations, shape=shape),
+        "inventory": {"rows": list(_symbol_inventory_rows(taxonomy_data))},
+        "executions": [observation.to_dict() for observation in observations],
+        "notes": [
+            "The worker bee extracts a shape from code before rendering any Markdown.",
+            "The code inventory anchors declarations and the executions show the observed steps.",
+        ],
+    }
+
+
 def collect_python_function_observations(source_path: Path, include_private: bool = False) -> tuple[PythonFunctionObservation, ...]:
     """Collect ordered function and method observations from a Python source file."""
 
@@ -277,6 +350,7 @@ def collect_python_function_observations(source_path: Path, include_private: boo
 def build_code_observation_document_schema(
     source_path: Path,
     observations: tuple[PythonFunctionObservation, ...],
+    taxonomy_data: dict[str, Any] | None = None,
     *,
     shape: str = "sequence-diagram",
     title: str = "",
@@ -284,48 +358,125 @@ def build_code_observation_document_schema(
     """Build the JSON Schema contract for code observation output."""
 
     resolved_title = title.strip() or f"Code Observation: {source_path.stem}"
-    participants = _unique_preserve_order(
-        participant for observation in observations for participant in observation.participants
-    )
+    taxonomy_data = taxonomy_data or {}
+    inventory_rows = _symbol_inventory_rows(taxonomy_data)
+    overview_sample = _build_observation_overview(taxonomy_data, source_path, observations, shape=shape)
     sample_paths = [observation.to_dict() for observation in observations]
     schema = {
         "$schema": DEFAULT_SCHEMA_DRAFT,
         "title": resolved_title,
+        "description": "A contract-backed code observation that inventories the source file before rendering the observed executions as Mermaid sequence diagrams.",
         "type": "object",
         "properties": {
-            "source_file": {
-                "type": "string",
-                "x-sample": str(source_path),
-                "x-markdown": {"kind": "paragraph", "label": True},
+            "overview": {
+                "type": "object",
+                "properties": {
+                    "source_file": {
+                        "type": "string",
+                        "x-sample": overview_sample["source_file"],
+                        "x-markdown": {"kind": "paragraph", "label": True},
+                    },
+                    "module_path": {
+                        "type": "string",
+                        "x-sample": overview_sample["module_path"],
+                        "x-markdown": {"kind": "paragraph", "label": True},
+                    },
+                    "source_hash": {
+                        "type": "string",
+                        "x-sample": overview_sample["source_hash"],
+                        "x-markdown": {"kind": "paragraph", "label": True},
+                    },
+                    "shape": {
+                        "type": "string",
+                        "x-sample": overview_sample["shape"],
+                        "x-markdown": {"kind": "paragraph", "label": True},
+                    },
+                    "summary": {
+                        "type": "string",
+                        "x-sample": overview_sample["summary"],
+                        "x-markdown": {"kind": "paragraph"},
+                    },
+                },
+                "required": ["source_file", "module_path", "source_hash", "shape", "summary"],
+                "x-sample": overview_sample,
+                "x-markdown": {"kind": "section", "heading": "Overview"},
             },
-            "shape": {
-                "type": "string",
-                "x-sample": shape,
-                "x-markdown": {"kind": "paragraph", "label": True},
+            "inventory": {
+                "type": "object",
+                "properties": {
+                    "rows": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": {
+                                    "type": "string",
+                                    "x-markdown": {"kind": "paragraph"},
+                                },
+                                "kind": {
+                                    "type": "string",
+                                    "x-markdown": {"kind": "paragraph"},
+                                },
+                                "role": {
+                                    "type": "string",
+                                    "x-markdown": {"kind": "paragraph"},
+                                },
+                                "responsibility": {
+                                    "type": "string",
+                                    "x-markdown": {"kind": "paragraph"},
+                                },
+                                "anchor": {
+                                    "type": "string",
+                                    "x-markdown": {"kind": "paragraph"},
+                                },
+                                "line_start": {
+                                    "type": "integer",
+                                },
+                                "line_end": {
+                                    "type": "integer",
+                                },
+                            },
+                            "required": [
+                                "label",
+                                "kind",
+                                "role",
+                                "responsibility",
+                                "anchor",
+                                "line_start",
+                                "line_end",
+                            ],
+                            "x-markdown": {"kind": "table"},
+                        },
+                        "x-sample": list(inventory_rows),
+                        "x-markdown": {"kind": "table"},
+                    }
+                },
+                "required": ["rows"],
+                "x-sample": {"rows": list(inventory_rows)},
+                "x-markdown": {"kind": "section", "heading": "Code Inventory"},
             },
-            "summary": {
-                "type": "string",
-                "x-sample": (
-                    f"Observed {len(observations)} execution path(s) and projected them into Mermaid sequence diagrams."
-                ),
-                "x-markdown": {"kind": "paragraph"},
-            },
-            "participants": {
-                "type": "array",
-                "items": {"type": "string"},
-                "x-sample": list(participants),
-                "x-markdown": {"kind": "list"},
-            },
-            "execution_paths": {
+            "executions": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "name": {
                             "type": "string",
-                            "x-markdown": {"kind": "heading", "level": 3},
+                            "x-markdown": {"kind": "paragraph", "label": True},
                         },
                         "kind": {
+                            "type": "string",
+                            "x-markdown": {"kind": "paragraph", "label": True},
+                        },
+                        "role": {
+                            "type": "string",
+                            "x-markdown": {"kind": "paragraph", "label": True},
+                        },
+                        "responsibility": {
+                            "type": "string",
+                            "x-markdown": {"kind": "paragraph", "label": True},
+                        },
+                        "anchor": {
                             "type": "string",
                             "x-markdown": {"kind": "paragraph", "label": True},
                         },
@@ -360,6 +511,9 @@ def build_code_observation_document_schema(
                     "required": [
                         "name",
                         "kind",
+                        "role",
+                        "responsibility",
+                        "anchor",
                         "signature",
                         "docstring",
                         "participants",
@@ -372,7 +526,8 @@ def build_code_observation_document_schema(
                 "x-sample": sample_paths,
                 "x-markdown": {
                     "kind": "section",
-                    "heading": "Execution Paths",
+                    "heading": "Executions",
+                    "item_heading": "Execution",
                 },
             },
             "notes": {
@@ -385,7 +540,7 @@ def build_code_observation_document_schema(
                 "x-markdown": {"kind": "list"},
             },
         },
-        "required": ["source_file", "shape", "summary", "participants", "execution_paths", "notes"],
+        "required": ["overview", "inventory", "executions", "notes"],
     }
     validate_schema_node(schema)
     return schema
@@ -402,21 +557,16 @@ def build_code_observation_document(
 
     source_path = Path(source_file)
     taxonomy = scan_python_source_taxonomy(source_path, include_private=include_private)
-    observations = _observations_from_taxonomy_data(taxonomy.to_dict())
-    schema = build_code_observation_document_schema(source_path, observations, shape=shape, title=title)
-    data = {
-        "source_file": taxonomy.source_file,
-        "shape": shape,
-        "summary": f"Observed {len(observations)} execution path(s) from {source_path.name}.",
-        "participants": list(
-            _unique_preserve_order(participant for observation in observations for participant in observation.participants)
-        ),
-        "execution_paths": [observation.to_dict() for observation in observations],
-        "notes": [
-            "The worker bee turns code shape into a contract before rendering Markdown.",
-            "Sequence diagrams make the participants and call order visible at a glance.",
-        ],
-    }
+    taxonomy_data = taxonomy.to_dict()
+    observations = _observations_from_taxonomy_data(taxonomy_data)
+    schema = build_code_observation_document_schema(
+        source_path,
+        observations,
+        taxonomy_data,
+        shape=shape,
+        title=title,
+    )
+    data = _build_observation_document_payload(taxonomy_data, source_path, observations, shape=shape)
     validate_instance_against_schema(schema, data)
     rendered = render_markdown_document(schema, data)
     return schema, data, rendered
@@ -435,20 +585,14 @@ def build_code_observation_document_from_taxonomy(
         raise SchemaError("taxonomy document is missing source_file")
     source_path = Path(source_file)
     observations = _observations_from_taxonomy_data(taxonomy_data)
-    schema = build_code_observation_document_schema(source_path, observations, shape=shape, title=title)
-    data = {
-        "source_file": source_file,
-        "shape": shape,
-        "summary": f"Observed {len(observations)} execution path(s) from {source_path.name}.",
-        "participants": list(
-            _unique_preserve_order(participant for observation in observations for participant in observation.participants)
-        ),
-        "execution_paths": [observation.to_dict() for observation in observations],
-        "notes": [
-            "The worker bee turns taxonomy JSON into a contract before rendering Markdown.",
-            "Sequence diagrams make the participants and call order visible at a glance.",
-        ],
-    }
+    schema = build_code_observation_document_schema(
+        source_path,
+        observations,
+        taxonomy_data,
+        shape=shape,
+        title=title,
+    )
+    data = _build_observation_document_payload(taxonomy_data, source_path, observations, shape=shape)
     validate_instance_against_schema(schema, data)
     rendered = render_markdown_document(schema, data)
     return schema, data, rendered
