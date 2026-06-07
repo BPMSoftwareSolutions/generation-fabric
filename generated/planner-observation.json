@@ -1,0 +1,514 @@
+{
+  "overview": {
+    "source_file": "generation_fabric/worker_bee/planner.py",
+    "module_path": "generation_fabric.worker_bee.planner",
+    "source_hash": "sha256:cf328803443d4ced5d9c2fba25dd9957f1a7cac820c6f1b33223745c90892a17",
+    "shape": "sequence-diagram",
+    "summary": "Observed 9 execution(s) in planner.py and projected triggers, data batons, state changes, and returns into Mermaid sequence diagrams."
+  },
+  "inventory": {
+    "rows": [
+      {
+        "label": "Worker Bee Plan Step",
+        "kind": "class",
+        "role": "Worker Bee Plan Step",
+        "responsibility": "Describe one deterministic step in the worker-bee plan",
+        "anchor": "generation_fabric/worker_bee/planner.py:32-38",
+        "line_start": 32,
+        "line_end": 38
+      },
+      {
+        "label": "Worker Bee Generation Packet",
+        "kind": "class",
+        "role": "Worker Bee Generation Packet",
+        "responsibility": "Describe a worker-bee packet that can drive the generation fabric",
+        "anchor": "generation_fabric/worker_bee/planner.py:42-63",
+        "line_start": 42,
+        "line_end": 63
+      },
+      {
+        "label": "Worker Bee Generation Packet To Dict",
+        "kind": "method",
+        "role": "Worker Bee Generation Packet Serializer",
+        "responsibility": "Serialize the packet into a JSON-friendly structure",
+        "anchor": "generation_fabric/worker_bee/planner.py:60-63",
+        "line_start": 60,
+        "line_end": 63
+      },
+      {
+        "label": "Normalize Brief",
+        "kind": "function",
+        "role": "Brief Normalizer",
+        "responsibility": "Normalize whitespace so the packet stays deterministic",
+        "anchor": "generation_fabric/worker_bee/planner.py:66-69",
+        "line_start": 66,
+        "line_end": 69
+      },
+      {
+        "label": "Summarize Brief",
+        "kind": "function",
+        "role": "Brief Summarizer",
+        "responsibility": "Create a short summary of the brief for packet metadata",
+        "anchor": "generation_fabric/worker_bee/planner.py:72-78",
+        "line_start": 72,
+        "line_end": 78
+      },
+      {
+        "label": "Slugify Text",
+        "kind": "function",
+        "role": "Text Slugifier",
+        "responsibility": "Convert arbitrary text into a stable lowercase slug",
+        "anchor": "generation_fabric/worker_bee/planner.py:81-85",
+        "line_start": 81,
+        "line_end": 85
+      },
+      {
+        "label": "Infer Focus",
+        "kind": "function",
+        "role": "Focus Inference",
+        "responsibility": "Infer the dominant fabric surface from the brief",
+        "anchor": "generation_fabric/worker_bee/planner.py:88-114",
+        "line_start": 88,
+        "line_end": 114
+      },
+      {
+        "label": "Explain Focus",
+        "kind": "function",
+        "role": "Focus Explainer",
+        "responsibility": "Explain why the packet resolved to a particular focus",
+        "anchor": "generation_fabric/worker_bee/planner.py:117-129",
+        "line_start": 117,
+        "line_end": 129
+      },
+      {
+        "label": "Build Plan Steps",
+        "kind": "function",
+        "role": "Plan Steps Builder",
+        "responsibility": "Build the deterministic plan steps that every packet follows",
+        "anchor": "generation_fabric/worker_bee/planner.py:132-173",
+        "line_start": 132,
+        "line_end": 173
+      },
+      {
+        "label": "Collect Guardrails",
+        "kind": "function",
+        "role": "Guardrails Collector",
+        "responsibility": "Flatten the strategy guardrails into a packet-level guardrail list",
+        "anchor": "generation_fabric/worker_bee/planner.py:176-191",
+        "line_start": 176,
+        "line_end": 191
+      },
+      {
+        "label": "Build Generation Packet",
+        "kind": "function",
+        "role": "Generation Packet Builder",
+        "responsibility": "Build a deterministic worker-bee packet from a natural-language brief",
+        "anchor": "generation_fabric/worker_bee/planner.py:194-234",
+        "line_start": 194,
+        "line_end": 234
+      }
+    ]
+  },
+  "executions": [
+    {
+      "name": "WorkerBeeGenerationPacket.to_dict",
+      "kind": "method",
+      "signature": "def WorkerBeeGenerationPacket.to_dict(self) -> dict[str, Any]",
+      "docstring": "Serialize the packet into a JSON-friendly structure.",
+      "anchor": "generation_fabric/worker_bee/planner.py:60-63",
+      "line_start": 60,
+      "line_end": 63,
+      "role": "Worker Bee Generation Packet Serializer",
+      "responsibility": "Serialize the packet into a JSON-friendly structure",
+      "participants": [
+        "Caller",
+        "Worker Bee Generation Packet Serializer",
+        "Dataclass Serializer"
+      ],
+      "flow_steps": [
+        "trigger Worker Bee Generation Packet Serializer",
+        "owner Worker Bee Generation Packet",
+        "return to_jsonable_dataclass(self)",
+        "data to_jsonable_dataclass: self"
+      ],
+      "mutations": [],
+      "returns": [
+        "to_jsonable_dataclass(self)"
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Worker_Bee_Generation_Packet_Serializer as Worker Bee Generation Packet Serializer\n    participant Dataclass_Serializer as Dataclass Serializer\n    Caller->>Worker_Bee_Generation_Packet_Serializer: invoke\n    Worker_Bee_Generation_Packet_Serializer->>Dataclass_Serializer: data: self\n    Dataclass_Serializer-->>Worker_Bee_Generation_Packet_Serializer: return\n    Worker_Bee_Generation_Packet_Serializer-->>Caller: return to_jsonable_dataclass(self)",
+      "notes": [
+        "Observed as a method in the code flow.",
+        "Return points detected on lines: 63.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "normalize_brief",
+      "kind": "function",
+      "signature": "def normalize_brief(brief) -> str",
+      "docstring": "Normalize whitespace so the packet stays deterministic.",
+      "anchor": "generation_fabric/worker_bee/planner.py:66-69",
+      "line_start": 66,
+      "line_end": 69,
+      "role": "Brief Normalizer",
+      "responsibility": "Normalize whitespace so the packet stays deterministic",
+      "participants": [
+        "Caller",
+        "Brief Normalizer"
+      ],
+      "flow_steps": [
+        "trigger Brief Normalizer",
+        "return \" \".join(brief.split()).strip()",
+        "no helper calls observed"
+      ],
+      "mutations": [],
+      "returns": [
+        "\" \".join(brief.split()).strip()"
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Brief_Normalizer as Brief Normalizer\n    Caller->>Brief_Normalizer: invoke\n    Brief_Normalizer-->>Caller: return \" \".join(brief.split()).strip()",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Return points detected on lines: 69.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "summarize_brief",
+      "kind": "function",
+      "signature": "def summarize_brief(brief, limit=160) -> str",
+      "docstring": "Create a short summary of the brief for packet metadata.",
+      "anchor": "generation_fabric/worker_bee/planner.py:72-78",
+      "line_start": 72,
+      "line_end": 78,
+      "role": "Brief Summarizer",
+      "responsibility": "Create a short summary of the brief for packet metadata",
+      "participants": [
+        "Caller",
+        "Brief Summarizer",
+        "Brief Normalizer"
+      ],
+      "flow_steps": [
+        "trigger Brief Summarizer",
+        "mutation normalized = normalize_brief(brief)",
+        "data normalize_brief: brief",
+        "branch: if len(normalized) <= limit",
+        "return normalized",
+        "return normalized[: max(0, limit - 3)].rstrip() + \"...\""
+      ],
+      "mutations": [
+        "normalized = normalize_brief(brief)"
+      ],
+      "returns": [
+        "normalized",
+        "normalized[: max(0, limit - 3)].rstrip() + \"...\""
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Brief_Summarizer as Brief Summarizer\n    participant Brief_Normalizer as Brief Normalizer\n    Caller->>Brief_Summarizer: invoke\n    note over Brief_Summarizer: mutation observed - normalized = normalize_brief(brief)\n    Brief_Summarizer->>Brief_Normalizer: data: brief\n    Brief_Normalizer-->>Brief_Summarizer: return\n    note over Brief_Summarizer: if len(normalized) <= limit branch observed\n    Brief_Summarizer-->>Caller: return normalized[: max(0, limit - 3)].rstrip() + \"...\"",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Branch markers detected: if.",
+        "Captured 1 condition(s) for reuse by the worker bee.",
+        "Captured 1 state change(s) for the execution path.",
+        "Return points detected on lines: 77, 78.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "slugify_text",
+      "kind": "function",
+      "signature": "def slugify_text(text) -> str",
+      "docstring": "Convert arbitrary text into a stable lowercase slug.",
+      "anchor": "generation_fabric/worker_bee/planner.py:81-85",
+      "line_start": 81,
+      "line_end": 85,
+      "role": "Text Slugifier",
+      "responsibility": "Convert arbitrary text into a stable lowercase slug",
+      "participants": [
+        "Caller",
+        "Text Slugifier",
+        "Regex Engine"
+      ],
+      "flow_steps": [
+        "trigger Text Slugifier",
+        "mutation slug = re.sub(r\"[^a-z0-9]+\", \"-\", text.lower()).strip(\"-\")",
+        "data re.sub: r\"[^a-z0-9]+\", \"-\", text.lower()",
+        "return slug or \"worker-bee\""
+      ],
+      "mutations": [
+        "slug = re.sub(r\"[^a-z0-9]+\", \"-\", text.lower()).strip(\"-\")"
+      ],
+      "returns": [
+        "slug or \"worker-bee\""
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Text_Slugifier as Text Slugifier\n    participant Regex_Engine as Regex Engine\n    Caller->>Text_Slugifier: invoke\n    note over Text_Slugifier: mutation observed - slug = re.sub(r\"[^a-z0-9]+\", \"-\", text.lower()).strip(\"-\")\n    Text_Slugifier->>Regex_Engine: data: r\"[^a-z0-9]+\", \"-\", text.lower()\n    Regex_Engine-->>Text_Slugifier: return\n    Text_Slugifier-->>Caller: return slug or \"worker-bee\"",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Captured 1 state change(s) for the execution path.",
+        "Return points detected on lines: 85.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "infer_focus",
+      "kind": "function",
+      "signature": "def infer_focus(brief) -> str",
+      "docstring": "Infer the dominant fabric surface from the brief.",
+      "anchor": "generation_fabric/worker_bee/planner.py:88-114",
+      "line_start": 88,
+      "line_end": 114,
+      "role": "Focus Inference",
+      "responsibility": "Infer the dominant fabric surface from the brief",
+      "participants": [
+        "Caller",
+        "Focus Inference",
+        "Brief Normalizer"
+      ],
+      "flow_steps": [
+        "trigger Focus Inference",
+        "mutation normalized = normalize_brief(brief).lower()",
+        "data normalize_brief: brief",
+        "mutation scores = {\"markdown\": 0, \"schema\": 0, \"json\": 0}",
+        "branch: for token in ('markdown', 'readme', 'docs', 'documentation', 'document', 'diagram', 'workflow')",
+        "branch: if token in normalized",
+        "mutation scores[\"markdown\"] add= 1",
+        "branch: for token in ('schema', 'contract', 'contract-backed', 'shape', 'structure', 'validation')",
+        "branch: if token in normalized",
+        "mutation scores[\"schema\"] add= 1",
+        "branch: for token in ('json', 'payload', 'sample', 'instance', 'data')",
+        "branch: if token in normalized",
+        "mutation scores[\"json\"] add= 1",
+        "mutation best_score = max(scores.values())",
+        "branch: if best_score == 0",
+        "return \"markdown\"",
+        "branch: for focus in ('markdown', 'schema', 'json')",
+        "branch: if scores[focus] == best_score",
+        "return focus",
+        "return \"markdown\""
+      ],
+      "mutations": [
+        "normalized = normalize_brief(brief).lower()",
+        "scores = {\"markdown\": 0, \"schema\": 0, \"json\": 0}",
+        "scores[\"markdown\"] add= 1",
+        "scores[\"schema\"] add= 1",
+        "scores[\"json\"] add= 1",
+        "best_score = max(scores.values())"
+      ],
+      "returns": [
+        "\"markdown\"",
+        "focus"
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Focus_Inference as Focus Inference\n    participant Brief_Normalizer as Brief Normalizer\n    Caller->>Focus_Inference: invoke\n    note over Focus_Inference: mutation observed - normalized = normalize_brief(brief).lower()\n    Focus_Inference->>Brief_Normalizer: data: brief\n    Brief_Normalizer-->>Focus_Inference: return\n    note over Focus_Inference: mutation observed - scores = {\"markdown\": 0, \"schema\": 0, \"json\": 0}\n    note over Focus_Inference: for token in ('markdown', 'readme', 'docs', 'documentation', 'document', 'diagram', 'workflow') branch observed\n    note over Focus_Inference: if token in normalized branch observed\n    note over Focus_Inference: mutation observed - scores[\"markdown\"] add= 1\n    note over Focus_Inference: for token in ('schema', 'contract', 'contract-backed', 'shape', 'structure', 'validation') branch observed\n    note over Focus_Inference: if token in normalized branch observed\n    note over Focus_Inference: mutation observed - scores[\"schema\"] add= 1\n    note over Focus_Inference: for token in ('json', 'payload', 'sample', 'instance', 'data') branch observed\n    note over Focus_Inference: if token in normalized branch observed\n    note over Focus_Inference: mutation observed - scores[\"json\"] add= 1\n    note over Focus_Inference: mutation observed - best_score = max(scores.values())\n    note over Focus_Inference: if best_score == 0 branch observed\n    note over Focus_Inference: for focus in ('markdown', 'schema', 'json') branch observed\n    note over Focus_Inference: if scores[focus] == best_score branch observed\n    Focus_Inference-->>Caller: return \"markdown\"",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Branch markers detected: for, if.",
+        "Captured 9 condition(s) for reuse by the worker bee.",
+        "Captured 6 state change(s) for the execution path.",
+        "Return points detected on lines: 108, 112, 114.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "explain_focus",
+      "kind": "function",
+      "signature": "def explain_focus(brief, focus) -> str",
+      "docstring": "Explain why the packet resolved to a particular focus.",
+      "anchor": "generation_fabric/worker_bee/planner.py:117-129",
+      "line_start": 117,
+      "line_end": 129,
+      "role": "Focus Explainer",
+      "responsibility": "Explain why the packet resolved to a particular focus",
+      "participants": [
+        "Caller",
+        "Focus Explainer",
+        "Brief Normalizer"
+      ],
+      "flow_steps": [
+        "trigger Focus Explainer",
+        "mutation normalized = normalize_brief(brief).lower()",
+        "data normalize_brief: brief",
+        "branch: if focus == \"markdown\"",
+        "branch: if any(token in normalized for token in (\"markdown\", \"readme\", \"docs\", \"documentation\", \"document\"))",
+        "return \"brief references markdown-oriented documentation\"",
+        "return \"no stronger surface signal was present, so markdown is the default\"",
+        "branch: if focus == \"schema\"",
+        "return \"brief references schema, contract, or validation language\"",
+        "branch: if focus == \"json\"",
+        "return \"brief references JSON, payload, or sample-data language\"",
+        "return \"focus was supplied explicitly\""
+      ],
+      "mutations": [
+        "normalized = normalize_brief(brief).lower()"
+      ],
+      "returns": [
+        "\"brief references markdown-oriented documentation\"",
+        "\"no stronger surface signal was present, so markdown is the default\"",
+        "\"brief references schema, contract, or validation language\"",
+        "\"brief references JSON, payload, or sample-data language\"",
+        "\"focus was supplied explicitly\""
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Focus_Explainer as Focus Explainer\n    participant Brief_Normalizer as Brief Normalizer\n    Caller->>Focus_Explainer: invoke\n    note over Focus_Explainer: mutation observed - normalized = normalize_brief(brief).lower()\n    Focus_Explainer->>Brief_Normalizer: data: brief\n    Brief_Normalizer-->>Focus_Explainer: return\n    note over Focus_Explainer: if focus == \"markdown\" branch observed\n    note over Focus_Explainer: if any(token in normalized for token in (\"markdown\", \"readme\", \"docs\", \"documentation\", \"document\")) branch observed\n    note over Focus_Explainer: if focus == \"schema\" branch observed\n    note over Focus_Explainer: if focus == \"json\" branch observed\n    Focus_Explainer-->>Caller: return \"focus was supplied explicitly\"",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Branch markers detected: if.",
+        "Captured 4 condition(s) for reuse by the worker bee.",
+        "Captured 1 state change(s) for the execution path.",
+        "Return points detected on lines: 123, 124, 126, 128, 129.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "build_plan_steps",
+      "kind": "function",
+      "signature": "def build_plan_steps(focus) -> tuple[WorkerBeePlanStep, ...]",
+      "docstring": "Build the deterministic plan steps that every packet follows.",
+      "anchor": "generation_fabric/worker_bee/planner.py:132-173",
+      "line_start": 132,
+      "line_end": 173,
+      "role": "Plan Steps Builder",
+      "responsibility": "Build the deterministic plan steps that every packet follows",
+      "participants": [
+        "Caller",
+        "Plan Steps Builder",
+        "Worker Bee Plan Step"
+      ],
+      "flow_steps": [
+        "trigger Plan Steps Builder",
+        "mutation focus_label = focus or \"markdown\"",
+        "return ( WorkerBeePlanStep( order=1, name=\"capture_brief\", purpose=\"preserve the request as an immutable planning input\", ar...",
+        "data WorkerBeePlanStep: order=1, name=\"capture_brief\", purpose=\"preserve the request as an i...",
+        "data WorkerBeePlanStep: order=2, name=\"resolve_focus\", purpose=f\"select the primary fabric s...",
+        "data WorkerBeePlanStep: order=3, name=\"derive_contract\", purpose=\"shape the JSON Schema contra...",
+        "data WorkerBeePlanStep: order=4, name=\"derive_json\", purpose=\"prepare the JSON sample that...",
+        "data WorkerBeePlanStep: order=5, name=\"render_markdown\", purpose=\"render the Markdown artifact...",
+        "data WorkerBeePlanStep: order=6, name=\"validate_round_trip\", purpose=\"prove the packet is coherent..."
+      ],
+      "mutations": [
+        "focus_label = focus or \"markdown\""
+      ],
+      "returns": [
+        "( WorkerBeePlanStep( order=1, name=\"capture_brief\", purpose=\"preserve the request as an immutable planning input\", ar..."
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Plan_Steps_Builder as Plan Steps Builder\n    participant Worker_Bee_Plan_Step as Worker Bee Plan Step\n    Caller->>Plan_Steps_Builder: invoke\n    note over Plan_Steps_Builder: mutation observed - focus_label = focus or \"markdown\"\n    Plan_Steps_Builder->>Worker_Bee_Plan_Step: data: order=1, name=\"capture_brief\", purpose=\"preserve the request as an i...\n    Worker_Bee_Plan_Step-->>Plan_Steps_Builder: return\n    Plan_Steps_Builder->>Worker_Bee_Plan_Step: data: order=2, name=\"resolve_focus\", purpose=f\"select the primary fabric s...\n    Worker_Bee_Plan_Step-->>Plan_Steps_Builder: return\n    Plan_Steps_Builder->>Worker_Bee_Plan_Step: data: order=3, name=\"derive_contract\", purpose=\"shape the JSON Schema contra...\n    Worker_Bee_Plan_Step-->>Plan_Steps_Builder: return\n    Plan_Steps_Builder->>Worker_Bee_Plan_Step: data: order=4, name=\"derive_json\", purpose=\"prepare the JSON sample that...\n    Worker_Bee_Plan_Step-->>Plan_Steps_Builder: return\n    Plan_Steps_Builder->>Worker_Bee_Plan_Step: data: order=5, name=\"render_markdown\", purpose=\"render the Markdown artifact...\n    Worker_Bee_Plan_Step-->>Plan_Steps_Builder: return\n    Plan_Steps_Builder->>Worker_Bee_Plan_Step: data: order=6, name=\"validate_round_trip\", purpose=\"prove the packet is coherent...\n    Worker_Bee_Plan_Step-->>Plan_Steps_Builder: return\n    Plan_Steps_Builder-->>Caller: return ( WorkerBeePlanStep( order=1, name=\"capture_brief\", purpose=\"preserve the request as an immutable planning input\", ar...",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Captured 1 state change(s) for the execution path.",
+        "Return points detected on lines: 136.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "collect_guardrails",
+      "kind": "function",
+      "signature": "def collect_guardrails(strategy) -> tuple[str, ...]",
+      "docstring": "Flatten the strategy guardrails into a packet-level guardrail list.",
+      "anchor": "generation_fabric/worker_bee/planner.py:176-191",
+      "line_start": 176,
+      "line_end": 191,
+      "role": "Guardrails Collector",
+      "responsibility": "Flatten the strategy guardrails into a packet-level guardrail list",
+      "participants": [
+        "Caller",
+        "Guardrails Collector"
+      ],
+      "flow_steps": [
+        "trigger Guardrails Collector",
+        "mutation ordered_guardrails: list[str] = [ \"planner_proposes_only\", \"planner_does_not_write_files\", \"generated_output_...",
+        "branch: for phase in strategy.phases",
+        "mutation deduped: dict[str, None] = {}",
+        "branch: for guardrail in ordered_guardrails",
+        "return tuple(deduped.keys())",
+        "no helper calls observed"
+      ],
+      "mutations": [
+        "ordered_guardrails: list[str] = [ \"planner_proposes_only\", \"planner_does_not_write_files\", \"generated_output_...",
+        "deduped: dict[str, None] = {}"
+      ],
+      "returns": [
+        "tuple(deduped.keys())"
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Guardrails_Collector as Guardrails Collector\n    Caller->>Guardrails_Collector: invoke\n    note over Guardrails_Collector: mutation observed - ordered_guardrails: list[str] = [ \"planner_proposes_only\", \"planner_does_not_write_files\", \"generated_output_...\n    note over Guardrails_Collector: for phase in strategy.phases branch observed\n    note over Guardrails_Collector: mutation observed - deduped: dict[str, None] = {}\n    note over Guardrails_Collector: for guardrail in ordered_guardrails branch observed\n    Guardrails_Collector-->>Caller: return tuple(deduped.keys())",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Branch markers detected: for.",
+        "Captured 2 condition(s) for reuse by the worker bee.",
+        "Captured 2 state change(s) for the execution path.",
+        "Return points detected on lines: 191.",
+        "Docstring captured as part of the contract."
+      ]
+    },
+    {
+      "name": "build_generation_packet",
+      "kind": "function",
+      "signature": "def build_generation_packet(brief, base_name='', focus='') -> WorkerBeeGenerationPacket",
+      "docstring": "Build a deterministic worker-bee packet from a natural-language brief.",
+      "anchor": "generation_fabric/worker_bee/planner.py:194-234",
+      "line_start": 194,
+      "line_end": 234,
+      "role": "Generation Packet Builder",
+      "responsibility": "Build a deterministic worker-bee packet from a natural-language brief",
+      "participants": [
+        "Caller",
+        "Generation Packet Builder",
+        "Brief Normalizer",
+        "Focus Inference",
+        "Default Worker Bee Strategy Builder",
+        "Text Slugifier",
+        "Sha256",
+        "Focus Explainer",
+        "Worker Bee Generation Packet",
+        "Brief Summarizer",
+        "Plan Steps Builder",
+        "Guardrails Collector"
+      ],
+      "flow_steps": [
+        "trigger Generation Packet Builder",
+        "mutation normalized_brief = normalize_brief(brief)",
+        "data normalize_brief: brief",
+        "branch: if not normalized_brief",
+        "mutation resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)",
+        "data normalize_brief: focus",
+        "data infer_focus: normalized_brief",
+        "branch: if resolved_focus not in {\"markdown\", \"schema\", \"json\"}",
+        "mutation strategy = build_default_worker_bee_strategy()",
+        "trigger build_default_worker_bee_strategy",
+        "mutation resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)",
+        "data slugify_text: base_name",
+        "data slugify_text: normalized_brief",
+        "mutation digest_source = \"|\".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...",
+        "mutation packet_id = f\"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...",
+        "data sha256: digest_source.encode('utf-8')",
+        "mutation metadata = { \"source\": \"generation_fabric.worker_bee.planner\", \"brief_length\": len(norma...",
+        "data explain_focus: normalized_brief, resolved_focus",
+        "return WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...",
+        "data WorkerBeeGenerationPacket: packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id",
+        "data summarize_brief: normalized_brief",
+        "data build_plan_steps: resolved_focus",
+        "data collect_guardrails: strategy"
+      ],
+      "mutations": [
+        "normalized_brief = normalize_brief(brief)",
+        "resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)",
+        "strategy = build_default_worker_bee_strategy()",
+        "resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)",
+        "digest_source = \"|\".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...",
+        "packet_id = f\"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...",
+        "metadata = { \"source\": \"generation_fabric.worker_bee.planner\", \"brief_length\": len(norma..."
+      ],
+      "returns": [
+        "WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali..."
+      ],
+      "mermaid": "sequenceDiagram\n    participant Caller\n    participant Generation_Packet_Builder as Generation Packet Builder\n    participant Brief_Normalizer as Brief Normalizer\n    participant Focus_Inference as Focus Inference\n    participant Default_Worker_Bee_Strategy_Builder as Default Worker Bee Strategy Builder\n    participant Text_Slugifier as Text Slugifier\n    participant Sha256 as Sha256\n    participant Focus_Explainer as Focus Explainer\n    participant Worker_Bee_Generation_Packet as Worker Bee Generation Packet\n    participant Brief_Summarizer as Brief Summarizer\n    participant Plan_Steps_Builder as Plan Steps Builder\n    participant Guardrails_Collector as Guardrails Collector\n    Caller->>Generation_Packet_Builder: invoke\n    note over Generation_Packet_Builder: mutation observed - normalized_brief = normalize_brief(brief)\n    Generation_Packet_Builder->>Brief_Normalizer: data: brief\n    Brief_Normalizer-->>Generation_Packet_Builder: return\n    note over Generation_Packet_Builder: if not normalized_brief branch observed\n    note over Generation_Packet_Builder: mutation observed - resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)\n    Generation_Packet_Builder->>Brief_Normalizer: data: focus\n    Brief_Normalizer-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder->>Focus_Inference: data: normalized_brief\n    Focus_Inference-->>Generation_Packet_Builder: return\n    note over Generation_Packet_Builder: if resolved_focus not in {\"markdown\", \"schema\", \"json\"} branch observed\n    note over Generation_Packet_Builder: mutation observed - strategy = build_default_worker_bee_strategy()\n    Generation_Packet_Builder->>Default_Worker_Bee_Strategy_Builder: trigger\n    Default_Worker_Bee_Strategy_Builder-->>Generation_Packet_Builder: return\n    note over Generation_Packet_Builder: mutation observed - resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)\n    Generation_Packet_Builder->>Text_Slugifier: data: base_name\n    Text_Slugifier-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder->>Text_Slugifier: data: normalized_brief\n    Text_Slugifier-->>Generation_Packet_Builder: return\n    note over Generation_Packet_Builder: mutation observed - digest_source = \"|\".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...\n    note over Generation_Packet_Builder: mutation observed - packet_id = f\"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...\n    Generation_Packet_Builder->>Sha256: data: digest_source.encode('utf-8')\n    Sha256-->>Generation_Packet_Builder: return\n    note over Generation_Packet_Builder: mutation observed - metadata = { \"source\": \"generation_fabric.worker_bee.planner\", \"brief_length\": len(norma...\n    Generation_Packet_Builder->>Focus_Explainer: data: normalized_brief, resolved_focus\n    Focus_Explainer-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder->>Worker_Bee_Generation_Packet: data: packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id\n    Worker_Bee_Generation_Packet-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder->>Brief_Summarizer: data: normalized_brief\n    Brief_Summarizer-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder->>Plan_Steps_Builder: data: resolved_focus\n    Plan_Steps_Builder-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder->>Guardrails_Collector: data: strategy\n    Guardrails_Collector-->>Generation_Packet_Builder: return\n    Generation_Packet_Builder-->>Caller: return WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...",
+      "notes": [
+        "Observed as a function in the code flow.",
+        "Branch markers detected: if.",
+        "Captured 2 condition(s) for reuse by the worker bee.",
+        "Captured 7 state change(s) for the execution path.",
+        "Return points detected on lines: 219.",
+        "Docstring captured as part of the contract."
+      ]
+    }
+  ],
+  "notes": [
+    "The worker bee extracts a shape from code before rendering any Markdown.",
+    "The code inventory anchors declarations, while executions show triggers, data batons, mutations, and returns."
+  ]
+}

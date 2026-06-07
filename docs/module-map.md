@@ -47,6 +47,7 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/worker_bee/provider.py`: provider-backed planning proposal helpers and the deterministic local provider adapter.
 - `generation_fabric/worker_bee/taxonomy.py`: deterministic source-file scan that extracts the reusable code taxonomy before observation or review.
 - `generation_fabric/worker_bee/observation.py`: code-observation helpers that turn Python execution paths into Mermaid sequence-diagram Markdown.
+- `generation_fabric/worker_bee/observation_playback.py`: deterministic playback-step extraction for observability HTML.
 - `generation_fabric/worker_bee/object_coherence.py`: deterministic object-oriented coherence checks and design-pattern classification for the worker-bee observability layer.
 - `generation_fabric/worker_bee/object_diagram.py`: deterministic Mermaid class-diagram rendering from the object-model taxonomy.
 - `generation_fabric/worker_bee/object_model.py`: deterministic object-model scan and contract-backed report builder for Python source files.
@@ -72,6 +73,8 @@ This repository is organized so the file names tell the implementation story.
 ## HTML
 
 - `generation_fabric/html/renderer.py`: deterministic semantic HTML rendering from a schema contract using the `x-html` annotation namespace.
+- `generation_fabric/html/markdown_page.py`: Markdown-to-HTML projection that preserves fenced Mermaid blocks and wraps contract reports in a standalone HTML page.
+- `generation_fabric/html/observability_page.py`: worker-bee observability wrapper that binds Markdown, JSON sidecars, and playback controls into one HTML projection.
 
 ## CSS
 
@@ -129,6 +132,8 @@ This repository is organized so the file names tell the implementation story.
 - `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
 - `tests/test_worker_bee_executor.py`: coverage for the worker-bee executor and document generation command.
 - `tests/test_worker_bee_object_model.py`: coverage for object-model scanning, report rendering, and the `worker-bee-object-model` command.
+- `tests/test_observation_playback.py`: coverage for deterministic worker-bee playback track extraction.
+- `tests/test_observability_html.py`: coverage for the observability HTML sidecar and the `worker-bee-observe-html` command.
 - `tests/test_layout_ascii.py`: coverage for ASCII sketch parsing, the zone taxonomy contract, HTML rendering, and the `ascii-zones`/`layout-html` commands.
 - `tests/test_layout_box_model.py`: coverage for box-model derivation and the `layout-boxes` command.
 - `tests/test_layout_inventory.py`: coverage for layout reuse inventory reporting and the `layout-inventory` command.

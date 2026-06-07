@@ -1,13 +1,13 @@
-"""Semantic HTML rendering target for Generation Fabric.
+"""Semantic HTML rendering targets for Generation Fabric."""
 
-The HTML renderer mirrors the Markdown renderer: it walks a JSON Schema contract
-plus matching data and emits a derived artifact, dispatching on the ``x-html``
-annotation namespace.
-"""
-
+from .markdown_page import render_markdown_html_document
+from .observability_page import render_observability_html_document, write_observability_html_document
 from .renderer import render_html_body, render_html_document
 
 __all__ = [
+    "render_markdown_html_document",
+    "render_observability_html_document",
     "render_html_body",
     "render_html_document",
+    "write_observability_html_document",
 ]

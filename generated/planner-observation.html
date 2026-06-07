@@ -1,0 +1,3137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Observation: planner</title>
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-soft: #eef2f8;
+  --border: #d6dce8;
+  --border-strong: #b8c1d3;
+  --text: #17202f;
+  --muted: #5c6677;
+  --accent: #2457ff;
+  --accent-soft: rgba(36, 87, 255, 0.12);
+  --call: #2457ff;
+  --data: #0f9bb7;
+  --mutation: #d97706;
+  --branch: #7c3aed;
+  --return: #16a34a;
+  --error: #dc2626;
+  --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.observability-page {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+.markdown-page {
+  display: block;
+  padding: 1rem;
+}
+
+.markdown-page > .markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.execution-panel,
+.markdown-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.execution-panel {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem;
+}
+
+.panel-header {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.panel-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.panel-summary {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.playback-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.playback-toolbar button,
+.playback-toolbar select {
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+}
+
+.playback-toolbar button {
+  cursor: pointer;
+}
+
+.playback-toolbar button:hover,
+.playback-toolbar button:focus-visible,
+.execution-track:hover,
+.execution-track:focus-visible,
+.step-card:hover,
+.step-card:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.speed-control {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.active-step-panel,
+.execution-list-section,
+.step-list-section {
+  margin-top: 1rem;
+}
+
+.active-step-panel h2,
+.execution-list-section h2,
+.step-list-section h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.98rem;
+}
+
+.section-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.step-details {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.step-details > div {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.step-details dt {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.step-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.execution-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.execution-track {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text);
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.execution-track.is-active {
+  border-color: var(--accent);
+  background: #eef4ff;
+}
+
+.execution-track__title {
+  display: block;
+  font-weight: 650;
+}
+
+.execution-track__meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.step-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step-card {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.step-card.is-active {
+  border-color: var(--accent);
+  background: #f0f4ff;
+}
+
+.step-card__top {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-card__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.step-card__message {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.step-card__route {
+  font-weight: 600;
+}
+
+.markdown-body {
+  padding: clamp(1rem, 2.2vw, 2rem);
+  overflow: hidden;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-heading {
+  scroll-margin-top: 1rem;
+}
+
+.markdown-paragraph {
+  margin: 0.85rem 0;
+}
+
+.markdown-list,
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.4rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.markdown-list li,
+.markdown-body li {
+  margin: 0.35rem 0;
+}
+
+.markdown-blockquote {
+  margin: 1rem 0;
+  padding: 0.15rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: #f7f9ff;
+  color: var(--muted);
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.94rem;
+}
+
+.markdown-table th,
+.markdown-table td {
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.7rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.markdown-table th {
+  background: #f0f4ff;
+}
+
+.markdown-code,
+.mermaid-source {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.markdown-code code,
+.mermaid-source code {
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.diagram-shell {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.diagram-shell.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.diagram-shell .mermaid {
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+
+.diagram-source summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.diagram-source[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+.diagram-source pre {
+  margin: 0;
+}
+
+.call-step {
+  border-left-color: var(--call);
+}
+
+.data-step {
+  border-left-color: var(--data);
+}
+
+.mutation-step {
+  border-left-color: var(--mutation);
+}
+
+.branch-step {
+  border-left-color: var(--branch);
+}
+
+.return-step {
+  border-left-color: var(--return);
+}
+
+.idle-step {
+  border-left-color: var(--border-strong);
+}
+
+.error-step {
+  border-left-color: var(--error);
+}
+
+@media (max-width: 1080px) {
+  .observability-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-panel {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .observability-page,
+  .markdown-page {
+    padding: 0.65rem;
+  }
+
+  .step-details > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+  </style>
+</head>
+<body class="observability-page">
+<main class="observability-page">
+  <aside class="execution-panel">
+    <div class="panel-header">
+      <p class="eyebrow">Execution Playback</p>
+      <h1 id="active-execution-title">Loading playback...</h1>
+      <p id="active-execution-meta" class="panel-summary">Mermaid diagrams and execution steps will appear here.</p>
+    </div>
+    <div class="playback-toolbar" role="group" aria-label="Playback controls">
+      <button type="button" data-action="previous">Previous</button>
+      <button type="button" data-action="play">Play</button>
+      <button type="button" data-action="pause">Pause</button>
+      <button type="button" data-action="next">Next</button>
+      <button type="button" data-action="reset">Reset</button>
+      <label class="speed-control">
+        Speed
+        <select id="playback-speed">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+      </label>
+    </div>
+    <section class="active-step-panel">
+      <h2>Active Step</h2>
+      <dl class="step-details">
+        <div><dt>Type</dt><dd id="active-step-type">—</dd></div>
+        <div><dt>Label</dt><dd id="active-step-label">—</dd></div>
+        <div><dt>Source</dt><dd id="active-step-source">—</dd></div>
+        <div><dt>Target</dt><dd id="active-step-target">—</dd></div>
+        <div><dt>Message</dt><dd id="active-step-message">—</dd></div>
+        <div><dt>Anchor</dt><dd id="active-step-anchor">—</dd></div>
+        <div><dt>Duration</dt><dd id="active-step-duration">—</dd></div>
+      </dl>
+    </section>
+    <section class="execution-list-section">
+      <h2>Executions <span class="section-count">(9)</span></h2>
+      <div class="execution-list" id="execution-list" data-track-count="9">
+      </div>
+    </section>
+    <section class="step-list-section">
+      <h2>Steps <span class="section-count">(119)</span></h2>
+      <ol class="step-list" id="step-list" data-step-count="119">
+      </ol>
+    </section>
+  </aside>
+  <article class="markdown-body">
+<h1 class="markdown-heading">Code Observation: planner</h1>
+<p class="markdown-paragraph">A contract-backed code observation that inventories the source file before rendering the observed executions, data batons, state changes, and returns as Mermaid sequence diagrams.</p>
+<h2 class="markdown-heading">Overview</h2>
+<p class="markdown-paragraph"><strong>source_file</strong>: generation_fabric/worker_bee/planner.py</p>
+<p class="markdown-paragraph"><strong>module_path</strong>: generation_fabric.worker_bee.planner</p>
+<p class="markdown-paragraph"><strong>source_hash</strong>: sha256:cf328803443d4ced5d9c2fba25dd9957f1a7cac820c6f1b33223745c90892a17</p>
+<p class="markdown-paragraph"><strong>shape</strong>: sequence-diagram</p>
+<p class="markdown-paragraph">Observed 9 execution(s) in planner.py and projected triggers, data batons, state changes, and returns into Mermaid sequence diagrams.</p>
+<h2 class="markdown-heading">Code Inventory</h2>
+<table class="markdown-table">
+  <thead>
+    <tr>
+      <th>label</th>
+      <th>kind</th>
+      <th>role</th>
+      <th>responsibility</th>
+      <th>anchor</th>
+      <th>line_start</th>
+      <th>line_end</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Worker Bee Plan Step</td>
+      <td>class</td>
+      <td>Worker Bee Plan Step</td>
+      <td>Describe one deterministic step in the worker-bee plan</td>
+      <td>generation_fabric/worker_bee/planner.py:32-38</td>
+      <td>32</td>
+      <td>38</td>
+    </tr>
+    <tr>
+      <td>Worker Bee Generation Packet</td>
+      <td>class</td>
+      <td>Worker Bee Generation Packet</td>
+      <td>Describe a worker-bee packet that can drive the generation fabric</td>
+      <td>generation_fabric/worker_bee/planner.py:42-63</td>
+      <td>42</td>
+      <td>63</td>
+    </tr>
+    <tr>
+      <td>Worker Bee Generation Packet To Dict</td>
+      <td>method</td>
+      <td>Worker Bee Generation Packet Serializer</td>
+      <td>Serialize the packet into a JSON-friendly structure</td>
+      <td>generation_fabric/worker_bee/planner.py:60-63</td>
+      <td>60</td>
+      <td>63</td>
+    </tr>
+    <tr>
+      <td>Normalize Brief</td>
+      <td>function</td>
+      <td>Brief Normalizer</td>
+      <td>Normalize whitespace so the packet stays deterministic</td>
+      <td>generation_fabric/worker_bee/planner.py:66-69</td>
+      <td>66</td>
+      <td>69</td>
+    </tr>
+    <tr>
+      <td>Summarize Brief</td>
+      <td>function</td>
+      <td>Brief Summarizer</td>
+      <td>Create a short summary of the brief for packet metadata</td>
+      <td>generation_fabric/worker_bee/planner.py:72-78</td>
+      <td>72</td>
+      <td>78</td>
+    </tr>
+    <tr>
+      <td>Slugify Text</td>
+      <td>function</td>
+      <td>Text Slugifier</td>
+      <td>Convert arbitrary text into a stable lowercase slug</td>
+      <td>generation_fabric/worker_bee/planner.py:81-85</td>
+      <td>81</td>
+      <td>85</td>
+    </tr>
+    <tr>
+      <td>Infer Focus</td>
+      <td>function</td>
+      <td>Focus Inference</td>
+      <td>Infer the dominant fabric surface from the brief</td>
+      <td>generation_fabric/worker_bee/planner.py:88-114</td>
+      <td>88</td>
+      <td>114</td>
+    </tr>
+    <tr>
+      <td>Explain Focus</td>
+      <td>function</td>
+      <td>Focus Explainer</td>
+      <td>Explain why the packet resolved to a particular focus</td>
+      <td>generation_fabric/worker_bee/planner.py:117-129</td>
+      <td>117</td>
+      <td>129</td>
+    </tr>
+    <tr>
+      <td>Build Plan Steps</td>
+      <td>function</td>
+      <td>Plan Steps Builder</td>
+      <td>Build the deterministic plan steps that every packet follows</td>
+      <td>generation_fabric/worker_bee/planner.py:132-173</td>
+      <td>132</td>
+      <td>173</td>
+    </tr>
+    <tr>
+      <td>Collect Guardrails</td>
+      <td>function</td>
+      <td>Guardrails Collector</td>
+      <td>Flatten the strategy guardrails into a packet-level guardrail list</td>
+      <td>generation_fabric/worker_bee/planner.py:176-191</td>
+      <td>176</td>
+      <td>191</td>
+    </tr>
+    <tr>
+      <td>Build Generation Packet</td>
+      <td>function</td>
+      <td>Generation Packet Builder</td>
+      <td>Build a deterministic worker-bee packet from a natural-language brief</td>
+      <td>generation_fabric/worker_bee/planner.py:194-234</td>
+      <td>194</td>
+      <td>234</td>
+    </tr>
+  </tbody>
+</table>
+<h2 class="markdown-heading">Executions</h2>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: WorkerBeeGenerationPacket.to_dict</p>
+<p class="markdown-paragraph"><strong>kind</strong>: method</p>
+<p class="markdown-paragraph"><strong>role</strong>: Worker Bee Generation Packet Serializer</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Serialize the packet into a JSON-friendly structure</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:60-63</p>
+<pre class="markdown-code" data-language="python"><code>def WorkerBeeGenerationPacket.to_dict(self) -&gt; dict[str, Any]</code></pre>
+<p class="markdown-paragraph">Serialize the packet into a JSON-friendly structure.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Worker Bee Generation Packet Serializer</li>
+  <li>Dataclass Serializer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Worker Bee Generation Packet Serializer</li>
+  <li>owner Worker Bee Generation Packet</li>
+  <li>return to_jsonable_dataclass(self)</li>
+  <li>data to_jsonable_dataclass: self</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">to_jsonable_dataclass(self)</p>
+<div class="diagram-shell" data-diagram-index="1">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Worker_Bee_Generation_Packet_Serializer as Worker Bee Generation Packet Serializer
+    participant Dataclass_Serializer as Dataclass Serializer
+    Caller-&gt;&gt;Worker_Bee_Generation_Packet_Serializer: invoke
+    Worker_Bee_Generation_Packet_Serializer-&gt;&gt;Dataclass_Serializer: data: self
+    Dataclass_Serializer--&gt;&gt;Worker_Bee_Generation_Packet_Serializer: return
+    Worker_Bee_Generation_Packet_Serializer--&gt;&gt;Caller: return to_jsonable_dataclass(self)</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="1">sequenceDiagram
+    participant Caller
+    participant Worker_Bee_Generation_Packet_Serializer as Worker Bee Generation Packet Serializer
+    participant Dataclass_Serializer as Dataclass Serializer
+    Caller-&gt;&gt;Worker_Bee_Generation_Packet_Serializer: invoke
+    Worker_Bee_Generation_Packet_Serializer-&gt;&gt;Dataclass_Serializer: data: self
+    Dataclass_Serializer--&gt;&gt;Worker_Bee_Generation_Packet_Serializer: return
+    Worker_Bee_Generation_Packet_Serializer--&gt;&gt;Caller: return to_jsonable_dataclass(self)</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a method in the code flow.</li>
+  <li>Return points detected on lines: 63.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: normalize_brief</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Brief Normalizer</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Normalize whitespace so the packet stays deterministic</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:66-69</p>
+<pre class="markdown-code" data-language="python"><code>def normalize_brief(brief) -&gt; str</code></pre>
+<p class="markdown-paragraph">Normalize whitespace so the packet stays deterministic.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Brief Normalizer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Brief Normalizer</li>
+  <li>return " ".join(brief.split()).strip()</li>
+  <li>no helper calls observed</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">" ".join(brief.split()).strip()</p>
+<div class="diagram-shell" data-diagram-index="2">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Brief_Normalizer: invoke
+    Brief_Normalizer--&gt;&gt;Caller: return " ".join(brief.split()).strip()</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="2">sequenceDiagram
+    participant Caller
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Brief_Normalizer: invoke
+    Brief_Normalizer--&gt;&gt;Caller: return " ".join(brief.split()).strip()</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Return points detected on lines: 69.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: summarize_brief</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Brief Summarizer</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Create a short summary of the brief for packet metadata</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:72-78</p>
+<pre class="markdown-code" data-language="python"><code>def summarize_brief(brief, limit=160) -&gt; str</code></pre>
+<p class="markdown-paragraph">Create a short summary of the brief for packet metadata.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Brief Summarizer</li>
+  <li>Brief Normalizer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Brief Summarizer</li>
+  <li>mutation normalized = normalize_brief(brief)</li>
+  <li>data normalize_brief: brief</li>
+  <li>branch: if len(normalized) &lt;= limit</li>
+  <li>return normalized</li>
+  <li>return normalized[: max(0, limit - 3)].rstrip() + "..."</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">normalized = normalize_brief(brief)</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">normalized</p>
+<p class="markdown-paragraph">normalized[: max(0, limit - 3)].rstrip() + "..."</p>
+<div class="diagram-shell" data-diagram-index="3">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Brief_Summarizer as Brief Summarizer
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Brief_Summarizer: invoke
+    note over Brief_Summarizer: mutation observed - normalized = normalize_brief(brief)
+    Brief_Summarizer-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Brief_Summarizer: return
+    note over Brief_Summarizer: if len(normalized) &lt;= limit branch observed
+    Brief_Summarizer--&gt;&gt;Caller: return normalized[: max(0, limit - 3)].rstrip() + "..."</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="3">sequenceDiagram
+    participant Caller
+    participant Brief_Summarizer as Brief Summarizer
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Brief_Summarizer: invoke
+    note over Brief_Summarizer: mutation observed - normalized = normalize_brief(brief)
+    Brief_Summarizer-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Brief_Summarizer: return
+    note over Brief_Summarizer: if len(normalized) &lt;= limit branch observed
+    Brief_Summarizer--&gt;&gt;Caller: return normalized[: max(0, limit - 3)].rstrip() + "..."</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Branch markers detected: if.</li>
+  <li>Captured 1 condition(s) for reuse by the worker bee.</li>
+  <li>Captured 1 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 77, 78.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: slugify_text</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Text Slugifier</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Convert arbitrary text into a stable lowercase slug</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:81-85</p>
+<pre class="markdown-code" data-language="python"><code>def slugify_text(text) -&gt; str</code></pre>
+<p class="markdown-paragraph">Convert arbitrary text into a stable lowercase slug.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Text Slugifier</li>
+  <li>Regex Engine</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Text Slugifier</li>
+  <li>mutation slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")</li>
+  <li>data re.sub: r"[^a-z0-9]+", "-", text.lower()</li>
+  <li>return slug or "worker-bee"</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">slug or "worker-bee"</p>
+<div class="diagram-shell" data-diagram-index="4">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Text_Slugifier as Text Slugifier
+    participant Regex_Engine as Regex Engine
+    Caller-&gt;&gt;Text_Slugifier: invoke
+    note over Text_Slugifier: mutation observed - slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    Text_Slugifier-&gt;&gt;Regex_Engine: data: r"[^a-z0-9]+", "-", text.lower()
+    Regex_Engine--&gt;&gt;Text_Slugifier: return
+    Text_Slugifier--&gt;&gt;Caller: return slug or "worker-bee"</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="4">sequenceDiagram
+    participant Caller
+    participant Text_Slugifier as Text Slugifier
+    participant Regex_Engine as Regex Engine
+    Caller-&gt;&gt;Text_Slugifier: invoke
+    note over Text_Slugifier: mutation observed - slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    Text_Slugifier-&gt;&gt;Regex_Engine: data: r"[^a-z0-9]+", "-", text.lower()
+    Regex_Engine--&gt;&gt;Text_Slugifier: return
+    Text_Slugifier--&gt;&gt;Caller: return slug or "worker-bee"</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Captured 1 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 85.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: infer_focus</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Focus Inference</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Infer the dominant fabric surface from the brief</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:88-114</p>
+<pre class="markdown-code" data-language="python"><code>def infer_focus(brief) -&gt; str</code></pre>
+<p class="markdown-paragraph">Infer the dominant fabric surface from the brief.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Focus Inference</li>
+  <li>Brief Normalizer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Focus Inference</li>
+  <li>mutation normalized = normalize_brief(brief).lower()</li>
+  <li>data normalize_brief: brief</li>
+  <li>mutation scores = {"markdown": 0, "schema": 0, "json": 0}</li>
+  <li>branch: for token in ('markdown', 'readme', 'docs', 'documentation', 'document', 'diagram', 'workflow')</li>
+  <li>branch: if token in normalized</li>
+  <li>mutation scores["markdown"] add= 1</li>
+  <li>branch: for token in ('schema', 'contract', 'contract-backed', 'shape', 'structure', 'validation')</li>
+  <li>branch: if token in normalized</li>
+  <li>mutation scores["schema"] add= 1</li>
+  <li>branch: for token in ('json', 'payload', 'sample', 'instance', 'data')</li>
+  <li>branch: if token in normalized</li>
+  <li>mutation scores["json"] add= 1</li>
+  <li>mutation best_score = max(scores.values())</li>
+  <li>branch: if best_score == 0</li>
+  <li>return "markdown"</li>
+  <li>branch: for focus in ('markdown', 'schema', 'json')</li>
+  <li>branch: if scores[focus] == best_score</li>
+  <li>return focus</li>
+  <li>return "markdown"</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">normalized = normalize_brief(brief).lower()</p>
+<p class="markdown-paragraph">scores = {"markdown": 0, "schema": 0, "json": 0}</p>
+<p class="markdown-paragraph">scores["markdown"] add= 1</p>
+<p class="markdown-paragraph">scores["schema"] add= 1</p>
+<p class="markdown-paragraph">scores["json"] add= 1</p>
+<p class="markdown-paragraph">best_score = max(scores.values())</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">"markdown"</p>
+<p class="markdown-paragraph">focus</p>
+<div class="diagram-shell" data-diagram-index="5">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Focus_Inference as Focus Inference
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Focus_Inference: invoke
+    note over Focus_Inference: mutation observed - normalized = normalize_brief(brief).lower()
+    Focus_Inference-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Focus_Inference: return
+    note over Focus_Inference: mutation observed - scores = {"markdown": 0, "schema": 0, "json": 0}
+    note over Focus_Inference: for token in ('markdown', 'readme', 'docs', 'documentation', 'document', 'diagram', 'workflow') branch observed
+    note over Focus_Inference: if token in normalized branch observed
+    note over Focus_Inference: mutation observed - scores["markdown"] add= 1
+    note over Focus_Inference: for token in ('schema', 'contract', 'contract-backed', 'shape', 'structure', 'validation') branch observed
+    note over Focus_Inference: if token in normalized branch observed
+    note over Focus_Inference: mutation observed - scores["schema"] add= 1
+    note over Focus_Inference: for token in ('json', 'payload', 'sample', 'instance', 'data') branch observed
+    note over Focus_Inference: if token in normalized branch observed
+    note over Focus_Inference: mutation observed - scores["json"] add= 1
+    note over Focus_Inference: mutation observed - best_score = max(scores.values())
+    note over Focus_Inference: if best_score == 0 branch observed
+    note over Focus_Inference: for focus in ('markdown', 'schema', 'json') branch observed
+    note over Focus_Inference: if scores[focus] == best_score branch observed
+    Focus_Inference--&gt;&gt;Caller: return "markdown"</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="5">sequenceDiagram
+    participant Caller
+    participant Focus_Inference as Focus Inference
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Focus_Inference: invoke
+    note over Focus_Inference: mutation observed - normalized = normalize_brief(brief).lower()
+    Focus_Inference-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Focus_Inference: return
+    note over Focus_Inference: mutation observed - scores = {"markdown": 0, "schema": 0, "json": 0}
+    note over Focus_Inference: for token in ('markdown', 'readme', 'docs', 'documentation', 'document', 'diagram', 'workflow') branch observed
+    note over Focus_Inference: if token in normalized branch observed
+    note over Focus_Inference: mutation observed - scores["markdown"] add= 1
+    note over Focus_Inference: for token in ('schema', 'contract', 'contract-backed', 'shape', 'structure', 'validation') branch observed
+    note over Focus_Inference: if token in normalized branch observed
+    note over Focus_Inference: mutation observed - scores["schema"] add= 1
+    note over Focus_Inference: for token in ('json', 'payload', 'sample', 'instance', 'data') branch observed
+    note over Focus_Inference: if token in normalized branch observed
+    note over Focus_Inference: mutation observed - scores["json"] add= 1
+    note over Focus_Inference: mutation observed - best_score = max(scores.values())
+    note over Focus_Inference: if best_score == 0 branch observed
+    note over Focus_Inference: for focus in ('markdown', 'schema', 'json') branch observed
+    note over Focus_Inference: if scores[focus] == best_score branch observed
+    Focus_Inference--&gt;&gt;Caller: return "markdown"</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Branch markers detected: for, if.</li>
+  <li>Captured 9 condition(s) for reuse by the worker bee.</li>
+  <li>Captured 6 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 108, 112, 114.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: explain_focus</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Focus Explainer</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Explain why the packet resolved to a particular focus</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:117-129</p>
+<pre class="markdown-code" data-language="python"><code>def explain_focus(brief, focus) -&gt; str</code></pre>
+<p class="markdown-paragraph">Explain why the packet resolved to a particular focus.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Focus Explainer</li>
+  <li>Brief Normalizer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Focus Explainer</li>
+  <li>mutation normalized = normalize_brief(brief).lower()</li>
+  <li>data normalize_brief: brief</li>
+  <li>branch: if focus == "markdown"</li>
+  <li>branch: if any(token in normalized for token in ("markdown", "readme", "docs", "documentation", "document"))</li>
+  <li>return "brief references markdown-oriented documentation"</li>
+  <li>return "no stronger surface signal was present, so markdown is the default"</li>
+  <li>branch: if focus == "schema"</li>
+  <li>return "brief references schema, contract, or validation language"</li>
+  <li>branch: if focus == "json"</li>
+  <li>return "brief references JSON, payload, or sample-data language"</li>
+  <li>return "focus was supplied explicitly"</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">normalized = normalize_brief(brief).lower()</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">"brief references markdown-oriented documentation"</p>
+<p class="markdown-paragraph">"no stronger surface signal was present, so markdown is the default"</p>
+<p class="markdown-paragraph">"brief references schema, contract, or validation language"</p>
+<p class="markdown-paragraph">"brief references JSON, payload, or sample-data language"</p>
+<p class="markdown-paragraph">"focus was supplied explicitly"</p>
+<div class="diagram-shell" data-diagram-index="6">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Focus_Explainer as Focus Explainer
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Focus_Explainer: invoke
+    note over Focus_Explainer: mutation observed - normalized = normalize_brief(brief).lower()
+    Focus_Explainer-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Focus_Explainer: return
+    note over Focus_Explainer: if focus == "markdown" branch observed
+    note over Focus_Explainer: if any(token in normalized for token in ("markdown", "readme", "docs", "documentation", "document")) branch observed
+    note over Focus_Explainer: if focus == "schema" branch observed
+    note over Focus_Explainer: if focus == "json" branch observed
+    Focus_Explainer--&gt;&gt;Caller: return "focus was supplied explicitly"</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="6">sequenceDiagram
+    participant Caller
+    participant Focus_Explainer as Focus Explainer
+    participant Brief_Normalizer as Brief Normalizer
+    Caller-&gt;&gt;Focus_Explainer: invoke
+    note over Focus_Explainer: mutation observed - normalized = normalize_brief(brief).lower()
+    Focus_Explainer-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Focus_Explainer: return
+    note over Focus_Explainer: if focus == "markdown" branch observed
+    note over Focus_Explainer: if any(token in normalized for token in ("markdown", "readme", "docs", "documentation", "document")) branch observed
+    note over Focus_Explainer: if focus == "schema" branch observed
+    note over Focus_Explainer: if focus == "json" branch observed
+    Focus_Explainer--&gt;&gt;Caller: return "focus was supplied explicitly"</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Branch markers detected: if.</li>
+  <li>Captured 4 condition(s) for reuse by the worker bee.</li>
+  <li>Captured 1 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 123, 124, 126, 128, 129.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: build_plan_steps</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Plan Steps Builder</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Build the deterministic plan steps that every packet follows</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:132-173</p>
+<pre class="markdown-code" data-language="python"><code>def build_plan_steps(focus) -&gt; tuple[WorkerBeePlanStep, ...]</code></pre>
+<p class="markdown-paragraph">Build the deterministic plan steps that every packet follows.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Plan Steps Builder</li>
+  <li>Worker Bee Plan Step</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Plan Steps Builder</li>
+  <li>mutation focus_label = focus or "markdown"</li>
+  <li>return ( WorkerBeePlanStep( order=1, name="capture_brief", purpose="preserve the request as an immutable planning input", ar...</li>
+  <li>data WorkerBeePlanStep: order=1, name="capture_brief", purpose="preserve the request as an i...</li>
+  <li>data WorkerBeePlanStep: order=2, name="resolve_focus", purpose=f"select the primary fabric s...</li>
+  <li>data WorkerBeePlanStep: order=3, name="derive_contract", purpose="shape the JSON Schema contra...</li>
+  <li>data WorkerBeePlanStep: order=4, name="derive_json", purpose="prepare the JSON sample that...</li>
+  <li>data WorkerBeePlanStep: order=5, name="render_markdown", purpose="render the Markdown artifact...</li>
+  <li>data WorkerBeePlanStep: order=6, name="validate_round_trip", purpose="prove the packet is coherent...</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">focus_label = focus or "markdown"</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">( WorkerBeePlanStep( order=1, name="capture_brief", purpose="preserve the request as an immutable planning input", ar...</p>
+<div class="diagram-shell" data-diagram-index="7">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Plan_Steps_Builder as Plan Steps Builder
+    participant Worker_Bee_Plan_Step as Worker Bee Plan Step
+    Caller-&gt;&gt;Plan_Steps_Builder: invoke
+    note over Plan_Steps_Builder: mutation observed - focus_label = focus or "markdown"
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=1, name="capture_brief", purpose="preserve the request as an i...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=2, name="resolve_focus", purpose=f"select the primary fabric s...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=3, name="derive_contract", purpose="shape the JSON Schema contra...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=4, name="derive_json", purpose="prepare the JSON sample that...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=5, name="render_markdown", purpose="render the Markdown artifact...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=6, name="validate_round_trip", purpose="prove the packet is coherent...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder--&gt;&gt;Caller: return ( WorkerBeePlanStep( order=1, name="capture_brief", purpose="preserve the request as an immutable planning input", ar...</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="7">sequenceDiagram
+    participant Caller
+    participant Plan_Steps_Builder as Plan Steps Builder
+    participant Worker_Bee_Plan_Step as Worker Bee Plan Step
+    Caller-&gt;&gt;Plan_Steps_Builder: invoke
+    note over Plan_Steps_Builder: mutation observed - focus_label = focus or "markdown"
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=1, name="capture_brief", purpose="preserve the request as an i...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=2, name="resolve_focus", purpose=f"select the primary fabric s...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=3, name="derive_contract", purpose="shape the JSON Schema contra...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=4, name="derive_json", purpose="prepare the JSON sample that...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=5, name="render_markdown", purpose="render the Markdown artifact...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder-&gt;&gt;Worker_Bee_Plan_Step: data: order=6, name="validate_round_trip", purpose="prove the packet is coherent...
+    Worker_Bee_Plan_Step--&gt;&gt;Plan_Steps_Builder: return
+    Plan_Steps_Builder--&gt;&gt;Caller: return ( WorkerBeePlanStep( order=1, name="capture_brief", purpose="preserve the request as an immutable planning input", ar...</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Captured 1 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 136.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: collect_guardrails</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Guardrails Collector</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Flatten the strategy guardrails into a packet-level guardrail list</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:176-191</p>
+<pre class="markdown-code" data-language="python"><code>def collect_guardrails(strategy) -&gt; tuple[str, ...]</code></pre>
+<p class="markdown-paragraph">Flatten the strategy guardrails into a packet-level guardrail list.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Guardrails Collector</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Guardrails Collector</li>
+  <li>mutation ordered_guardrails: list[str] = [ "planner_proposes_only", "planner_does_not_write_files", "generated_output_...</li>
+  <li>branch: for phase in strategy.phases</li>
+  <li>mutation deduped: dict[str, None] = {}</li>
+  <li>branch: for guardrail in ordered_guardrails</li>
+  <li>return tuple(deduped.keys())</li>
+  <li>no helper calls observed</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">ordered_guardrails: list[str] = [ "planner_proposes_only", "planner_does_not_write_files", "generated_output_...</p>
+<p class="markdown-paragraph">deduped: dict[str, None] = {}</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">tuple(deduped.keys())</p>
+<div class="diagram-shell" data-diagram-index="8">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Guardrails_Collector as Guardrails Collector
+    Caller-&gt;&gt;Guardrails_Collector: invoke
+    note over Guardrails_Collector: mutation observed - ordered_guardrails: list[str] = [ "planner_proposes_only", "planner_does_not_write_files", "generated_output_...
+    note over Guardrails_Collector: for phase in strategy.phases branch observed
+    note over Guardrails_Collector: mutation observed - deduped: dict[str, None] = {}
+    note over Guardrails_Collector: for guardrail in ordered_guardrails branch observed
+    Guardrails_Collector--&gt;&gt;Caller: return tuple(deduped.keys())</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="8">sequenceDiagram
+    participant Caller
+    participant Guardrails_Collector as Guardrails Collector
+    Caller-&gt;&gt;Guardrails_Collector: invoke
+    note over Guardrails_Collector: mutation observed - ordered_guardrails: list[str] = [ "planner_proposes_only", "planner_does_not_write_files", "generated_output_...
+    note over Guardrails_Collector: for phase in strategy.phases branch observed
+    note over Guardrails_Collector: mutation observed - deduped: dict[str, None] = {}
+    note over Guardrails_Collector: for guardrail in ordered_guardrails branch observed
+    Guardrails_Collector--&gt;&gt;Caller: return tuple(deduped.keys())</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Branch markers detected: for.</li>
+  <li>Captured 2 condition(s) for reuse by the worker bee.</li>
+  <li>Captured 2 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 191.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: build_generation_packet</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Generation Packet Builder</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Build a deterministic worker-bee packet from a natural-language brief</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/planner.py:194-234</p>
+<pre class="markdown-code" data-language="python"><code>def build_generation_packet(brief, base_name='', focus='') -&gt; WorkerBeeGenerationPacket</code></pre>
+<p class="markdown-paragraph">Build a deterministic worker-bee packet from a natural-language brief.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Generation Packet Builder</li>
+  <li>Brief Normalizer</li>
+  <li>Focus Inference</li>
+  <li>Default Worker Bee Strategy Builder</li>
+  <li>Text Slugifier</li>
+  <li>Sha256</li>
+  <li>Focus Explainer</li>
+  <li>Worker Bee Generation Packet</li>
+  <li>Brief Summarizer</li>
+  <li>Plan Steps Builder</li>
+  <li>Guardrails Collector</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Generation Packet Builder</li>
+  <li>mutation normalized_brief = normalize_brief(brief)</li>
+  <li>data normalize_brief: brief</li>
+  <li>branch: if not normalized_brief</li>
+  <li>mutation resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)</li>
+  <li>data normalize_brief: focus</li>
+  <li>data infer_focus: normalized_brief</li>
+  <li>branch: if resolved_focus not in {"markdown", "schema", "json"}</li>
+  <li>mutation strategy = build_default_worker_bee_strategy()</li>
+  <li>trigger build_default_worker_bee_strategy</li>
+  <li>mutation resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)</li>
+  <li>data slugify_text: base_name</li>
+  <li>data slugify_text: normalized_brief</li>
+  <li>mutation digest_source = "|".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...</li>
+  <li>mutation packet_id = f"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...</li>
+  <li>data sha256: digest_source.encode('utf-8')</li>
+  <li>mutation metadata = { "source": "generation_fabric.worker_bee.planner", "brief_length": len(norma...</li>
+  <li>data explain_focus: normalized_brief, resolved_focus</li>
+  <li>return WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...</li>
+  <li>data WorkerBeeGenerationPacket: packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id</li>
+  <li>data summarize_brief: normalized_brief</li>
+  <li>data build_plan_steps: resolved_focus</li>
+  <li>data collect_guardrails: strategy</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">normalized_brief = normalize_brief(brief)</p>
+<p class="markdown-paragraph">resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)</p>
+<p class="markdown-paragraph">strategy = build_default_worker_bee_strategy()</p>
+<p class="markdown-paragraph">resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)</p>
+<p class="markdown-paragraph">digest_source = "|".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...</p>
+<p class="markdown-paragraph">packet_id = f"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...</p>
+<p class="markdown-paragraph">metadata = { "source": "generation_fabric.worker_bee.planner", "brief_length": len(norma...</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...</p>
+<div class="diagram-shell" data-diagram-index="9">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Generation_Packet_Builder as Generation Packet Builder
+    participant Brief_Normalizer as Brief Normalizer
+    participant Focus_Inference as Focus Inference
+    participant Default_Worker_Bee_Strategy_Builder as Default Worker Bee Strategy Builder
+    participant Text_Slugifier as Text Slugifier
+    participant Sha256 as Sha256
+    participant Focus_Explainer as Focus Explainer
+    participant Worker_Bee_Generation_Packet as Worker Bee Generation Packet
+    participant Brief_Summarizer as Brief Summarizer
+    participant Plan_Steps_Builder as Plan Steps Builder
+    participant Guardrails_Collector as Guardrails Collector
+    Caller-&gt;&gt;Generation_Packet_Builder: invoke
+    note over Generation_Packet_Builder: mutation observed - normalized_brief = normalize_brief(brief)
+    Generation_Packet_Builder-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: if not normalized_brief branch observed
+    note over Generation_Packet_Builder: mutation observed - resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)
+    Generation_Packet_Builder-&gt;&gt;Brief_Normalizer: data: focus
+    Brief_Normalizer--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Focus_Inference: data: normalized_brief
+    Focus_Inference--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: if resolved_focus not in {"markdown", "schema", "json"} branch observed
+    note over Generation_Packet_Builder: mutation observed - strategy = build_default_worker_bee_strategy()
+    Generation_Packet_Builder-&gt;&gt;Default_Worker_Bee_Strategy_Builder: trigger
+    Default_Worker_Bee_Strategy_Builder--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: mutation observed - resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)
+    Generation_Packet_Builder-&gt;&gt;Text_Slugifier: data: base_name
+    Text_Slugifier--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Text_Slugifier: data: normalized_brief
+    Text_Slugifier--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: mutation observed - digest_source = "|".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...
+    note over Generation_Packet_Builder: mutation observed - packet_id = f"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...
+    Generation_Packet_Builder-&gt;&gt;Sha256: data: digest_source.encode('utf-8')
+    Sha256--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: mutation observed - metadata = { "source": "generation_fabric.worker_bee.planner", "brief_length": len(norma...
+    Generation_Packet_Builder-&gt;&gt;Focus_Explainer: data: normalized_brief, resolved_focus
+    Focus_Explainer--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Worker_Bee_Generation_Packet: data: packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id
+    Worker_Bee_Generation_Packet--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Brief_Summarizer: data: normalized_brief
+    Brief_Summarizer--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Plan_Steps_Builder: data: resolved_focus
+    Plan_Steps_Builder--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Guardrails_Collector: data: strategy
+    Guardrails_Collector--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder--&gt;&gt;Caller: return WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="9">sequenceDiagram
+    participant Caller
+    participant Generation_Packet_Builder as Generation Packet Builder
+    participant Brief_Normalizer as Brief Normalizer
+    participant Focus_Inference as Focus Inference
+    participant Default_Worker_Bee_Strategy_Builder as Default Worker Bee Strategy Builder
+    participant Text_Slugifier as Text Slugifier
+    participant Sha256 as Sha256
+    participant Focus_Explainer as Focus Explainer
+    participant Worker_Bee_Generation_Packet as Worker Bee Generation Packet
+    participant Brief_Summarizer as Brief Summarizer
+    participant Plan_Steps_Builder as Plan Steps Builder
+    participant Guardrails_Collector as Guardrails Collector
+    Caller-&gt;&gt;Generation_Packet_Builder: invoke
+    note over Generation_Packet_Builder: mutation observed - normalized_brief = normalize_brief(brief)
+    Generation_Packet_Builder-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: if not normalized_brief branch observed
+    note over Generation_Packet_Builder: mutation observed - resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)
+    Generation_Packet_Builder-&gt;&gt;Brief_Normalizer: data: focus
+    Brief_Normalizer--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Focus_Inference: data: normalized_brief
+    Focus_Inference--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: if resolved_focus not in {"markdown", "schema", "json"} branch observed
+    note over Generation_Packet_Builder: mutation observed - strategy = build_default_worker_bee_strategy()
+    Generation_Packet_Builder-&gt;&gt;Default_Worker_Bee_Strategy_Builder: trigger
+    Default_Worker_Bee_Strategy_Builder--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: mutation observed - resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)
+    Generation_Packet_Builder-&gt;&gt;Text_Slugifier: data: base_name
+    Text_Slugifier--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Text_Slugifier: data: normalized_brief
+    Text_Slugifier--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: mutation observed - digest_source = "|".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...
+    note over Generation_Packet_Builder: mutation observed - packet_id = f"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...
+    Generation_Packet_Builder-&gt;&gt;Sha256: data: digest_source.encode('utf-8')
+    Sha256--&gt;&gt;Generation_Packet_Builder: return
+    note over Generation_Packet_Builder: mutation observed - metadata = { "source": "generation_fabric.worker_bee.planner", "brief_length": len(norma...
+    Generation_Packet_Builder-&gt;&gt;Focus_Explainer: data: normalized_brief, resolved_focus
+    Focus_Explainer--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Worker_Bee_Generation_Packet: data: packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id
+    Worker_Bee_Generation_Packet--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Brief_Summarizer: data: normalized_brief
+    Brief_Summarizer--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Plan_Steps_Builder: data: resolved_focus
+    Plan_Steps_Builder--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder-&gt;&gt;Guardrails_Collector: data: strategy
+    Guardrails_Collector--&gt;&gt;Generation_Packet_Builder: return
+    Generation_Packet_Builder--&gt;&gt;Caller: return WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Branch markers detected: if.</li>
+  <li>Captured 2 condition(s) for reuse by the worker bee.</li>
+  <li>Captured 7 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 219.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<ul class="markdown-list">
+  <li>The worker bee extracts a shape from code before rendering any Markdown.</li>
+  <li>The code inventory anchors declarations, while executions show triggers, data batons, mutations, and returns.</li>
+</ul>
+  </article>
+</main>
+  <script type="application/json" id="observability-playback-data">{
+  "title": "Code Observation: planner",
+  "track_count": 9,
+  "step_count": 119,
+  "tracks": [
+    {
+      "execution_id": "worker-bee-generation-packet-serializer",
+      "title": "Worker Bee Generation Packet Serializer",
+      "diagram_index": 1,
+      "participants": [
+        "Caller",
+        "Worker Bee Generation Packet Serializer",
+        "Dataclass Serializer"
+      ],
+      "steps": [
+        {
+          "execution_id": "worker-bee-generation-packet-serializer",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Worker Bee Generation Packet Serializer",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:60-63",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "worker-bee-generation-packet-serializer",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Worker Bee Generation Packet Serializer",
+          "target": "Worker Bee Generation Packet Serializer",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:60-63",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "worker-bee-generation-packet-serializer",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Worker Bee Generation Packet Serializer",
+          "target": "Worker Bee Generation Packet Serializer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:60-63",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "worker-bee-generation-packet-serializer",
+          "step_index": 4,
+          "step_type": "data",
+          "label": "data",
+          "source": "Worker Bee Generation Packet Serializer",
+          "target": "to_jsonable_dataclass",
+          "message": "self",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:60-63",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "worker-bee-generation-packet-serializer",
+          "step_index": 5,
+          "step_type": "return",
+          "label": "return",
+          "source": "to_jsonable_dataclass",
+          "target": "Worker Bee Generation Packet Serializer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:60-63",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "worker-bee-generation-packet-serializer",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "Worker Bee Generation Packet Serializer",
+          "target": "Caller",
+          "message": "to_jsonable_dataclass(self)",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:60-63",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "brief-normalizer",
+      "title": "Brief Normalizer",
+      "diagram_index": 2,
+      "participants": [
+        "Caller",
+        "Brief Normalizer"
+      ],
+      "steps": [
+        {
+          "execution_id": "brief-normalizer",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Brief Normalizer",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:66-69",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "brief-normalizer",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Brief Normalizer",
+          "target": "Brief Normalizer",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:66-69",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "brief-normalizer",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Brief Normalizer",
+          "target": "Brief Normalizer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:66-69",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "brief-normalizer",
+          "step_index": 4,
+          "step_type": "return",
+          "label": "return",
+          "source": "Brief Normalizer",
+          "target": "Caller",
+          "message": "\" \".join(brief.split()).strip()",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:66-69",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "brief-summarizer",
+      "title": "Brief Summarizer",
+      "diagram_index": 3,
+      "participants": [
+        "Caller",
+        "Brief Summarizer",
+        "Brief Normalizer"
+      ],
+      "steps": [
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Brief Summarizer",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Brief Summarizer",
+          "target": "Brief Summarizer",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Brief Summarizer",
+          "target": "Brief Summarizer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Brief Summarizer",
+          "target": "Brief Summarizer",
+          "message": "normalized = normalize_brief(brief)",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Brief Summarizer",
+          "target": "normalize_brief",
+          "message": "brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Brief Summarizer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 7,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Brief Summarizer",
+          "target": "Brief Summarizer",
+          "message": "if len(normalized) \u003c= limit",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "brief-summarizer",
+          "step_index": 8,
+          "step_type": "return",
+          "label": "return",
+          "source": "Brief Summarizer",
+          "target": "Caller",
+          "message": "normalized[: max(0, limit - 3)].rstrip() + \"...\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:72-78",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "text-slugifier",
+      "title": "Text Slugifier",
+      "diagram_index": 4,
+      "participants": [
+        "Caller",
+        "Text Slugifier",
+        "Regex Engine"
+      ],
+      "steps": [
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Text Slugifier",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Text Slugifier",
+          "target": "Text Slugifier",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Text Slugifier",
+          "target": "Text Slugifier",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Text Slugifier",
+          "target": "Text Slugifier",
+          "message": "slug = re.sub(r\"[^a-z0-9]+\", \"-\", text.lower()).strip(\"-\")",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Text Slugifier",
+          "target": "re.sub",
+          "message": "r\"[^a-z0-9]+\", \"-\", text.lower()",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "re.sub",
+          "target": "Text Slugifier",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "text-slugifier",
+          "step_index": 7,
+          "step_type": "return",
+          "label": "return",
+          "source": "Text Slugifier",
+          "target": "Caller",
+          "message": "slug or \"worker-bee\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:81-85",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "focus-inference",
+      "title": "Focus Inference",
+      "diagram_index": 5,
+      "participants": [
+        "Caller",
+        "Focus Inference",
+        "Brief Normalizer"
+      ],
+      "steps": [
+        {
+          "execution_id": "focus-inference",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Focus Inference",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "normalized = normalize_brief(brief).lower()",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Focus Inference",
+          "target": "normalize_brief",
+          "message": "brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Focus Inference",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 7,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "scores = {\"markdown\": 0, \"schema\": 0, \"json\": 0}",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 8,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "for token in ('markdown', 'readme', 'docs', 'documentation', 'document', 'diagram', 'workflow')",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 9,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "if token in normalized",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 10,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "scores[\"markdown\"] add= 1",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 11,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "for token in ('schema', 'contract', 'contract-backed', 'shape', 'structure', 'validation')",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 12,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "if token in normalized",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 13,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "scores[\"schema\"] add= 1",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 14,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "for token in ('json', 'payload', 'sample', 'instance', 'data')",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 15,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "if token in normalized",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 16,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "scores[\"json\"] add= 1",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 17,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "best_score = max(scores.values())",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 18,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "if best_score == 0",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 19,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "for focus in ('markdown', 'schema', 'json')",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 20,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Inference",
+          "target": "Focus Inference",
+          "message": "if scores[focus] == best_score",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-inference",
+          "step_index": 21,
+          "step_type": "return",
+          "label": "return",
+          "source": "Focus Inference",
+          "target": "Caller",
+          "message": "\"markdown\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:88-114",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "focus-explainer",
+      "title": "Focus Explainer",
+      "diagram_index": 6,
+      "participants": [
+        "Caller",
+        "Focus Explainer",
+        "Brief Normalizer"
+      ],
+      "steps": [
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Focus Explainer",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "normalized = normalize_brief(brief).lower()",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Focus Explainer",
+          "target": "normalize_brief",
+          "message": "brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Focus Explainer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 7,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "if focus == \"markdown\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 8,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "if any(token in normalized for token in (\"markdown\", \"readme\", \"docs\", \"documentation\", \"document\"))",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 9,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "if focus == \"schema\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 10,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Focus Explainer",
+          "target": "Focus Explainer",
+          "message": "if focus == \"json\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "focus-explainer",
+          "step_index": 11,
+          "step_type": "return",
+          "label": "return",
+          "source": "Focus Explainer",
+          "target": "Caller",
+          "message": "\"focus was supplied explicitly\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:117-129",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "plan-steps-builder",
+      "title": "Plan Steps Builder",
+      "diagram_index": 7,
+      "participants": [
+        "Caller",
+        "Plan Steps Builder",
+        "Worker Bee Plan Step"
+      ],
+      "steps": [
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Plan Steps Builder",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Plan Steps Builder",
+          "target": "Plan Steps Builder",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Plan Steps Builder",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Plan Steps Builder",
+          "target": "Plan Steps Builder",
+          "message": "focus_label = focus or \"markdown\"",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Plan Steps Builder",
+          "target": "WorkerBeePlanStep",
+          "message": "order=1, name=\"capture_brief\", purpose=\"preserve the request as an i...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanStep",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 7,
+          "step_type": "data",
+          "label": "data",
+          "source": "Plan Steps Builder",
+          "target": "WorkerBeePlanStep",
+          "message": "order=2, name=\"resolve_focus\", purpose=f\"select the primary fabric s...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 8,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanStep",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 9,
+          "step_type": "data",
+          "label": "data",
+          "source": "Plan Steps Builder",
+          "target": "WorkerBeePlanStep",
+          "message": "order=3, name=\"derive_contract\", purpose=\"shape the JSON Schema contra...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 10,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanStep",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 11,
+          "step_type": "data",
+          "label": "data",
+          "source": "Plan Steps Builder",
+          "target": "WorkerBeePlanStep",
+          "message": "order=4, name=\"derive_json\", purpose=\"prepare the JSON sample that...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 12,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanStep",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 13,
+          "step_type": "data",
+          "label": "data",
+          "source": "Plan Steps Builder",
+          "target": "WorkerBeePlanStep",
+          "message": "order=5, name=\"render_markdown\", purpose=\"render the Markdown artifact...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 14,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanStep",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 15,
+          "step_type": "data",
+          "label": "data",
+          "source": "Plan Steps Builder",
+          "target": "WorkerBeePlanStep",
+          "message": "order=6, name=\"validate_round_trip\", purpose=\"prove the packet is coherent...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 16,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanStep",
+          "target": "Plan Steps Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "plan-steps-builder",
+          "step_index": 17,
+          "step_type": "return",
+          "label": "return",
+          "source": "Plan Steps Builder",
+          "target": "Caller",
+          "message": "( WorkerBeePlanStep( order=1, name=\"capture_brief\", purpose=\"preserve the request as an immutable planning input\", ar...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:132-173",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "guardrails-collector",
+      "title": "Guardrails Collector",
+      "diagram_index": 8,
+      "participants": [
+        "Caller",
+        "Guardrails Collector"
+      ],
+      "steps": [
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Guardrails Collector",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Guardrails Collector",
+          "target": "Guardrails Collector",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Guardrails Collector",
+          "target": "Guardrails Collector",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Guardrails Collector",
+          "target": "Guardrails Collector",
+          "message": "ordered_guardrails: list[str] = [ \"planner_proposes_only\", \"planner_does_not_write_files\", \"generated_output_...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 5,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Guardrails Collector",
+          "target": "Guardrails Collector",
+          "message": "for phase in strategy.phases",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 6,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Guardrails Collector",
+          "target": "Guardrails Collector",
+          "message": "deduped: dict[str, None] = {}",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 7,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Guardrails Collector",
+          "target": "Guardrails Collector",
+          "message": "for guardrail in ordered_guardrails",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "guardrails-collector",
+          "step_index": 8,
+          "step_type": "return",
+          "label": "return",
+          "source": "Guardrails Collector",
+          "target": "Caller",
+          "message": "tuple(deduped.keys())",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:176-191",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "generation-packet-builder",
+      "title": "Generation Packet Builder",
+      "diagram_index": 9,
+      "participants": [
+        "Caller",
+        "Generation Packet Builder",
+        "Brief Normalizer",
+        "Focus Inference",
+        "Default Worker Bee Strategy Builder",
+        "Text Slugifier",
+        "Sha256",
+        "Focus Explainer",
+        "Worker Bee Generation Packet",
+        "Brief Summarizer",
+        "Plan Steps Builder",
+        "Guardrails Collector"
+      ],
+      "steps": [
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Generation Packet Builder",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "normalized_brief = normalize_brief(brief)",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "normalize_brief",
+          "message": "brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 7,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "if not normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 8,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 9,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "normalize_brief",
+          "message": "focus",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 10,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 11,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "infer_focus",
+          "message": "normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 12,
+          "step_type": "return",
+          "label": "return",
+          "source": "infer_focus",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 13,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "if resolved_focus not in {\"markdown\", \"schema\", \"json\"}",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 14,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "strategy = build_default_worker_bee_strategy()",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 15,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Generation Packet Builder",
+          "target": "build_default_worker_bee_strategy",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 16,
+          "step_type": "return",
+          "label": "return",
+          "source": "build_default_worker_bee_strategy",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 17,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 18,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "slugify_text",
+          "message": "base_name",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 19,
+          "step_type": "return",
+          "label": "return",
+          "source": "slugify_text",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 20,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "slugify_text",
+          "message": "normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 21,
+          "step_type": "return",
+          "label": "return",
+          "source": "slugify_text",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 22,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "digest_source = \"|\".join((normalized_brief, resolved_base_name, resolved_focus, strategy.nort...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 23,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "packet_id = f\"wb-{resolved_base_name}-{sha256(digest_source.encode('utf-8')).hexdigest()[...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 24,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "sha256",
+          "message": "digest_source.encode('utf-8')",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 25,
+          "step_type": "return",
+          "label": "return",
+          "source": "sha256",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 26,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Generation Packet Builder",
+          "target": "Generation Packet Builder",
+          "message": "metadata = { \"source\": \"generation_fabric.worker_bee.planner\", \"brief_length\": len(norma...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 27,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "explain_focus",
+          "message": "normalized_brief, resolved_focus",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 28,
+          "step_type": "return",
+          "label": "return",
+          "source": "explain_focus",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 29,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "WorkerBeeGenerationPacket",
+          "message": "packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 30,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeeGenerationPacket",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 31,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "summarize_brief",
+          "message": "normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 32,
+          "step_type": "return",
+          "label": "return",
+          "source": "summarize_brief",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 33,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "build_plan_steps",
+          "message": "resolved_focus",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 34,
+          "step_type": "return",
+          "label": "return",
+          "source": "build_plan_steps",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 35,
+          "step_type": "data",
+          "label": "data",
+          "source": "Generation Packet Builder",
+          "target": "collect_guardrails",
+          "message": "strategy",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 36,
+          "step_type": "return",
+          "label": "return",
+          "source": "collect_guardrails",
+          "target": "Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "generation-packet-builder",
+          "step_index": 37,
+          "step_type": "return",
+          "label": "return",
+          "source": "Generation Packet Builder",
+          "target": "Caller",
+          "message": "WorkerBeeGenerationPacket( packet_type=PACKET_TYPE, packet_version=PACKET_VERSION, packet_id=packet_id, brief=normali...",
+          "source_anchor": "generation_fabric/worker_bee/planner.py:194-234",
+          "duration_ms": 800
+        }
+      ]
+    }
+  ]
+}</script>
+  <script type="module">
+const playbackElement = document.getElementById("observability-playback-data");
+const playbackData = playbackElement ? JSON.parse(playbackElement.textContent || "{}") : {};
+const tracks = Array.isArray(playbackData.tracks) ? playbackData.tracks : [];
+const timeline = [];
+for (let trackIndex = 0; trackIndex < tracks.length; trackIndex += 1) {
+  const track = tracks[trackIndex] || {};
+  const steps = Array.isArray(track.steps) ? track.steps : [];
+  for (let stepIndex = 0; stepIndex < steps.length; stepIndex += 1) {
+    timeline.push({ trackIndex, stepIndex, track, step: steps[stepIndex] || {} });
+  }
+}
+
+const state = {
+  timelineIndex: 0,
+  playing: false,
+  speed: 1,
+  timer: null,
+};
+
+const nodes = {
+  executionList: document.getElementById("execution-list"),
+  stepList: document.getElementById("step-list"),
+  activeExecutionTitle: document.getElementById("active-execution-title"),
+  activeExecutionMeta: document.getElementById("active-execution-meta"),
+  activeStepType: document.getElementById("active-step-type"),
+  activeStepLabel: document.getElementById("active-step-label"),
+  activeStepSource: document.getElementById("active-step-source"),
+  activeStepTarget: document.getElementById("active-step-target"),
+  activeStepMessage: document.getElementById("active-step-message"),
+  activeStepAnchor: document.getElementById("active-step-anchor"),
+  activeStepDuration: document.getElementById("active-step-duration"),
+  speedSelect: document.getElementById("playback-speed"),
+  buttons: {
+    previous: document.querySelector('[data-action="previous"]'),
+    play: document.querySelector('[data-action="play"]'),
+    pause: document.querySelector('[data-action="pause"]'),
+    next: document.querySelector('[data-action="next"]'),
+    reset: document.querySelector('[data-action="reset"]'),
+  },
+};
+
+const executionButtonMap = new Map();
+const stepButtonMap = new Map();
+
+function stepId(entry) {
+  return `${entry.track.execution_id}.${entry.step.step_index}`;
+}
+
+function trackLabel(track) {
+  return track.title || track.execution_id || "Execution";
+}
+
+function stepClass(stepType) {
+  const normalized = String(stepType || "idle").toLowerCase();
+  if (normalized === "call") return "call-step";
+  if (normalized === "data") return "data-step";
+  if (normalized === "mutation") return "mutation-step";
+  if (normalized === "branch") return "branch-step";
+  if (normalized === "return") return "return-step";
+  if (normalized === "error") return "error-step";
+  return "idle-step";
+}
+
+function formatDuration(durationMs) {
+  const value = Number(durationMs || 0);
+  if (!Number.isFinite(value) || value <= 0) {
+    return "—";
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}s`;
+  }
+  return `${value}ms`;
+}
+
+function currentEntry() {
+  if (!timeline.length) {
+    return null;
+  }
+  const index = Math.max(0, Math.min(state.timelineIndex, timeline.length - 1));
+  return timeline[index];
+}
+
+function firstTimelineIndexForTrack(trackIndex) {
+  return timeline.findIndex((entry) => entry.trackIndex === trackIndex);
+}
+
+function setTimelineIndex(index) {
+  if (!timeline.length) {
+    return;
+  }
+  const clamped = Math.max(0, Math.min(index, timeline.length - 1));
+  state.timelineIndex = clamped;
+  renderState();
+  if (state.playing) {
+    scheduleNextStep();
+  }
+}
+
+function pausePlayback() {
+  state.playing = false;
+  if (state.timer) {
+    window.clearTimeout(state.timer);
+    state.timer = null;
+  }
+  if (nodes.buttons.play) {
+    nodes.buttons.play.disabled = false;
+  }
+}
+
+function scheduleNextStep() {
+  if (state.timer) {
+    window.clearTimeout(state.timer);
+    state.timer = null;
+  }
+  const entry = currentEntry();
+  if (!entry) {
+    pausePlayback();
+    return;
+  }
+  const step = entry.step || {};
+  const durationMs = Math.max(250, Math.round(Number(step.duration_ms || 0) / state.speed) || 600);
+  state.timer = window.setTimeout(() => {
+    const nextIndex = state.timelineIndex + 1;
+    if (nextIndex >= timeline.length) {
+      pausePlayback();
+      return;
+    }
+    state.timelineIndex = nextIndex;
+    renderState();
+    if (state.playing) {
+      scheduleNextStep();
+    }
+  }, durationMs);
+}
+
+function playPlayback() {
+  if (!timeline.length) {
+    return;
+  }
+  state.playing = true;
+  if (nodes.buttons.play) {
+    nodes.buttons.play.disabled = true;
+  }
+  scheduleNextStep();
+}
+
+function resetPlayback() {
+  pausePlayback();
+  state.timelineIndex = 0;
+  renderState();
+}
+
+function nextStep() {
+  if (!timeline.length) {
+    return;
+  }
+  const nextIndex = Math.min(state.timelineIndex + 1, timeline.length - 1);
+  setTimelineIndex(nextIndex);
+}
+
+function previousStep() {
+  if (!timeline.length) {
+    return;
+  }
+  const previousIndex = Math.max(state.timelineIndex - 1, 0);
+  setTimelineIndex(previousIndex);
+}
+
+function setSpeed(multiplier) {
+  const parsed = Number(multiplier);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    state.speed = parsed;
+    if (state.playing) {
+      scheduleNextStep();
+    }
+  }
+}
+
+function clearActiveClasses() {
+  for (const button of executionButtonMap.values()) {
+    button.classList.remove("is-active");
+  }
+  for (const button of stepButtonMap.values()) {
+    button.classList.remove("is-active");
+  }
+  document.querySelectorAll(".diagram-shell").forEach((element) => {
+    element.classList.remove("is-active");
+  });
+}
+
+function updateActivePanels(entry) {
+  if (!entry) {
+    if (nodes.activeExecutionTitle) {
+      nodes.activeExecutionTitle.textContent = "No execution tracks available";
+    }
+    if (nodes.activeExecutionMeta) {
+      nodes.activeExecutionMeta.textContent = "Generate an observation report to enable playback.";
+    }
+    return;
+  }
+
+  const track = entry.track || {};
+  const step = entry.step || {};
+  const trackSteps = Array.isArray(track.steps) ? track.steps : [];
+  const stepNumber = entry.stepIndex + 1;
+
+  if (nodes.activeExecutionTitle) {
+    nodes.activeExecutionTitle.textContent = trackLabel(track);
+  }
+  if (nodes.activeExecutionMeta) {
+    nodes.activeExecutionMeta.textContent = `${track.execution_id || "execution"} · diagram ${track.diagram_index || 0} · ${trackSteps.length} step(s)`;
+  }
+  if (nodes.activeStepType) {
+    nodes.activeStepType.textContent = String(step.step_type || "idle");
+  }
+  if (nodes.activeStepLabel) {
+    nodes.activeStepLabel.textContent = String(step.label || "—");
+  }
+  if (nodes.activeStepSource) {
+    nodes.activeStepSource.textContent = String(step.source || "—");
+  }
+  if (nodes.activeStepTarget) {
+    nodes.activeStepTarget.textContent = String(step.target || "—");
+  }
+  if (nodes.activeStepMessage) {
+    nodes.activeStepMessage.textContent = String(step.message || "—");
+  }
+  if (nodes.activeStepAnchor) {
+    nodes.activeStepAnchor.textContent = String(step.source_anchor || "—");
+  }
+  if (nodes.activeStepDuration) {
+    nodes.activeStepDuration.textContent = formatDuration(step.duration_ms);
+  }
+
+  const executionButton = executionButtonMap.get(entry.trackIndex);
+  if (executionButton) {
+    executionButton.classList.add("is-active");
+  }
+
+  const stepButton = stepButtonMap.get(stepId(entry));
+  if (stepButton) {
+    stepButton.classList.add("is-active");
+  }
+
+  const diagramIndex = Number(track.diagram_index || 0);
+  if (diagramIndex > 0) {
+    const diagram = document.querySelector(`.diagram-shell[data-diagram-index="${diagramIndex}"]`);
+    if (diagram) {
+      diagram.classList.add("is-active");
+    }
+  }
+
+  if (nodes.activeExecutionMeta) {
+    nodes.activeExecutionMeta.dataset.activeStep = String(stepNumber);
+  }
+}
+
+function renderExecutionList() {
+  if (!nodes.executionList) {
+    return;
+  }
+
+  nodes.executionList.innerHTML = "";
+  executionButtonMap.clear();
+
+  if (!tracks.length) {
+    const empty = document.createElement("p");
+    empty.className = "panel-summary";
+    empty.textContent = "No execution tracks were extracted from the observation JSON.";
+    nodes.executionList.appendChild(empty);
+    return;
+  }
+
+  tracks.forEach((track, trackIndex) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "execution-track";
+    button.dataset.trackIndex = String(trackIndex);
+
+    const title = document.createElement("span");
+    title.className = "execution-track__title";
+    title.textContent = trackLabel(track);
+
+    const meta = document.createElement("span");
+    meta.className = "execution-track__meta";
+    const steps = Array.isArray(track.steps) ? track.steps.length : 0;
+    meta.textContent = `${track.execution_id || "execution"} · ${steps} step(s) · diagram ${track.diagram_index || 0}`;
+
+    button.append(title, meta);
+    button.addEventListener("click", () => {
+      const firstIndex = firstTimelineIndexForTrack(trackIndex);
+      if (firstIndex >= 0) {
+        setTimelineIndex(firstIndex);
+      }
+    });
+
+    executionButtonMap.set(trackIndex, button);
+    nodes.executionList.appendChild(button);
+  });
+}
+
+function renderStepList(trackIndex) {
+  if (!nodes.stepList) {
+    return;
+  }
+
+  nodes.stepList.innerHTML = "";
+  stepButtonMap.clear();
+
+  const track = tracks[trackIndex];
+  if (!track || !Array.isArray(track.steps)) {
+    const empty = document.createElement("li");
+    empty.className = "panel-summary";
+    empty.textContent = "Select an execution to inspect its steps.";
+    nodes.stepList.appendChild(empty);
+    return;
+  }
+
+  track.steps.forEach((step, stepIndex) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `step-card ${stepClass(step.step_type)}`;
+    button.dataset.stepId = `${track.execution_id || "execution"}.${stepIndex + 1}`;
+
+    const top = document.createElement("div");
+    top.className = "step-card__top";
+
+    const type = document.createElement("span");
+    type.className = "step-card__type";
+    type.textContent = `${step.step_type || "idle"} · #${stepIndex + 1}`;
+
+    const route = document.createElement("span");
+    route.className = "step-card__route";
+    route.textContent = `${step.source || "—"} → ${step.target || "—"}`;
+
+    top.append(type, route);
+
+    const message = document.createElement("div");
+    message.className = "step-card__message";
+    const messageParts = [step.label || "", step.message || ""].filter(Boolean);
+    message.textContent = messageParts.join(" · ");
+
+    button.append(top, message);
+    button.addEventListener("click", () => {
+      const index = timeline.findIndex((entry) => entry.trackIndex === trackIndex && entry.stepIndex === stepIndex);
+      if (index >= 0) {
+        setTimelineIndex(index);
+      }
+    });
+
+    stepButtonMap.set(`${track.execution_id || "execution"}.${stepIndex + 1}`, button);
+    nodes.stepList.appendChild(button);
+  });
+}
+
+function renderState() {
+  clearActiveClasses();
+  const entry = currentEntry();
+  if (!entry) {
+    updateActivePanels(null);
+    return;
+  }
+
+  renderStepList(entry.trackIndex);
+  updateActivePanels(entry);
+}
+
+async function renderMermaidDiagrams() {
+  const mermaidBlocks = document.querySelectorAll(".mermaid");
+  if (!mermaidBlocks.length) {
+    return;
+  }
+
+  try {
+    const module = await import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs");
+    const mermaid = module.default || module;
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "default",
+    });
+    await mermaid.run({ querySelector: ".mermaid" });
+  } catch (error) {
+    console.warn("Mermaid rendering failed", error);
+  }
+}
+
+function attachControls() {
+  if (nodes.buttons.previous) {
+    nodes.buttons.previous.addEventListener("click", () => previousStep());
+  }
+  if (nodes.buttons.play) {
+    nodes.buttons.play.addEventListener("click", () => playPlayback());
+  }
+  if (nodes.buttons.pause) {
+    nodes.buttons.pause.addEventListener("click", () => pausePlayback());
+  }
+  if (nodes.buttons.next) {
+    nodes.buttons.next.addEventListener("click", () => nextStep());
+  }
+  if (nodes.buttons.reset) {
+    nodes.buttons.reset.addEventListener("click", () => resetPlayback());
+  }
+  if (nodes.speedSelect) {
+    nodes.speedSelect.addEventListener("change", () => setSpeed(nodes.speedSelect.value));
+  }
+}
+
+async function bootstrapObservability() {
+  renderExecutionList();
+  renderState();
+  attachControls();
+  await renderMermaidDiagrams();
+  renderState();
+}
+
+bootstrapObservability().catch((error) => {
+  console.error("observability bootstrap failed", error);
+});
+
+  </script>
+</body>
+</html>

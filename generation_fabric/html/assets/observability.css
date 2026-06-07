@@ -1,0 +1,417 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-soft: #eef2f8;
+  --border: #d6dce8;
+  --border-strong: #b8c1d3;
+  --text: #17202f;
+  --muted: #5c6677;
+  --accent: #2457ff;
+  --accent-soft: rgba(36, 87, 255, 0.12);
+  --call: #2457ff;
+  --data: #0f9bb7;
+  --mutation: #d97706;
+  --branch: #7c3aed;
+  --return: #16a34a;
+  --error: #dc2626;
+  --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.observability-page {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+.markdown-page {
+  display: block;
+  padding: 1rem;
+}
+
+.markdown-page > .markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.execution-panel,
+.markdown-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.execution-panel {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem;
+}
+
+.panel-header {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.panel-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.panel-summary {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.playback-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.playback-toolbar button,
+.playback-toolbar select {
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+}
+
+.playback-toolbar button {
+  cursor: pointer;
+}
+
+.playback-toolbar button:hover,
+.playback-toolbar button:focus-visible,
+.execution-track:hover,
+.execution-track:focus-visible,
+.step-card:hover,
+.step-card:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.speed-control {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.active-step-panel,
+.execution-list-section,
+.step-list-section {
+  margin-top: 1rem;
+}
+
+.active-step-panel h2,
+.execution-list-section h2,
+.step-list-section h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.98rem;
+}
+
+.section-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.step-details {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.step-details > div {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.step-details dt {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.step-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.execution-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.execution-track {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text);
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.execution-track.is-active {
+  border-color: var(--accent);
+  background: #eef4ff;
+}
+
+.execution-track__title {
+  display: block;
+  font-weight: 650;
+}
+
+.execution-track__meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.step-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step-card {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.step-card.is-active {
+  border-color: var(--accent);
+  background: #f0f4ff;
+}
+
+.step-card__top {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-card__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.step-card__message {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.step-card__route {
+  font-weight: 600;
+}
+
+.markdown-body {
+  padding: clamp(1rem, 2.2vw, 2rem);
+  overflow: hidden;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-heading {
+  scroll-margin-top: 1rem;
+}
+
+.markdown-paragraph {
+  margin: 0.85rem 0;
+}
+
+.markdown-list,
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.4rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.markdown-list li,
+.markdown-body li {
+  margin: 0.35rem 0;
+}
+
+.markdown-blockquote {
+  margin: 1rem 0;
+  padding: 0.15rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: #f7f9ff;
+  color: var(--muted);
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.94rem;
+}
+
+.markdown-table th,
+.markdown-table td {
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.7rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.markdown-table th {
+  background: #f0f4ff;
+}
+
+.markdown-code,
+.mermaid-source {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.markdown-code code,
+.mermaid-source code {
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.diagram-shell {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.diagram-shell.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.diagram-shell .mermaid {
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+
+.diagram-source summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.diagram-source[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+.diagram-source pre {
+  margin: 0;
+}
+
+.call-step {
+  border-left-color: var(--call);
+}
+
+.data-step {
+  border-left-color: var(--data);
+}
+
+.mutation-step {
+  border-left-color: var(--mutation);
+}
+
+.branch-step {
+  border-left-color: var(--branch);
+}
+
+.return-step {
+  border-left-color: var(--return);
+}
+
+.idle-step {
+  border-left-color: var(--border-strong);
+}
+
+.error-step {
+  border-left-color: var(--error);
+}
+
+@media (max-width: 1080px) {
+  .observability-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-panel {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .observability-page,
+  .markdown-page {
+    padding: 0.65rem;
+  }
+
+  .step-details > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}

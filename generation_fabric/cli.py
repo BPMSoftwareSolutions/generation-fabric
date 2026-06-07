@@ -21,6 +21,7 @@ from generation_fabric.core.io import (
 from generation_fabric.css.renderer import render_css_document
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.html.renderer import render_html_document
+from generation_fabric.html.observability_page import write_observability_html_document
 from generation_fabric.json_documents.crud import create_node, delete_node, read_node, update_node
 from generation_fabric.json_documents.sample import build_json_sample_from_root
 from generation_fabric.layout.ascii_sketch import build_layout_zone_schema, build_zone_document
@@ -713,6 +714,30 @@ def worker_bee_observe_command(args: argparse.Namespace) -> int:
         )
     print(f"worker-bee observation written: {paths.markdown_path}")
     print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
+    if getattr(args, "with_html", False):
+        html_path = write_observability_html_document(
+            paths.markdown_path,
+            paths.data_path,
+            paths.schema_path,
+            output=str(Path(paths.markdown_path).with_suffix(".html")),
+            overwrite=args.overwrite,
+        )
+        print(f"worker-bee observability html written: {html_path}")
+        print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}, {html_path}")
+    return 0
+
+
+def worker_bee_observe_html_command(args: argparse.Namespace) -> int:
+    """Render an observability HTML projection from a Markdown report and sidecars."""
+
+    html_path = write_observability_html_document(
+        args.markdown_file,
+        args.data_file,
+        args.schema,
+        output=args.output,
+        overwrite=args.overwrite,
+    )
+    print(f"worker-bee observability html written: {html_path}")
     return 0
 
 
@@ -1401,7 +1426,43 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Allow replacing existing generated files",
     )
+    worker_bee_observe_parser.add_argument(
+        "--with-html",
+        action="store_true",
+        help="Also write a standalone observability HTML projection with the same stem",
+    )
     worker_bee_observe_parser.set_defaults(func=worker_bee_observe_command)
+
+    worker_bee_observe_html_parser = subparsers.add_parser(
+        "worker-bee-observe-html",
+        help="Render an observability HTML projection from an observation report",
+    )
+    worker_bee_observe_html_parser.add_argument(
+        "--markdown-file",
+        required=True,
+        help="Path to the generated Markdown observation report",
+    )
+    worker_bee_observe_html_parser.add_argument(
+        "--data-file",
+        required=True,
+        help="Path to the generated observation JSON sidecar",
+    )
+    worker_bee_observe_html_parser.add_argument(
+        "--schema",
+        required=True,
+        help="Path to the generated observation schema sidecar",
+    )
+    worker_bee_observe_html_parser.add_argument(
+        "--output",
+        default="",
+        help="HTML output path; defaults to the Markdown stem with .html",
+    )
+    worker_bee_observe_html_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing HTML output file",
+    )
+    worker_bee_observe_html_parser.set_defaults(func=worker_bee_observe_html_command)
 
     worker_bee_object_model_parser = subparsers.add_parser(
         "worker-bee-object-model",

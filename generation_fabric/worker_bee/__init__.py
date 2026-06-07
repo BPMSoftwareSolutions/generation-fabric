@@ -41,6 +41,11 @@ from .observation import (
     write_code_observation_document_from_taxonomy,
     write_code_observation_document,
 )
+from .observation_playback import (
+    ExecutionPlaybackStep,
+    ExecutionPlaybackTrack,
+    build_execution_playback_tracks,
+)
 from .taxonomy import (
     CodeTaxonomyCondition,
     CodeTaxonomyDocument,
@@ -101,6 +106,8 @@ __all__ = [
     "DeterministicWorkerBeePlanningProvider",
     "CodeObservationDocumentPaths",
     "PythonFunctionObservation",
+    "ExecutionPlaybackStep",
+    "ExecutionPlaybackTrack",
     "CodeTaxonomyCondition",
     "CodeTaxonomyDocument",
     "CodeTaxonomyDocumentPaths",
@@ -145,6 +152,7 @@ __all__ = [
     "build_worker_bee_document_schema",
     "build_default_worker_bee_strategy",
     "collect_python_function_observations",
+    "build_execution_playback_tracks",
     "extract_sketch_phrases",
     "infer_focus",
     "normalize_sketch_phrase",

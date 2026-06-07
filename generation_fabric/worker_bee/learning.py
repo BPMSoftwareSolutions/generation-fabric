@@ -55,6 +55,7 @@ DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "worker-bee-propose",
     "worker-bee-taxonomy",
     "worker-bee-observe",
+    "worker-bee-observe-html",
     "worker-bee-object-model",
     "worker-bee-generate",
 )
@@ -550,6 +551,44 @@ def _worker_bee_observation_case(root: Path) -> WorkerBeeLearningCaseResult:
     )
 
 
+def _worker_bee_observability_html_case(root: Path) -> WorkerBeeLearningCaseResult:
+    """Exercise observability HTML projection from a generated observation report."""
+
+    from generation_fabric.html.observability_page import write_observability_html_document
+
+    repo_root = _repo_root()
+    source_path = repo_root / "generation_fabric" / "worker_bee" / "planner.py"
+    markdown_path = root / "planner-observation.md"
+
+    paths = write_code_observation_document(
+        str(source_path),
+        output=str(markdown_path),
+        overwrite=True,
+    )
+    html_path = write_observability_html_document(
+        paths.markdown_path,
+        paths.data_path,
+        paths.schema_path,
+        output=str(Path(paths.markdown_path).with_suffix(".html")),
+        overwrite=True,
+    )
+
+    html = Path(html_path).read_text(encoding="utf-8")
+    if "<!DOCTYPE html>" not in html or "observability-playback-data" not in html:
+        raise SchemaError("observability HTML projection did not render a standalone HTML page")
+    if "execution-panel" not in html or "mermaid" not in html:
+        raise SchemaError("observability HTML projection did not include playback controls or Mermaid containers")
+
+    return WorkerBeeLearningCaseResult(
+        name="worker_bee_observability_html",
+        capabilities=("worker-bee-observe-html",),
+        passed=True,
+        details="observability HTML projection rendered a standalone playback page",
+        lessons=("The Markdown report can now project into an interactive HTML observability surface.",),
+        artifacts=(str(paths.schema_path), str(paths.data_path), str(paths.markdown_path), str(html_path)),
+    )
+
+
 def _worker_bee_object_model_case(root: Path) -> WorkerBeeLearningCaseResult:
     """Exercise object-model scanning and class-diagram rendering."""
 
@@ -736,6 +775,12 @@ def build_default_worker_bee_learning_cases() -> tuple[WorkerBeeLearningCase, ..
             capabilities=("worker-bee-observe",),
             description="Observe a Python file and render sequence diagrams",
             exercise=_worker_bee_observation_case,
+        ),
+        WorkerBeeLearningCase(
+            name="worker_bee_observability_html",
+            capabilities=("worker-bee-observe-html",),
+            description="Project an observation report into standalone HTML",
+            exercise=_worker_bee_observability_html_case,
         ),
         WorkerBeeLearningCase(
             name="worker_bee_object_model",

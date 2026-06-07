@@ -22,7 +22,7 @@ That lets us keep each responsibility isolated while still composing them into o
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
 - `scripts/generate_segment_examples.py` is the portable Python generator for the layout segment examples and inventories.
 - `tests/` contains end-to-end coverage for the published behaviors.
-- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, object-model observability, and document executor.
+- `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, observability playback, object-model observability, HTML observability projection, and document executor.
 
 If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).
 If you want the implementation plan, see [docs/compiler-pipeline-roadmap.md](docs/compiler-pipeline-roadmap.md).
@@ -143,10 +143,16 @@ Generate a Markdown document from a worker-bee brief:
 python json_schema_crud.py worker-bee-generate --brief 'Generate me a markdown file that has two ASCII sketches' --output generated/billboards.md
 ```
 
-Observe a Python file and render its execution paths as Mermaid sequence diagrams:
+Observe a Python file and render its execution paths as Mermaid sequence diagrams, with an optional HTML sidecar:
 
 ```powershell
-python json_schema_crud.py worker-bee-observe --source-file generation_fabric/worker_bee/planner.py --output generated/planner-observation.md
+python json_schema_crud.py worker-bee-observe --source-file generation_fabric/worker_bee/planner.py --output generated/planner-observation.md --with-html
+```
+
+Render the observability HTML projection from an existing Markdown report and its sidecars:
+
+```powershell
+python json_schema_crud.py worker-bee-observe-html --markdown-file generated/planner-observation.md --data-file generated/planner-observation.json --schema generated/planner-observation.schema.json --output generated/planner-observation.html
 ```
 
 Scan a Python file into reusable taxonomy JSON:
@@ -220,6 +226,7 @@ python json_schema_crud.py interactive
 - `worker-bee-plan`: build a deterministic generation packet from a brief
 - `worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON
 - `worker-bee-observe`: observe Python execution paths and render Mermaid sequence diagrams
+- `worker-bee-observe-html`: render the observability HTML projection from Markdown plus sidecars
 - `worker-bee-object-model`: scan Python source into an object-model taxonomy and render a coherence report
 - `worker-bee-propose`: build a provider-backed planning proposal from a brief
 - `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
@@ -285,6 +292,7 @@ The tests cover:
 - code observation and Mermaid sequence diagrams
 - object-model observability and class inventory reporting
 - worker-bee executor and Markdown generation
+- observability HTML projection and playback
 - worker-bee learning loop
 
 ## Design Principle

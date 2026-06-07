@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code Observation: provider</title>
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-soft: #eef2f8;
+  --border: #d6dce8;
+  --border-strong: #b8c1d3;
+  --text: #17202f;
+  --muted: #5c6677;
+  --accent: #2457ff;
+  --accent-soft: rgba(36, 87, 255, 0.12);
+  --call: #2457ff;
+  --data: #0f9bb7;
+  --mutation: #d97706;
+  --branch: #7c3aed;
+  --return: #16a34a;
+  --error: #dc2626;
+  --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.observability-page {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+}
+
+.markdown-page {
+  display: block;
+  padding: 1rem;
+}
+
+.markdown-page > .markdown-body {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.execution-panel,
+.markdown-body {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.execution-panel {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem;
+}
+
+.panel-header {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.panel-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.panel-summary {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.playback-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.playback-toolbar button,
+.playback-toolbar select {
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+}
+
+.playback-toolbar button {
+  cursor: pointer;
+}
+
+.playback-toolbar button:hover,
+.playback-toolbar button:focus-visible,
+.execution-track:hover,
+.execution-track:focus-visible,
+.step-card:hover,
+.step-card:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.speed-control {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.active-step-panel,
+.execution-list-section,
+.step-list-section {
+  margin-top: 1rem;
+}
+
+.active-step-panel h2,
+.execution-list-section h2,
+.step-list-section h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.98rem;
+}
+
+.section-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.step-details {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.step-details > div {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.step-details dt {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.step-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.execution-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.execution-track {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--text);
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.execution-track.is-active {
+  border-color: var(--accent);
+  background: #eef4ff;
+}
+
+.execution-track__title {
+  display: block;
+  font-weight: 650;
+}
+
+.execution-track__meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.step-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step-card {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.step-card.is-active {
+  border-color: var(--accent);
+  background: #f0f4ff;
+}
+
+.step-card__top {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-card__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.step-card__message {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.step-card__route {
+  font-weight: 600;
+}
+
+.markdown-body {
+  padding: clamp(1rem, 2.2vw, 2rem);
+  overflow: hidden;
+}
+
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+
+.markdown-heading {
+  scroll-margin-top: 1rem;
+}
+
+.markdown-paragraph {
+  margin: 0.85rem 0;
+}
+
+.markdown-list,
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.4rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.markdown-list li,
+.markdown-body li {
+  margin: 0.35rem 0;
+}
+
+.markdown-blockquote {
+  margin: 1rem 0;
+  padding: 0.15rem 1rem;
+  border-left: 4px solid var(--accent);
+  background: #f7f9ff;
+  color: var(--muted);
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.94rem;
+}
+
+.markdown-table th,
+.markdown-table td {
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.7rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.markdown-table th {
+  background: #f0f4ff;
+}
+
+.markdown-code,
+.mermaid-source {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.markdown-code code,
+.mermaid-source code {
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.diagram-shell {
+  margin: 1rem 0 1.25rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.diagram-shell.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.diagram-shell .mermaid {
+  margin-top: 0.75rem;
+  overflow-x: auto;
+}
+
+.diagram-source summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.diagram-source[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+.diagram-source pre {
+  margin: 0;
+}
+
+.call-step {
+  border-left-color: var(--call);
+}
+
+.data-step {
+  border-left-color: var(--data);
+}
+
+.mutation-step {
+  border-left-color: var(--mutation);
+}
+
+.branch-step {
+  border-left-color: var(--branch);
+}
+
+.return-step {
+  border-left-color: var(--return);
+}
+
+.idle-step {
+  border-left-color: var(--border-strong);
+}
+
+.error-step {
+  border-left-color: var(--error);
+}
+
+@media (max-width: 1080px) {
+  .observability-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .execution-panel {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .observability-page,
+  .markdown-page {
+    padding: 0.65rem;
+  }
+
+  .step-details > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}
+
+  </style>
+</head>
+<body class="observability-page">
+<main class="observability-page">
+  <aside class="execution-panel">
+    <div class="panel-header">
+      <p class="eyebrow">Execution Playback</p>
+      <h1 id="active-execution-title">Loading playback...</h1>
+      <p id="active-execution-meta" class="panel-summary">Mermaid diagrams and execution steps will appear here.</p>
+    </div>
+    <div class="playback-toolbar" role="group" aria-label="Playback controls">
+      <button type="button" data-action="previous">Previous</button>
+      <button type="button" data-action="play">Play</button>
+      <button type="button" data-action="pause">Pause</button>
+      <button type="button" data-action="next">Next</button>
+      <button type="button" data-action="reset">Reset</button>
+      <label class="speed-control">
+        Speed
+        <select id="playback-speed">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+      </label>
+    </div>
+    <section class="active-step-panel">
+      <h2>Active Step</h2>
+      <dl class="step-details">
+        <div><dt>Type</dt><dd id="active-step-type">—</dd></div>
+        <div><dt>Label</dt><dd id="active-step-label">—</dd></div>
+        <div><dt>Source</dt><dd id="active-step-source">—</dd></div>
+        <div><dt>Target</dt><dd id="active-step-target">—</dd></div>
+        <div><dt>Message</dt><dd id="active-step-message">—</dd></div>
+        <div><dt>Anchor</dt><dd id="active-step-anchor">—</dd></div>
+        <div><dt>Duration</dt><dd id="active-step-duration">—</dd></div>
+      </dl>
+    </section>
+    <section class="execution-list-section">
+      <h2>Executions <span class="section-count">(5)</span></h2>
+      <div class="execution-list" id="execution-list" data-track-count="5">
+      </div>
+    </section>
+    <section class="step-list-section">
+      <h2>Steps <span class="section-count">(57)</span></h2>
+      <ol class="step-list" id="step-list" data-step-count="57">
+      </ol>
+    </section>
+  </aside>
+  <article class="markdown-body">
+<h1 class="markdown-heading">Code Observation: provider</h1>
+<p class="markdown-paragraph">A contract-backed code observation that inventories the source file before rendering the observed executions, data batons, state changes, and returns as Mermaid sequence diagrams.</p>
+<h2 class="markdown-heading">Overview</h2>
+<p class="markdown-paragraph"><strong>source_file</strong>: generation_fabric/worker_bee/provider.py</p>
+<p class="markdown-paragraph"><strong>module_path</strong>: generation_fabric.worker_bee.provider</p>
+<p class="markdown-paragraph"><strong>source_hash</strong>: sha256:c0b26cae6040c133ee7039ce3c9319327e77a5b90822ff5e580c092b87814fac</p>
+<p class="markdown-paragraph"><strong>shape</strong>: sequence-diagram</p>
+<p class="markdown-paragraph">Observed 5 execution(s) in provider.py and projected triggers, data batons, state changes, and returns into Mermaid sequence diagrams.</p>
+<h2 class="markdown-heading">Code Inventory</h2>
+<table class="markdown-table">
+  <thead>
+    <tr>
+      <th>label</th>
+      <th>kind</th>
+      <th>role</th>
+      <th>responsibility</th>
+      <th>anchor</th>
+      <th>line_start</th>
+      <th>line_end</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Worker Bee Plan Proposal</td>
+      <td>class</td>
+      <td>Worker Bee Plan Proposal</td>
+      <td>Describe a provider-backed planning proposal</td>
+      <td>generation_fabric/worker_bee/provider.py:16-32</td>
+      <td>16</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>Worker Bee Plan Proposal To Dict</td>
+      <td>method</td>
+      <td>Worker Bee Plan Proposal Serializer</td>
+      <td>Serialize the proposal into JSON-friendly data</td>
+      <td>generation_fabric/worker_bee/provider.py:29-32</td>
+      <td>29</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>Worker Bee Planning Provider</td>
+      <td>class</td>
+      <td>Worker Bee Planning Provider</td>
+      <td>Protocol for a provider that proposes a worker-bee plan</td>
+      <td>generation_fabric/worker_bee/provider.py:35-41</td>
+      <td>35</td>
+      <td>41</td>
+    </tr>
+    <tr>
+      <td>Worker Bee Planning Provider Propose</td>
+      <td>method</td>
+      <td>Worker Bee Planning Provider Propose</td>
+      <td>Return a planning proposal for a brief</td>
+      <td>generation_fabric/worker_bee/provider.py:40-41</td>
+      <td>40</td>
+      <td>41</td>
+    </tr>
+    <tr>
+      <td>Deterministic Worker Bee Planning Provider</td>
+      <td>class</td>
+      <td>Deterministic Worker Bee Planning Provider</td>
+      <td>Deterministic provider used until a real model adapter is plugged in</td>
+      <td>generation_fabric/worker_bee/provider.py:45-84</td>
+      <td>45</td>
+      <td>84</td>
+    </tr>
+    <tr>
+      <td>Deterministic Worker Bee Planning Provider Propose</td>
+      <td>method</td>
+      <td>Deterministic Worker Bee Planning Provider Propose</td>
+      <td>Return a deterministic planning proposal for a brief</td>
+      <td>generation_fabric/worker_bee/provider.py:50-84</td>
+      <td>50</td>
+      <td>84</td>
+    </tr>
+    <tr>
+      <td>Propose Worker Bee Plan</td>
+      <td>function</td>
+      <td>Propose Worker Bee Plan</td>
+      <td>Produce a provider-backed planning proposal</td>
+      <td>generation_fabric/worker_bee/provider.py:87-97</td>
+      <td>87</td>
+      <td>97</td>
+    </tr>
+    <tr>
+      <td>Build Provider Backed Generation Packet</td>
+      <td>function</td>
+      <td>Provider Backed Generation Packet Builder</td>
+      <td>Build a generation packet by first passing through a provider proposal</td>
+      <td>generation_fabric/worker_bee/provider.py:100-113</td>
+      <td>100</td>
+      <td>113</td>
+    </tr>
+  </tbody>
+</table>
+<h2 class="markdown-heading">Executions</h2>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: WorkerBeePlanProposal.to_dict</p>
+<p class="markdown-paragraph"><strong>kind</strong>: method</p>
+<p class="markdown-paragraph"><strong>role</strong>: Worker Bee Plan Proposal Serializer</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Serialize the proposal into JSON-friendly data</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/provider.py:29-32</p>
+<pre class="markdown-code" data-language="python"><code>def WorkerBeePlanProposal.to_dict(self) -&gt; dict[str, Any]</code></pre>
+<p class="markdown-paragraph">Serialize the proposal into JSON-friendly data.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Worker Bee Plan Proposal Serializer</li>
+  <li>Dataclass Serializer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Worker Bee Plan Proposal Serializer</li>
+  <li>owner Worker Bee Plan Proposal</li>
+  <li>return to_jsonable_dataclass(self)</li>
+  <li>data to_jsonable_dataclass: self</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">to_jsonable_dataclass(self)</p>
+<div class="diagram-shell" data-diagram-index="1">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Worker_Bee_Plan_Proposal_Serializer as Worker Bee Plan Proposal Serializer
+    participant Dataclass_Serializer as Dataclass Serializer
+    Caller-&gt;&gt;Worker_Bee_Plan_Proposal_Serializer: invoke
+    Worker_Bee_Plan_Proposal_Serializer-&gt;&gt;Dataclass_Serializer: data: self
+    Dataclass_Serializer--&gt;&gt;Worker_Bee_Plan_Proposal_Serializer: return
+    Worker_Bee_Plan_Proposal_Serializer--&gt;&gt;Caller: return to_jsonable_dataclass(self)</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="1">sequenceDiagram
+    participant Caller
+    participant Worker_Bee_Plan_Proposal_Serializer as Worker Bee Plan Proposal Serializer
+    participant Dataclass_Serializer as Dataclass Serializer
+    Caller-&gt;&gt;Worker_Bee_Plan_Proposal_Serializer: invoke
+    Worker_Bee_Plan_Proposal_Serializer-&gt;&gt;Dataclass_Serializer: data: self
+    Dataclass_Serializer--&gt;&gt;Worker_Bee_Plan_Proposal_Serializer: return
+    Worker_Bee_Plan_Proposal_Serializer--&gt;&gt;Caller: return to_jsonable_dataclass(self)</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a method in the code flow.</li>
+  <li>Return points detected on lines: 32.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: WorkerBeePlanningProvider.propose</p>
+<p class="markdown-paragraph"><strong>kind</strong>: method</p>
+<p class="markdown-paragraph"><strong>role</strong>: Worker Bee Planning Provider Propose</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Return a planning proposal for a brief</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/provider.py:40-41</p>
+<pre class="markdown-code" data-language="python"><code>def WorkerBeePlanningProvider.propose(self, brief, base_name='', focus='') -&gt; WorkerBeePlanProposal</code></pre>
+<p class="markdown-paragraph">Return a planning proposal for a brief.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Worker Bee Planning Provider Propose</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Worker Bee Planning Provider Propose</li>
+  <li>owner Worker Bee Planning Provider</li>
+  <li>no helper calls observed</li>
+  <li>return</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">return</p>
+<div class="diagram-shell" data-diagram-index="2">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Worker_Bee_Planning_Provider_Propose as Worker Bee Planning Provider Propose
+    Caller-&gt;&gt;Worker_Bee_Planning_Provider_Propose: invoke
+    Worker_Bee_Planning_Provider_Propose--&gt;&gt;Caller: return</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="2">sequenceDiagram
+    participant Caller
+    participant Worker_Bee_Planning_Provider_Propose as Worker Bee Planning Provider Propose
+    Caller-&gt;&gt;Worker_Bee_Planning_Provider_Propose: invoke
+    Worker_Bee_Planning_Provider_Propose--&gt;&gt;Caller: return</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a method in the code flow.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: DeterministicWorkerBeePlanningProvider.propose</p>
+<p class="markdown-paragraph"><strong>kind</strong>: method</p>
+<p class="markdown-paragraph"><strong>role</strong>: Deterministic Worker Bee Planning Provider Propose</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Return a deterministic planning proposal for a brief</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/provider.py:50-84</p>
+<pre class="markdown-code" data-language="python"><code>def DeterministicWorkerBeePlanningProvider.propose(self, brief, base_name='', focus='') -&gt; WorkerBeePlanProposal</code></pre>
+<p class="markdown-paragraph">Return a deterministic planning proposal for a brief.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Deterministic Worker Bee Planning Provider Propose</li>
+  <li>Brief Normalizer</li>
+  <li>Text Slugifier</li>
+  <li>Focus Inference</li>
+  <li>Worker Bee Planning Prompt Builder</li>
+  <li>Worker Bee Plan Proposal</li>
+  <li>Brief Summarizer</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Deterministic Worker Bee Planning Provider Propose</li>
+  <li>owner Deterministic Worker Bee Planning Provider</li>
+  <li>mutation normalized_brief = normalize_brief(brief)</li>
+  <li>data normalize_brief: brief</li>
+  <li>branch: if not normalized_brief</li>
+  <li>mutation resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)</li>
+  <li>data slugify_text: base_name</li>
+  <li>data slugify_text: normalized_brief</li>
+  <li>mutation resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)</li>
+  <li>data normalize_brief: focus</li>
+  <li>data infer_focus: normalized_brief</li>
+  <li>mutation prompt = build_worker_bee_planning_prompt(normalized_brief, base_name=resolved_base_na...</li>
+  <li>data build_worker_bee_planning_prompt: normalized_brief, base_name=resolved_base_name, focus=resolved_focus</li>
+  <li>mutation rationale = "A deterministic local provider preserves the contract boundary while keeping...</li>
+  <li>mutation recommendations = ( "reuse the existing fabric primitives", "validate the proposal before execu...</li>
+  <li>mutation metadata = { "provider_kind": "local", "provider_mode": "deterministic", "brief_length":...</li>
+  <li>return WorkerBeePlanProposal( provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normal...</li>
+  <li>data WorkerBeePlanProposal: provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normalize...</li>
+  <li>data summarize_brief: normalized_brief</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">normalized_brief = normalize_brief(brief)</p>
+<p class="markdown-paragraph">resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)</p>
+<p class="markdown-paragraph">resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)</p>
+<p class="markdown-paragraph">prompt = build_worker_bee_planning_prompt(normalized_brief, base_name=resolved_base_na...</p>
+<p class="markdown-paragraph">rationale = "A deterministic local provider preserves the contract boundary while keeping...</p>
+<p class="markdown-paragraph">recommendations = ( "reuse the existing fabric primitives", "validate the proposal before execu...</p>
+<p class="markdown-paragraph">metadata = { "provider_kind": "local", "provider_mode": "deterministic", "brief_length":...</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">WorkerBeePlanProposal( provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normal...</p>
+<div class="diagram-shell" data-diagram-index="3">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Deterministic_Worker_Bee_Planning_Provider_Propose as Deterministic Worker Bee Planning Provider Propose
+    participant Brief_Normalizer as Brief Normalizer
+    participant Text_Slugifier as Text Slugifier
+    participant Focus_Inference as Focus Inference
+    participant Worker_Bee_Planning_Prompt_Builder as Worker Bee Planning Prompt Builder
+    participant Worker_Bee_Plan_Proposal as Worker Bee Plan Proposal
+    participant Brief_Summarizer as Brief Summarizer
+    Caller-&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: invoke
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - normalized_brief = normalize_brief(brief)
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: if not normalized_brief branch observed
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Text_Slugifier: data: base_name
+    Text_Slugifier--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Text_Slugifier: data: normalized_brief
+    Text_Slugifier--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Brief_Normalizer: data: focus
+    Brief_Normalizer--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Focus_Inference: data: normalized_brief
+    Focus_Inference--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - prompt = build_worker_bee_planning_prompt(normalized_brief, base_name=resolved_base_na...
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Worker_Bee_Planning_Prompt_Builder: data: normalized_brief, base_name=resolved_base_name, focus=resolved_focus
+    Worker_Bee_Planning_Prompt_Builder--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - rationale = "A deterministic local provider preserves the contract boundary while keeping...
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - recommendations = ( "reuse the existing fabric primitives", "validate the proposal before execu...
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - metadata = { "provider_kind": "local", "provider_mode": "deterministic", "brief_length":...
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Worker_Bee_Plan_Proposal: data: provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normalize...
+    Worker_Bee_Plan_Proposal--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Brief_Summarizer: data: normalized_brief
+    Brief_Summarizer--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose--&gt;&gt;Caller: return WorkerBeePlanProposal( provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normal...</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="3">sequenceDiagram
+    participant Caller
+    participant Deterministic_Worker_Bee_Planning_Provider_Propose as Deterministic Worker Bee Planning Provider Propose
+    participant Brief_Normalizer as Brief Normalizer
+    participant Text_Slugifier as Text Slugifier
+    participant Focus_Inference as Focus Inference
+    participant Worker_Bee_Planning_Prompt_Builder as Worker Bee Planning Prompt Builder
+    participant Worker_Bee_Plan_Proposal as Worker Bee Plan Proposal
+    participant Brief_Summarizer as Brief Summarizer
+    Caller-&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: invoke
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - normalized_brief = normalize_brief(brief)
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Brief_Normalizer: data: brief
+    Brief_Normalizer--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: if not normalized_brief branch observed
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Text_Slugifier: data: base_name
+    Text_Slugifier--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Text_Slugifier: data: normalized_brief
+    Text_Slugifier--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Brief_Normalizer: data: focus
+    Brief_Normalizer--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Focus_Inference: data: normalized_brief
+    Focus_Inference--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - prompt = build_worker_bee_planning_prompt(normalized_brief, base_name=resolved_base_na...
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Worker_Bee_Planning_Prompt_Builder: data: normalized_brief, base_name=resolved_base_name, focus=resolved_focus
+    Worker_Bee_Planning_Prompt_Builder--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - rationale = "A deterministic local provider preserves the contract boundary while keeping...
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - recommendations = ( "reuse the existing fabric primitives", "validate the proposal before execu...
+    note over Deterministic_Worker_Bee_Planning_Provider_Propose: mutation observed - metadata = { "provider_kind": "local", "provider_mode": "deterministic", "brief_length":...
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Worker_Bee_Plan_Proposal: data: provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normalize...
+    Worker_Bee_Plan_Proposal--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose-&gt;&gt;Brief_Summarizer: data: normalized_brief
+    Brief_Summarizer--&gt;&gt;Deterministic_Worker_Bee_Planning_Provider_Propose: return
+    Deterministic_Worker_Bee_Planning_Provider_Propose--&gt;&gt;Caller: return WorkerBeePlanProposal( provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normal...</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a method in the code flow.</li>
+  <li>Branch markers detected: if.</li>
+  <li>Captured 1 condition(s) for reuse by the worker bee.</li>
+  <li>Captured 7 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 74.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: propose_worker_bee_plan</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Propose Worker Bee Plan</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Produce a provider-backed planning proposal</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/provider.py:87-97</p>
+<pre class="markdown-code" data-language="python"><code>def propose_worker_bee_plan(brief, provider=None, *, base_name='', focus='') -&gt; WorkerBeePlanProposal</code></pre>
+<p class="markdown-paragraph">Produce a provider-backed planning proposal.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Propose Worker Bee Plan</li>
+  <li>Deterministic Worker Bee Planning Provider</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Propose Worker Bee Plan</li>
+  <li>mutation active_provider = provider or DeterministicWorkerBeePlanningProvider()</li>
+  <li>trigger DeterministicWorkerBeePlanningProvider</li>
+  <li>return active_provider.propose(brief, base_name=base_name, focus=focus)</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">active_provider = provider or DeterministicWorkerBeePlanningProvider()</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">active_provider.propose(brief, base_name=base_name, focus=focus)</p>
+<div class="diagram-shell" data-diagram-index="4">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Propose_Worker_Bee_Plan as Propose Worker Bee Plan
+    participant Deterministic_Worker_Bee_Planning_Provider as Deterministic Worker Bee Planning Provider
+    Caller-&gt;&gt;Propose_Worker_Bee_Plan: invoke
+    note over Propose_Worker_Bee_Plan: mutation observed - active_provider = provider or DeterministicWorkerBeePlanningProvider()
+    Propose_Worker_Bee_Plan-&gt;&gt;Deterministic_Worker_Bee_Planning_Provider: trigger
+    Deterministic_Worker_Bee_Planning_Provider--&gt;&gt;Propose_Worker_Bee_Plan: return
+    Propose_Worker_Bee_Plan--&gt;&gt;Caller: return active_provider.propose(brief, base_name=base_name, focus=focus)</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="4">sequenceDiagram
+    participant Caller
+    participant Propose_Worker_Bee_Plan as Propose Worker Bee Plan
+    participant Deterministic_Worker_Bee_Planning_Provider as Deterministic Worker Bee Planning Provider
+    Caller-&gt;&gt;Propose_Worker_Bee_Plan: invoke
+    note over Propose_Worker_Bee_Plan: mutation observed - active_provider = provider or DeterministicWorkerBeePlanningProvider()
+    Propose_Worker_Bee_Plan-&gt;&gt;Deterministic_Worker_Bee_Planning_Provider: trigger
+    Deterministic_Worker_Bee_Planning_Provider--&gt;&gt;Propose_Worker_Bee_Plan: return
+    Propose_Worker_Bee_Plan--&gt;&gt;Caller: return active_provider.propose(brief, base_name=base_name, focus=focus)</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Captured 1 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 97.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<h3 class="markdown-heading">Execution</h3>
+<p class="markdown-paragraph"><strong>name</strong>: build_provider_backed_generation_packet</p>
+<p class="markdown-paragraph"><strong>kind</strong>: function</p>
+<p class="markdown-paragraph"><strong>role</strong>: Provider Backed Generation Packet Builder</p>
+<p class="markdown-paragraph"><strong>responsibility</strong>: Build a generation packet by first passing through a provider proposal</p>
+<p class="markdown-paragraph"><strong>anchor</strong>: generation_fabric/worker_bee/provider.py:100-113</p>
+<pre class="markdown-code" data-language="python"><code>def build_provider_backed_generation_packet(brief, provider=None, *, base_name='', focus='')</code></pre>
+<p class="markdown-paragraph">Build a generation packet by first passing through a provider proposal.</p>
+<ul class="markdown-list">
+  <li>Caller</li>
+  <li>Provider Backed Generation Packet Builder</li>
+  <li>Propose Worker Bee Plan</li>
+  <li>Generation Packet Builder</li>
+</ul>
+<ol class="markdown-list">
+  <li>trigger Provider Backed Generation Packet Builder</li>
+  <li>mutation proposal = propose_worker_bee_plan(brief, provider=provider, base_name=base_name, focus=...</li>
+  <li>data propose_worker_bee_plan: brief, provider=provider, base_name=base_name, focus=focus</li>
+  <li>mutation packet = build_generation_packet(brief, base_name=proposal.base_name, focus=proposal.f...</li>
+  <li>data build_generation_packet: brief, base_name=proposal.base_name, focus=proposal.focus</li>
+  <li>mutation packet.metadata["planner_mode"] = "provider-backed"</li>
+  <li>mutation packet.metadata["provider"] = proposal.to_dict()</li>
+  <li>return packet</li>
+</ol>
+<h4 class="markdown-heading">State Changes</h4>
+<p class="markdown-paragraph">proposal = propose_worker_bee_plan(brief, provider=provider, base_name=base_name, focus=...</p>
+<p class="markdown-paragraph">packet = build_generation_packet(brief, base_name=proposal.base_name, focus=proposal.f...</p>
+<p class="markdown-paragraph">packet.metadata["planner_mode"] = "provider-backed"</p>
+<p class="markdown-paragraph">packet.metadata["provider"] = proposal.to_dict()</p>
+<h4 class="markdown-heading">Returns</h4>
+<p class="markdown-paragraph">packet</p>
+<div class="diagram-shell" data-diagram-index="5">
+  <details class="diagram-source" open>
+    <summary>Mermaid source</summary>
+    <pre class="mermaid-source"><code>sequenceDiagram
+    participant Caller
+    participant Provider_Backed_Generation_Packet_Builder as Provider Backed Generation Packet Builder
+    participant Propose_Worker_Bee_Plan as Propose Worker Bee Plan
+    participant Generation_Packet_Builder as Generation Packet Builder
+    Caller-&gt;&gt;Provider_Backed_Generation_Packet_Builder: invoke
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - proposal = propose_worker_bee_plan(brief, provider=provider, base_name=base_name, focus=...
+    Provider_Backed_Generation_Packet_Builder-&gt;&gt;Propose_Worker_Bee_Plan: data: brief, provider=provider, base_name=base_name, focus=focus
+    Propose_Worker_Bee_Plan--&gt;&gt;Provider_Backed_Generation_Packet_Builder: return
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - packet = build_generation_packet(brief, base_name=proposal.base_name, focus=proposal.f...
+    Provider_Backed_Generation_Packet_Builder-&gt;&gt;Generation_Packet_Builder: data: brief, base_name=proposal.base_name, focus=proposal.focus
+    Generation_Packet_Builder--&gt;&gt;Provider_Backed_Generation_Packet_Builder: return
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - packet.metadata["planner_mode"] = "provider-backed"
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - packet.metadata["provider"] = proposal.to_dict()
+    Provider_Backed_Generation_Packet_Builder--&gt;&gt;Caller: return packet</code></pre>
+  </details>
+  <div class="mermaid" data-diagram-index="5">sequenceDiagram
+    participant Caller
+    participant Provider_Backed_Generation_Packet_Builder as Provider Backed Generation Packet Builder
+    participant Propose_Worker_Bee_Plan as Propose Worker Bee Plan
+    participant Generation_Packet_Builder as Generation Packet Builder
+    Caller-&gt;&gt;Provider_Backed_Generation_Packet_Builder: invoke
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - proposal = propose_worker_bee_plan(brief, provider=provider, base_name=base_name, focus=...
+    Provider_Backed_Generation_Packet_Builder-&gt;&gt;Propose_Worker_Bee_Plan: data: brief, provider=provider, base_name=base_name, focus=focus
+    Propose_Worker_Bee_Plan--&gt;&gt;Provider_Backed_Generation_Packet_Builder: return
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - packet = build_generation_packet(brief, base_name=proposal.base_name, focus=proposal.f...
+    Provider_Backed_Generation_Packet_Builder-&gt;&gt;Generation_Packet_Builder: data: brief, base_name=proposal.base_name, focus=proposal.focus
+    Generation_Packet_Builder--&gt;&gt;Provider_Backed_Generation_Packet_Builder: return
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - packet.metadata["planner_mode"] = "provider-backed"
+    note over Provider_Backed_Generation_Packet_Builder: mutation observed - packet.metadata["provider"] = proposal.to_dict()
+    Provider_Backed_Generation_Packet_Builder--&gt;&gt;Caller: return packet</div>
+</div>
+<ul class="markdown-list">
+  <li>Observed as a function in the code flow.</li>
+  <li>Captured 4 state change(s) for the execution path.</li>
+  <li>Return points detected on lines: 113.</li>
+  <li>Docstring captured as part of the contract.</li>
+</ul>
+<ul class="markdown-list">
+  <li>The worker bee extracts a shape from code before rendering any Markdown.</li>
+  <li>The code inventory anchors declarations, while executions show triggers, data batons, mutations, and returns.</li>
+</ul>
+  </article>
+</main>
+  <script type="application/json" id="observability-playback-data">{
+  "title": "Code Observation: provider",
+  "track_count": 5,
+  "step_count": 57,
+  "tracks": [
+    {
+      "execution_id": "worker-bee-plan-proposal-serializer",
+      "title": "Worker Bee Plan Proposal Serializer",
+      "diagram_index": 1,
+      "participants": [
+        "Caller",
+        "Worker Bee Plan Proposal Serializer",
+        "Dataclass Serializer"
+      ],
+      "steps": [
+        {
+          "execution_id": "worker-bee-plan-proposal-serializer",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Worker Bee Plan Proposal Serializer",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:29-32",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "worker-bee-plan-proposal-serializer",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Worker Bee Plan Proposal Serializer",
+          "target": "Worker Bee Plan Proposal Serializer",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:29-32",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "worker-bee-plan-proposal-serializer",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Worker Bee Plan Proposal Serializer",
+          "target": "Worker Bee Plan Proposal Serializer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:29-32",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "worker-bee-plan-proposal-serializer",
+          "step_index": 4,
+          "step_type": "data",
+          "label": "data",
+          "source": "Worker Bee Plan Proposal Serializer",
+          "target": "to_jsonable_dataclass",
+          "message": "self",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:29-32",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "worker-bee-plan-proposal-serializer",
+          "step_index": 5,
+          "step_type": "return",
+          "label": "return",
+          "source": "to_jsonable_dataclass",
+          "target": "Worker Bee Plan Proposal Serializer",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:29-32",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "worker-bee-plan-proposal-serializer",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "Worker Bee Plan Proposal Serializer",
+          "target": "Caller",
+          "message": "to_jsonable_dataclass(self)",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:29-32",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "worker-bee-planning-provider-propose",
+      "title": "Worker Bee Planning Provider Propose",
+      "diagram_index": 2,
+      "participants": [
+        "Caller",
+        "Worker Bee Planning Provider Propose"
+      ],
+      "steps": [
+        {
+          "execution_id": "worker-bee-planning-provider-propose",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Worker Bee Planning Provider Propose",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:40-41",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "worker-bee-planning-provider-propose",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Worker Bee Planning Provider Propose",
+          "target": "Worker Bee Planning Provider Propose",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:40-41",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "worker-bee-planning-provider-propose",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Worker Bee Planning Provider Propose",
+          "target": "Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:40-41",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "worker-bee-planning-provider-propose",
+          "step_index": 4,
+          "step_type": "return",
+          "label": "return",
+          "source": "Worker Bee Planning Provider Propose",
+          "target": "Caller",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:40-41",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "deterministic-worker-bee-planning-provider-propose",
+      "title": "Deterministic Worker Bee Planning Provider Propose",
+      "diagram_index": 3,
+      "participants": [
+        "Caller",
+        "Deterministic Worker Bee Planning Provider Propose",
+        "Brief Normalizer",
+        "Text Slugifier",
+        "Focus Inference",
+        "Worker Bee Planning Prompt Builder",
+        "Worker Bee Plan Proposal",
+        "Brief Summarizer"
+      ],
+      "steps": [
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "normalized_brief = normalize_brief(brief)",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "normalize_brief",
+          "message": "brief",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 7,
+          "step_type": "branch",
+          "label": "branch",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "if not normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 700
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 8,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "resolved_base_name = slugify_text(base_name) if base_name else slugify_text(normalized_brief)",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 9,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "slugify_text",
+          "message": "base_name",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 10,
+          "step_type": "return",
+          "label": "return",
+          "source": "slugify_text",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 11,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "slugify_text",
+          "message": "normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 12,
+          "step_type": "return",
+          "label": "return",
+          "source": "slugify_text",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 13,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "resolved_focus = normalize_brief(focus).lower() if focus else infer_focus(normalized_brief)",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 14,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "normalize_brief",
+          "message": "focus",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 15,
+          "step_type": "return",
+          "label": "return",
+          "source": "normalize_brief",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 16,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "infer_focus",
+          "message": "normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 17,
+          "step_type": "return",
+          "label": "return",
+          "source": "infer_focus",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 18,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "prompt = build_worker_bee_planning_prompt(normalized_brief, base_name=resolved_base_na...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 19,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "build_worker_bee_planning_prompt",
+          "message": "normalized_brief, base_name=resolved_base_name, focus=resolved_focus",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 20,
+          "step_type": "return",
+          "label": "return",
+          "source": "build_worker_bee_planning_prompt",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 21,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "rationale = \"A deterministic local provider preserves the contract boundary while keeping...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 22,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "recommendations = ( \"reuse the existing fabric primitives\", \"validate the proposal before execu...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 23,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "metadata = { \"provider_kind\": \"local\", \"provider_mode\": \"deterministic\", \"brief_length\":...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 24,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "WorkerBeePlanProposal",
+          "message": "provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normalize...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 25,
+          "step_type": "return",
+          "label": "return",
+          "source": "WorkerBeePlanProposal",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 26,
+          "step_type": "data",
+          "label": "data",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "summarize_brief",
+          "message": "normalized_brief",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 27,
+          "step_type": "return",
+          "label": "return",
+          "source": "summarize_brief",
+          "target": "Deterministic Worker Bee Planning Provider Propose",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "deterministic-worker-bee-planning-provider-propose",
+          "step_index": 28,
+          "step_type": "return",
+          "label": "return",
+          "source": "Deterministic Worker Bee Planning Provider Propose",
+          "target": "Caller",
+          "message": "WorkerBeePlanProposal( provider_name=self.provider_name, brief=normalized_brief, brief_summary=summarize_brief(normal...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:50-84",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "propose-worker-bee-plan",
+      "title": "Propose Worker Bee Plan",
+      "diagram_index": 4,
+      "participants": [
+        "Caller",
+        "Propose Worker Bee Plan",
+        "Deterministic Worker Bee Planning Provider"
+      ],
+      "steps": [
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Propose Worker Bee Plan",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Propose Worker Bee Plan",
+          "target": "Propose Worker Bee Plan",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Propose Worker Bee Plan",
+          "target": "Propose Worker Bee Plan",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Propose Worker Bee Plan",
+          "target": "Propose Worker Bee Plan",
+          "message": "active_provider = provider or DeterministicWorkerBeePlanningProvider()",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 5,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Propose Worker Bee Plan",
+          "target": "DeterministicWorkerBeePlanningProvider",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "DeterministicWorkerBeePlanningProvider",
+          "target": "Propose Worker Bee Plan",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "propose-worker-bee-plan",
+          "step_index": 7,
+          "step_type": "return",
+          "label": "return",
+          "source": "Propose Worker Bee Plan",
+          "target": "Caller",
+          "message": "active_provider.propose(brief, base_name=base_name, focus=focus)",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:87-97",
+          "duration_ms": 800
+        }
+      ]
+    },
+    {
+      "execution_id": "provider-backed-generation-packet-builder",
+      "title": "Provider Backed Generation Packet Builder",
+      "diagram_index": 5,
+      "participants": [
+        "Caller",
+        "Provider Backed Generation Packet Builder",
+        "Propose Worker Bee Plan",
+        "Generation Packet Builder"
+      ],
+      "steps": [
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 1,
+          "step_type": "call",
+          "label": "invoke",
+          "source": "Caller",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "invoke",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 2,
+          "step_type": "call",
+          "label": "trigger",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "trigger",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 900
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 3,
+          "step_type": "return",
+          "label": "return",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 4,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "proposal = propose_worker_bee_plan(brief, provider=provider, base_name=base_name, focus=...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 5,
+          "step_type": "data",
+          "label": "data",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "propose_worker_bee_plan",
+          "message": "brief, provider=provider, base_name=base_name, focus=focus",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 6,
+          "step_type": "return",
+          "label": "return",
+          "source": "propose_worker_bee_plan",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 7,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "packet = build_generation_packet(brief, base_name=proposal.base_name, focus=proposal.f...",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 8,
+          "step_type": "data",
+          "label": "data",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "build_generation_packet",
+          "message": "brief, base_name=proposal.base_name, focus=proposal.focus",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 850
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 9,
+          "step_type": "return",
+          "label": "return",
+          "source": "build_generation_packet",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "return",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 800
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 10,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "packet.metadata[\"planner_mode\"] = \"provider-backed\"",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 11,
+          "step_type": "mutation",
+          "label": "mutation",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Provider Backed Generation Packet Builder",
+          "message": "packet.metadata[\"provider\"] = proposal.to_dict()",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 1000
+        },
+        {
+          "execution_id": "provider-backed-generation-packet-builder",
+          "step_index": 12,
+          "step_type": "return",
+          "label": "return",
+          "source": "Provider Backed Generation Packet Builder",
+          "target": "Caller",
+          "message": "packet",
+          "source_anchor": "generation_fabric/worker_bee/provider.py:100-113",
+          "duration_ms": 800
+        }
+      ]
+    }
+  ]
+}</script>
+  <script type="module">
+const playbackElement = document.getElementById("observability-playback-data");
+const playbackData = playbackElement ? JSON.parse(playbackElement.textContent || "{}") : {};
+const tracks = Array.isArray(playbackData.tracks) ? playbackData.tracks : [];
+const timeline = [];
+for (let trackIndex = 0; trackIndex < tracks.length; trackIndex += 1) {
+  const track = tracks[trackIndex] || {};
+  const steps = Array.isArray(track.steps) ? track.steps : [];
+  for (let stepIndex = 0; stepIndex < steps.length; stepIndex += 1) {
+    timeline.push({ trackIndex, stepIndex, track, step: steps[stepIndex] || {} });
+  }
+}
+
+const state = {
+  timelineIndex: 0,
+  playing: false,
+  speed: 1,
+  timer: null,
+};
+
+const nodes = {
+  executionList: document.getElementById("execution-list"),
+  stepList: document.getElementById("step-list"),
+  activeExecutionTitle: document.getElementById("active-execution-title"),
+  activeExecutionMeta: document.getElementById("active-execution-meta"),
+  activeStepType: document.getElementById("active-step-type"),
+  activeStepLabel: document.getElementById("active-step-label"),
+  activeStepSource: document.getElementById("active-step-source"),
+  activeStepTarget: document.getElementById("active-step-target"),
+  activeStepMessage: document.getElementById("active-step-message"),
+  activeStepAnchor: document.getElementById("active-step-anchor"),
+  activeStepDuration: document.getElementById("active-step-duration"),
+  speedSelect: document.getElementById("playback-speed"),
+  buttons: {
+    previous: document.querySelector('[data-action="previous"]'),
+    play: document.querySelector('[data-action="play"]'),
+    pause: document.querySelector('[data-action="pause"]'),
+    next: document.querySelector('[data-action="next"]'),
+    reset: document.querySelector('[data-action="reset"]'),
+  },
+};
+
+const executionButtonMap = new Map();
+const stepButtonMap = new Map();
+
+function stepId(entry) {
+  return `${entry.track.execution_id}.${entry.step.step_index}`;
+}
+
+function trackLabel(track) {
+  return track.title || track.execution_id || "Execution";
+}
+
+function stepClass(stepType) {
+  const normalized = String(stepType || "idle").toLowerCase();
+  if (normalized === "call") return "call-step";
+  if (normalized === "data") return "data-step";
+  if (normalized === "mutation") return "mutation-step";
+  if (normalized === "branch") return "branch-step";
+  if (normalized === "return") return "return-step";
+  if (normalized === "error") return "error-step";
+  return "idle-step";
+}
+
+function formatDuration(durationMs) {
+  const value = Number(durationMs || 0);
+  if (!Number.isFinite(value) || value <= 0) {
+    return "—";
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}s`;
+  }
+  return `${value}ms`;
+}
+
+function currentEntry() {
+  if (!timeline.length) {
+    return null;
+  }
+  const index = Math.max(0, Math.min(state.timelineIndex, timeline.length - 1));
+  return timeline[index];
+}
+
+function firstTimelineIndexForTrack(trackIndex) {
+  return timeline.findIndex((entry) => entry.trackIndex === trackIndex);
+}
+
+function setTimelineIndex(index) {
+  if (!timeline.length) {
+    return;
+  }
+  const clamped = Math.max(0, Math.min(index, timeline.length - 1));
+  state.timelineIndex = clamped;
+  renderState();
+  if (state.playing) {
+    scheduleNextStep();
+  }
+}
+
+function pausePlayback() {
+  state.playing = false;
+  if (state.timer) {
+    window.clearTimeout(state.timer);
+    state.timer = null;
+  }
+  if (nodes.buttons.play) {
+    nodes.buttons.play.disabled = false;
+  }
+}
+
+function scheduleNextStep() {
+  if (state.timer) {
+    window.clearTimeout(state.timer);
+    state.timer = null;
+  }
+  const entry = currentEntry();
+  if (!entry) {
+    pausePlayback();
+    return;
+  }
+  const step = entry.step || {};
+  const durationMs = Math.max(250, Math.round(Number(step.duration_ms || 0) / state.speed) || 600);
+  state.timer = window.setTimeout(() => {
+    const nextIndex = state.timelineIndex + 1;
+    if (nextIndex >= timeline.length) {
+      pausePlayback();
+      return;
+    }
+    state.timelineIndex = nextIndex;
+    renderState();
+    if (state.playing) {
+      scheduleNextStep();
+    }
+  }, durationMs);
+}
+
+function playPlayback() {
+  if (!timeline.length) {
+    return;
+  }
+  state.playing = true;
+  if (nodes.buttons.play) {
+    nodes.buttons.play.disabled = true;
+  }
+  scheduleNextStep();
+}
+
+function resetPlayback() {
+  pausePlayback();
+  state.timelineIndex = 0;
+  renderState();
+}
+
+function nextStep() {
+  if (!timeline.length) {
+    return;
+  }
+  const nextIndex = Math.min(state.timelineIndex + 1, timeline.length - 1);
+  setTimelineIndex(nextIndex);
+}
+
+function previousStep() {
+  if (!timeline.length) {
+    return;
+  }
+  const previousIndex = Math.max(state.timelineIndex - 1, 0);
+  setTimelineIndex(previousIndex);
+}
+
+function setSpeed(multiplier) {
+  const parsed = Number(multiplier);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    state.speed = parsed;
+    if (state.playing) {
+      scheduleNextStep();
+    }
+  }
+}
+
+function clearActiveClasses() {
+  for (const button of executionButtonMap.values()) {
+    button.classList.remove("is-active");
+  }
+  for (const button of stepButtonMap.values()) {
+    button.classList.remove("is-active");
+  }
+  document.querySelectorAll(".diagram-shell").forEach((element) => {
+    element.classList.remove("is-active");
+  });
+}
+
+function updateActivePanels(entry) {
+  if (!entry) {
+    if (nodes.activeExecutionTitle) {
+      nodes.activeExecutionTitle.textContent = "No execution tracks available";
+    }
+    if (nodes.activeExecutionMeta) {
+      nodes.activeExecutionMeta.textContent = "Generate an observation report to enable playback.";
+    }
+    return;
+  }
+
+  const track = entry.track || {};
+  const step = entry.step || {};
+  const trackSteps = Array.isArray(track.steps) ? track.steps : [];
+  const stepNumber = entry.stepIndex + 1;
+
+  if (nodes.activeExecutionTitle) {
+    nodes.activeExecutionTitle.textContent = trackLabel(track);
+  }
+  if (nodes.activeExecutionMeta) {
+    nodes.activeExecutionMeta.textContent = `${track.execution_id || "execution"} · diagram ${track.diagram_index || 0} · ${trackSteps.length} step(s)`;
+  }
+  if (nodes.activeStepType) {
+    nodes.activeStepType.textContent = String(step.step_type || "idle");
+  }
+  if (nodes.activeStepLabel) {
+    nodes.activeStepLabel.textContent = String(step.label || "—");
+  }
+  if (nodes.activeStepSource) {
+    nodes.activeStepSource.textContent = String(step.source || "—");
+  }
+  if (nodes.activeStepTarget) {
+    nodes.activeStepTarget.textContent = String(step.target || "—");
+  }
+  if (nodes.activeStepMessage) {
+    nodes.activeStepMessage.textContent = String(step.message || "—");
+  }
+  if (nodes.activeStepAnchor) {
+    nodes.activeStepAnchor.textContent = String(step.source_anchor || "—");
+  }
+  if (nodes.activeStepDuration) {
+    nodes.activeStepDuration.textContent = formatDuration(step.duration_ms);
+  }
+
+  const executionButton = executionButtonMap.get(entry.trackIndex);
+  if (executionButton) {
+    executionButton.classList.add("is-active");
+  }
+
+  const stepButton = stepButtonMap.get(stepId(entry));
+  if (stepButton) {
+    stepButton.classList.add("is-active");
+  }
+
+  const diagramIndex = Number(track.diagram_index || 0);
+  if (diagramIndex > 0) {
+    const diagram = document.querySelector(`.diagram-shell[data-diagram-index="${diagramIndex}"]`);
+    if (diagram) {
+      diagram.classList.add("is-active");
+    }
+  }
+
+  if (nodes.activeExecutionMeta) {
+    nodes.activeExecutionMeta.dataset.activeStep = String(stepNumber);
+  }
+}
+
+function renderExecutionList() {
+  if (!nodes.executionList) {
+    return;
+  }
+
+  nodes.executionList.innerHTML = "";
+  executionButtonMap.clear();
+
+  if (!tracks.length) {
+    const empty = document.createElement("p");
+    empty.className = "panel-summary";
+    empty.textContent = "No execution tracks were extracted from the observation JSON.";
+    nodes.executionList.appendChild(empty);
+    return;
+  }
+
+  tracks.forEach((track, trackIndex) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "execution-track";
+    button.dataset.trackIndex = String(trackIndex);
+
+    const title = document.createElement("span");
+    title.className = "execution-track__title";
+    title.textContent = trackLabel(track);
+
+    const meta = document.createElement("span");
+    meta.className = "execution-track__meta";
+    const steps = Array.isArray(track.steps) ? track.steps.length : 0;
+    meta.textContent = `${track.execution_id || "execution"} · ${steps} step(s) · diagram ${track.diagram_index || 0}`;
+
+    button.append(title, meta);
+    button.addEventListener("click", () => {
+      const firstIndex = firstTimelineIndexForTrack(trackIndex);
+      if (firstIndex >= 0) {
+        setTimelineIndex(firstIndex);
+      }
+    });
+
+    executionButtonMap.set(trackIndex, button);
+    nodes.executionList.appendChild(button);
+  });
+}
+
+function renderStepList(trackIndex) {
+  if (!nodes.stepList) {
+    return;
+  }
+
+  nodes.stepList.innerHTML = "";
+  stepButtonMap.clear();
+
+  const track = tracks[trackIndex];
+  if (!track || !Array.isArray(track.steps)) {
+    const empty = document.createElement("li");
+    empty.className = "panel-summary";
+    empty.textContent = "Select an execution to inspect its steps.";
+    nodes.stepList.appendChild(empty);
+    return;
+  }
+
+  track.steps.forEach((step, stepIndex) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `step-card ${stepClass(step.step_type)}`;
+    button.dataset.stepId = `${track.execution_id || "execution"}.${stepIndex + 1}`;
+
+    const top = document.createElement("div");
+    top.className = "step-card__top";
+
+    const type = document.createElement("span");
+    type.className = "step-card__type";
+    type.textContent = `${step.step_type || "idle"} · #${stepIndex + 1}`;
+
+    const route = document.createElement("span");
+    route.className = "step-card__route";
+    route.textContent = `${step.source || "—"} → ${step.target || "—"}`;
+
+    top.append(type, route);
+
+    const message = document.createElement("div");
+    message.className = "step-card__message";
+    const messageParts = [step.label || "", step.message || ""].filter(Boolean);
+    message.textContent = messageParts.join(" · ");
+
+    button.append(top, message);
+    button.addEventListener("click", () => {
+      const index = timeline.findIndex((entry) => entry.trackIndex === trackIndex && entry.stepIndex === stepIndex);
+      if (index >= 0) {
+        setTimelineIndex(index);
+      }
+    });
+
+    stepButtonMap.set(`${track.execution_id || "execution"}.${stepIndex + 1}`, button);
+    nodes.stepList.appendChild(button);
+  });
+}
+
+function renderState() {
+  clearActiveClasses();
+  const entry = currentEntry();
+  if (!entry) {
+    updateActivePanels(null);
+    return;
+  }
+
+  renderStepList(entry.trackIndex);
+  updateActivePanels(entry);
+}
+
+async function renderMermaidDiagrams() {
+  const mermaidBlocks = document.querySelectorAll(".mermaid");
+  if (!mermaidBlocks.length) {
+    return;
+  }
+
+  try {
+    const module = await import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs");
+    const mermaid = module.default || module;
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "default",
+    });
+    await mermaid.run({ querySelector: ".mermaid" });
+  } catch (error) {
+    console.warn("Mermaid rendering failed", error);
+  }
+}
+
+function attachControls() {
+  if (nodes.buttons.previous) {
+    nodes.buttons.previous.addEventListener("click", () => previousStep());
+  }
+  if (nodes.buttons.play) {
+    nodes.buttons.play.addEventListener("click", () => playPlayback());
+  }
+  if (nodes.buttons.pause) {
+    nodes.buttons.pause.addEventListener("click", () => pausePlayback());
+  }
+  if (nodes.buttons.next) {
+    nodes.buttons.next.addEventListener("click", () => nextStep());
+  }
+  if (nodes.buttons.reset) {
+    nodes.buttons.reset.addEventListener("click", () => resetPlayback());
+  }
+  if (nodes.speedSelect) {
+    nodes.speedSelect.addEventListener("change", () => setSpeed(nodes.speedSelect.value));
+  }
+}
+
+async function bootstrapObservability() {
+  renderExecutionList();
+  renderState();
+  attachControls();
+  await renderMermaidDiagrams();
+  renderState();
+}
+
+bootstrapObservability().catch((error) => {
+  console.error("observability bootstrap failed", error);
+});
+
+  </script>
+</body>
+</html>
