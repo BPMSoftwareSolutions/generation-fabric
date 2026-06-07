@@ -98,6 +98,12 @@ Generate a Markdown document from a worker-bee brief:
 python json_schema_crud.py worker-bee-generate --brief 'Generate me a markdown file that has two ASCII sketches' --output generated/billboards.md
 ```
 
+Run the worker-bee learning loop to benchmark the full fabric surface:
+
+```powershell
+python json_schema_crud.py worker-bee-learn --rounds 3 --output reports/worker-bee-learning.json
+```
+
 Start the interactive schema shell:
 
 ```powershell
@@ -125,6 +131,7 @@ python json_schema_crud.py interactive
 - `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
 - `worker-bee-plan`: build a deterministic generation packet from a brief
 - `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
+- `worker-bee-learn`: run the benchmark loop and report coverage
 - `interactive`: use the tiny schema shell for quick experiments
 
 ## Canonical Example
@@ -158,6 +165,7 @@ The tests cover:
 - the interactive shell
 - worker-bee strategy and packet planning
 - worker-bee executor and Markdown generation
+- worker-bee learning loop
 
 ## Design Principle
 

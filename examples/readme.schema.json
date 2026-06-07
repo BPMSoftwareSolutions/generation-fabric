@@ -201,6 +201,19 @@
         "language": "powershell"
       }
     },
+    "paragraph_worker_bee_learn": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_worker_bee_learn": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
     "paragraph_15": {
       "type": "string",
       "x-markdown": {
@@ -353,6 +366,8 @@
     "code_8",
     "paragraph_worker_bee",
     "code_worker_bee",
+    "paragraph_worker_bee_learn",
+    "code_worker_bee_learn",
     "paragraph_15",
     "code_9",
     "heading_h2_4",

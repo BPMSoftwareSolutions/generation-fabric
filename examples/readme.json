@@ -47,6 +47,8 @@
   "code_8": "python json_schema_crud.py markdown-import --file legacy.md --directory generated --with-markdown",
   "paragraph_worker_bee": "Generate a Markdown document from a worker-bee brief:",
   "code_worker_bee": "python json_schema_crud.py worker-bee-generate --brief 'Generate me a markdown file that has two ASCII sketches' --output generated/billboards.md",
+  "paragraph_worker_bee_learn": "Run the worker-bee learning loop to benchmark the full fabric surface:",
+  "code_worker_bee_learn": "python json_schema_crud.py worker-bee-learn --rounds 3 --output reports/worker-bee-learning.json",
   "paragraph_15": "Start the interactive schema shell:",
   "code_9": "python json_schema_crud.py interactive",
   "heading_h2_4": "CLI Surface",
@@ -70,6 +72,7 @@
     "`markdown-import`: convert a legacy Markdown file into a schema plus JSON contract",
     "`worker-bee-plan`: build a deterministic generation packet from a brief",
     "`worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief",
+    "`worker-bee-learn`: run the benchmark loop and report coverage",
     "`interactive`: use the tiny schema shell for quick experiments"
   ],
   "heading_h2_5": "Canonical Example",
@@ -95,7 +98,8 @@
     "contract scaffolding",
     "the interactive shell",
     "worker-bee strategy and packet planning",
-    "worker-bee executor and Markdown generation"
+    "worker-bee executor and Markdown generation",
+    "worker-bee learning loop"
   ],
   "heading_h2_7": "Design Principle",
   "paragraph_20": "The long-term direction is to keep the pipeline layered and deterministic:",

@@ -23,6 +23,15 @@ from .executor import (
     resolve_sketch_phrases,
     write_worker_bee_document,
 )
+from .learning import (
+    DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES,
+    WorkerBeeLearningCase,
+    WorkerBeeLearningCaseResult,
+    WorkerBeeLearningReport,
+    WorkerBeeLearningRoundResult,
+    build_default_worker_bee_learning_cases,
+    run_worker_bee_learning_loop,
+)
 from .strategy import WorkerBeeMigrationStrategy, WorkerBeePhase, WorkerBeeSurface, build_default_worker_bee_strategy
 
 __all__ = [
@@ -33,16 +42,23 @@ __all__ = [
     "WorkerBeeMigrationStrategy",
     "WorkerBeePhase",
     "WorkerBeeSurface",
+    "DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES",
+    "WorkerBeeLearningCase",
+    "WorkerBeeLearningCaseResult",
+    "WorkerBeeLearningReport",
+    "WorkerBeeLearningRoundResult",
     "WorkerBeeDocumentPaths",
     "build_generation_packet",
     "build_ascii_billboard",
     "build_worker_bee_document",
     "build_worker_bee_document_data",
+    "build_default_worker_bee_learning_cases",
     "build_worker_bee_document_schema",
     "build_default_worker_bee_strategy",
     "extract_sketch_phrases",
     "infer_focus",
     "normalize_sketch_phrase",
     "resolve_sketch_phrases",
+    "run_worker_bee_learning_loop",
     "write_worker_bee_document",
 ]

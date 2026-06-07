@@ -30,6 +30,7 @@ class WorkerBeeStrategyTests(unittest.TestCase):
                 "cli_orchestration",
                 "planner_layer",
                 "executor_layer",
+                "learning_loop",
                 "ledger_and_verification",
             ],
         )

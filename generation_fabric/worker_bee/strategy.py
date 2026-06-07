@@ -87,6 +87,14 @@ def build_default_worker_bee_strategy() -> WorkerBeeMigrationStrategy:
                 ),
             ),
             WorkerBeeSurface(
+                name="learning_loop",
+                status="existing",
+                responsibility="Benchmark the current fabric capabilities and report coverage for the worker-bee surface",
+                files=(
+                    "generation_fabric/worker_bee/learning.py",
+                ),
+            ),
+            WorkerBeeSurface(
                 name="ledger_and_verification",
                 status="planned",
                 responsibility="Record worker-bee runs, retries, and verification evidence for deterministic replay",

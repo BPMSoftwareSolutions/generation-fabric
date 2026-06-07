@@ -58,6 +58,8 @@ The first concrete runtime-facing module is `generation_fabric/worker_bee/planne
 
 The next layer is `generation_fabric/worker_bee/executor.py`, which turns that packet and any sketch prompts into schema, JSON, and Markdown artifacts without hand-stitching the file contents.
 
+The benchmark loop lives in `generation_fabric/worker_bee/learning.py`, which exercises the current fabric surface, records coverage, and tells us whether the worker bee is actually using the tools it is supposed to use.
+
 The `worker-bee-plan` CLI command writes that packet to JSON, or prints it to stdout, so the planning contract is visible before the executor exists.
 
 The `worker-bee-generate` CLI command executes the full brief-to-document path and writes the contract-backed Markdown output plus its sidecar schema and JSON files.
@@ -114,6 +116,7 @@ We know the migration is working when:
 - the planner can produce a structured packet from a brief
 - the packet can be emitted from the CLI without hand-stitching
 - the executor can write schema, JSON, and Markdown artifacts from that packet
+- the learning loop can benchmark the current fabric capabilities and report 100% coverage when the surface is healthy
 - the executor can reuse the existing fabric primitives
 - the generated output is deterministic and testable
 - a future provider swap does not change the file contract
@@ -121,7 +124,9 @@ We know the migration is working when:
 ## Related Files
 
 - `generation_fabric/worker_bee/strategy.py`
+- `generation_fabric/worker_bee/learning.py`
 - `docs/module-map.md`
+- `docs/worker-bee-learning-loop.md`
 - `docs/compiler-pipeline-roadmap.md`
 
 This is the first migration step, not the final architecture. The point is to make the worker-bee path explicit, aligned with the generation fabric, and safe to extend.

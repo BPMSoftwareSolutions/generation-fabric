@@ -21,7 +21,7 @@ from generation_fabric.markdown.contracts import (
 from generation_fabric.markdown.importer import scaffold_markdown_import
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.markdown.registry import list_markdown_contract_kinds
-from generation_fabric.worker_bee import build_generation_packet, write_worker_bee_document
+from generation_fabric.worker_bee import build_generation_packet, run_worker_bee_learning_loop, write_worker_bee_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
 from generation_fabric.schema.inference import build_inferred_schema
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -496,6 +496,25 @@ def worker_bee_generate_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def worker_bee_learn_command(args: argparse.Namespace) -> int:
+    """Run the worker-bee learning loop and emit a benchmark report."""
+
+    report = run_worker_bee_learning_loop(rounds=args.rounds)
+    report_dict = report.to_dict()
+
+    if args.output:
+        output_path = Path(args.output)
+        if output_path.exists() and not args.overwrite:
+            raise SchemaError(f"output file already exists: {output_path}")
+        write_json_file_atomic(output_path, report_dict)
+        print(f"worker-bee learning report written: {output_path}")
+        print(f"{report.summary} ({report.coverage_percent:.1f}% coverage)")
+    else:
+        print(json.dumps(report_dict, indent=2, ensure_ascii=False))
+
+    return 0 if report.passed else 1
+
+
 def create_schema_command(args: argparse.Namespace) -> int:
     """Create a schema file and return an exit code."""
 
@@ -889,6 +908,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing existing generated files",
     )
     worker_bee_generate_parser.set_defaults(func=worker_bee_generate_command)
+
+    worker_bee_learn_parser = subparsers.add_parser(
+        "worker-bee-learn",
+        help="Run the worker-bee benchmark loop and report coverage",
+    )
+    worker_bee_learn_parser.add_argument(
+        "--rounds",
+        type=int,
+        default=1,
+        help="Maximum number of benchmark rounds to run",
+    )
+    worker_bee_learn_parser.add_argument(
+        "--output",
+        default="",
+        help="Write the learning report JSON to a file",
+    )
+    worker_bee_learn_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing report file",
+    )
+    worker_bee_learn_parser.set_defaults(func=worker_bee_learn_command)
 
     interactive_parser = subparsers.add_parser("interactive", help="Start a tiny interactive shell")
     interactive_parser.add_argument("--file", default="", help="Optional schema file to load at startup")
