@@ -17,6 +17,7 @@ This repository is organized so the file names tell the implementation story.
 - `docs/unsupported-markdown-features.md`: manual reference for Markdown features that are not yet modeled by the fabric.
 - `docs/worker-bee-learning-loop.md`: benchmark-style learning loop for exercising the worker-bee surface against the fabric.
 - `docs/worker-bee-code-observation.md`: sequence-diagram shape guidance for observing Python execution paths.
+- `docs/worker-bee-code-observation-taxonomy.md`: richer taxonomy and anchor model for architectural code review and forecasted execution flow.
 - `docs/worker-bee-migration-strategy.md`: migration strategy for adding a planner/executor worker-bee boundary on top of the fabric.
 
 ## Core

@@ -62,7 +62,7 @@ The benchmark loop lives in `generation_fabric/worker_bee/learning.py`, which ex
 
 The provider seam lives in `generation_fabric/worker_bee/prompts.py` and `generation_fabric/worker_bee/provider.py`, which make the planning step swappable without changing the downstream packet or fabric contract.
 
-The code-observation seam lives in `generation_fabric/worker_bee/observation.py`, which turns Python execution paths into a shape-based contract for Mermaid sequence diagrams.
+The code-observation seam lives in `generation_fabric/worker_bee/observation.py`, which turns Python execution paths into a shape-based contract for Mermaid sequence diagrams. The richer architecture-review taxonomy for readable labels, anchors, condition text, and notes is described in `docs/worker-bee-code-observation-taxonomy.md`. That taxonomy should start with a deterministic file scan so the worker bee can reuse the extracted JSON instead of rereading source files for every pass.
 
 The `worker-bee-plan` CLI command writes that packet to JSON, or prints it to stdout, so the planning contract is visible before the executor exists.
 
@@ -123,6 +123,7 @@ We know the migration is working when:
 - the learning loop can benchmark the current fabric capabilities and report 100% coverage when the surface is healthy
 - the executor can reuse the existing fabric primitives
 - the generated output is deterministic and testable
+- the taxonomy scan can precompute code inventory, branches, and anchors before any model review
 - a future provider swap does not change the file contract
 
 ## Related Files
@@ -135,6 +136,7 @@ We know the migration is working when:
 - `docs/module-map.md`
 - `docs/worker-bee-learning-loop.md`
 - `docs/worker-bee-code-observation.md`
+- `docs/worker-bee-code-observation-taxonomy.md`
 - `docs/compiler-pipeline-roadmap.md`
 
 This is the first migration step, not the final architecture. The point is to make the worker-bee path explicit, aligned with the generation fabric, and safe to extend.

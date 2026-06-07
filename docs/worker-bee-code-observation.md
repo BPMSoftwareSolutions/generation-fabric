@@ -8,6 +8,8 @@ That shape is a good fit for Python execution paths because it makes three thing
 - the order of calls and branch markers
 - the resulting Mermaid diagram that can be rendered directly into Markdown
 
+If you want the richer architecture-review version of this capability, see [worker-bee-code-observation-taxonomy.md](./worker-bee-code-observation-taxonomy.md). That companion doc describes the anchor model, readable labels, notes, and deterministic base taxonomy scan that will sit on top of the same contract-based observation pipeline.
+
 ## Why Sequence Diagrams
 
 Sequence diagrams are a strong default for code observation because they show execution as a story:
