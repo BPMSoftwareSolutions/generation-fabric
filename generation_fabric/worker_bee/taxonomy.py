@@ -79,6 +79,9 @@ class CodeTaxonomyExecutionPath:
     conditions: tuple[CodeTaxonomyCondition, ...]
     branch_markers: tuple[str, ...]
     return_points: tuple[int, ...]
+    mutation_points: tuple[int, ...]
+    mutations: tuple[str, ...]
+    returns: tuple[str, ...]
     role: str
     responsibility: str
     notes: tuple[str, ...]
@@ -148,6 +151,24 @@ BUILTIN_CALL_NAMES = {
     "str",
     "sum",
     "tuple",
+}
+
+MUTATING_CALL_KEYWORDS = {
+    "append",
+    "clear",
+    "commit",
+    "create",
+    "delete",
+    "discard",
+    "extend",
+    "insert",
+    "persist",
+    "pop",
+    "remove",
+    "save",
+    "setdefault",
+    "update",
+    "write",
 }
 
 ROLE_PREFIXES = {
@@ -240,6 +261,61 @@ def _humanize_identifier(identifier: str) -> str:
     text = re.sub(r"(?<=[A-Z])(?=[A-Z][a-z])", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text.title() if text else identifier
+
+
+def _truncate_text(text: str, max_length: int = 80) -> str:
+    """Trim text to a readable length while preserving meaning."""
+
+    normalized = _normalize_brief(text)
+    if len(normalized) <= max_length:
+        return normalized
+    return normalized[: max(0, max_length - 3)].rstrip() + "..."
+
+
+def _expression_text(source_text: str, node: ast.AST, *, max_length: int = 80) -> str:
+    """Render a readable expression snippet."""
+
+    segment = ast.get_source_segment(source_text, node)
+    if not segment and hasattr(ast, "unparse"):
+        try:
+            segment = ast.unparse(node)
+        except Exception:  # pragma: no cover - defensive fallback
+            segment = ""
+    if not segment:
+        return ""
+    return _truncate_text(segment, max_length=max_length)
+
+
+def _call_payload_text(source_text: str, node: ast.Call) -> str:
+    """Render a concise call payload summary."""
+
+    parts: list[str] = []
+    for arg in node.args[:3]:
+        text = _expression_text(source_text, arg, max_length=40)
+        if text:
+            parts.append(text)
+    for keyword in node.keywords[:3]:
+        value_text = _expression_text(source_text, keyword.value, max_length=32)
+        if not value_text:
+            continue
+        if keyword.arg:
+            parts.append(f"{keyword.arg}={value_text}")
+        else:
+            parts.append(f"**{value_text}")
+    return _truncate_text(", ".join(parts), max_length=100)
+
+
+def _is_mutating_call_target(name: str) -> bool:
+    """Return True when a call target mutates state or writes data."""
+
+    if not name:
+        return False
+    lowered = name.lower()
+    segments = re.split(r"[^a-z0-9]+", lowered)
+    for keyword in MUTATING_CALL_KEYWORDS:
+        if keyword in segments or any(segment.startswith(keyword) for segment in segments):
+            return True
+    return False
 
 
 def _role_label_from_identifier(identifier: str) -> str:
@@ -460,6 +536,9 @@ class _TaxonomyFlowCollector(ast.NodeVisitor):
         self.branch_markers: list[str] = []
         self.conditions: list[CodeTaxonomyCondition] = []
         self.return_points: list[int] = []
+        self.mutation_points: list[int] = []
+        self.mutations: list[str] = []
+        self.returns: list[str] = []
 
     def _add_condition(self, kind: str, node: ast.AST, source_text: str, meaning: str) -> None:
         line_start, line_end = _line_span(node)
@@ -477,7 +556,17 @@ class _TaxonomyFlowCollector(ast.NodeVisitor):
         name = _resolve_call_name(node.func)
         if _is_meaningful_call_target(name, self.local_symbols, self.import_aliases):
             self.calls.append(name)
-            self.flow_steps.append(f"call {name}")
+            payload = _call_payload_text(self.source_text, node)
+            if _is_mutating_call_target(name):
+                mutation_text = f"mutation {name}"
+                if payload:
+                    mutation_text = f"{mutation_text}: {payload}"
+                self.flow_steps.append(mutation_text)
+                self.mutations.append(mutation_text.removeprefix("mutation ").strip())
+            elif payload:
+                self.flow_steps.append(f"data {name}: {payload}")
+            else:
+                self.flow_steps.append(f"trigger {name}")
         self.generic_visit(node)
 
     def visit_If(self, node: ast.If) -> Any:  # noqa: N802
@@ -527,7 +616,66 @@ class _TaxonomyFlowCollector(ast.NodeVisitor):
     def visit_Return(self, node: ast.Return) -> Any:  # noqa: N802
         line_start, _ = _line_span(node)
         self.return_points.append(line_start)
-        self.flow_steps.append("return")
+        if node.value is None:
+            self.flow_steps.append("return")
+            self.returns.append("return")
+        else:
+            value_text = _expression_text(self.source_text, node.value, max_length=120)
+            if value_text:
+                self.flow_steps.append(f"return {value_text}")
+                self.returns.append(value_text)
+            else:
+                self.flow_steps.append("return")
+                self.returns.append("return")
+        self.generic_visit(node)
+
+    def visit_Assign(self, node: ast.Assign) -> Any:  # noqa: N802
+        target_text = ", ".join(
+            text for text in (_expression_text(self.source_text, target, max_length=40) for target in node.targets) if text
+        )
+        value_text = _expression_text(self.source_text, node.value, max_length=80)
+        mutation_text = f"{target_text} = {value_text}".strip()
+        if mutation_text and mutation_text != "=":
+            line_start, _ = _line_span(node)
+            self.mutation_points.append(line_start)
+            self.mutations.append(mutation_text)
+            self.flow_steps.append(f"mutation {mutation_text}")
+        self.generic_visit(node)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> Any:  # noqa: N802
+        target_text = _expression_text(self.source_text, node.target, max_length=40)
+        value_text = _expression_text(self.source_text, node.value, max_length=80) if node.value is not None else ""
+        annotation_text = _expression_text(self.source_text, node.annotation, max_length=40)
+        if value_text:
+            mutation_text = f"{target_text}: {annotation_text} = {value_text}"
+        else:
+            mutation_text = f"{target_text}: {annotation_text}"
+        line_start, _ = _line_span(node)
+        self.mutation_points.append(line_start)
+        self.mutations.append(mutation_text)
+        self.flow_steps.append(f"mutation {mutation_text}")
+        self.generic_visit(node)
+
+    def visit_AugAssign(self, node: ast.AugAssign) -> Any:  # noqa: N802
+        target_text = _expression_text(self.source_text, node.target, max_length=40)
+        value_text = _expression_text(self.source_text, node.value, max_length=80)
+        op_text = node.op.__class__.__name__.removesuffix("Op").lower()
+        mutation_text = f"{target_text} {op_text}= {value_text}" if value_text else f"{target_text} {op_text}="
+        line_start, _ = _line_span(node)
+        self.mutation_points.append(line_start)
+        self.mutations.append(mutation_text)
+        self.flow_steps.append(f"mutation {mutation_text}")
+        self.generic_visit(node)
+
+    def visit_Delete(self, node: ast.Delete) -> Any:  # noqa: N802
+        targets = ", ".join(
+            text for text in (_expression_text(self.source_text, target, max_length=40) for target in node.targets) if text
+        )
+        mutation_text = f"delete {targets}".strip()
+        line_start, _ = _line_span(node)
+        self.mutation_points.append(line_start)
+        self.mutations.append(mutation_text)
+        self.flow_steps.append(f"mutation {mutation_text}")
         self.generic_visit(node)
 
 
@@ -575,6 +723,7 @@ def _collect_execution_path_notes(
     docstring: str,
     branch_markers: tuple[str, ...],
     return_points: tuple[int, ...],
+    mutations: tuple[str, ...],
     conditions: tuple[CodeTaxonomyCondition, ...],
 ) -> tuple[str, ...]:
     """Build summary notes for an execution path."""
@@ -584,6 +733,8 @@ def _collect_execution_path_notes(
         notes.append(f"Branch markers detected: {', '.join(branch_markers)}.")
     if conditions:
         notes.append(f"Captured {len(conditions)} condition(s) for reuse by the worker bee.")
+    if mutations:
+        notes.append(f"Captured {len(mutations)} state change(s) for the execution path.")
     if return_points:
         notes.append(f"Return points detected on lines: {', '.join(str(point) for point in return_points)}.")
     if docstring:
@@ -682,24 +833,32 @@ def _build_execution_path_from_node(
     line_start, line_end = _line_span(node)
     branch_markers = _unique_preserve_order(collector.branch_markers)
     call_targets = _unique_preserve_order(collector.calls)
+    mutation_points = tuple(collector.mutation_points)
+    mutations = _unique_preserve_order(collector.mutations)
+    returns = _unique_preserve_order(collector.returns)
     participants = _unique_preserve_order(
         ("Caller", _role_label_from_identifier(qualified_name), *(_call_label_from_identifier(call) for call in call_targets))
     )
-    flow_steps: list[str] = [f"invoke {_call_label_from_identifier(qualified_name)}"]
+    flow_steps: list[str] = [f"trigger {_call_label_from_identifier(qualified_name)}"]
     if parent_class:
         flow_steps.append(f"owner {_role_label_from_identifier(parent_class)}")
-    flow_steps.extend(
-        f"call {_call_label_from_identifier(step.removeprefix('call ').strip())}" if step.startswith("call ") else step
-        for step in collector.flow_steps
-    )
+    flow_steps.extend(collector.flow_steps)
     if not call_targets:
         flow_steps.append("no helper calls observed")
-    flow_steps.append("return")
+    if not returns:
+        flow_steps.append("return")
     label = _humanize_identifier(qualified_name)
     role = _role_label_from_identifier(qualified_name)
     responsibility = _first_sentence(docstring) or f"Observed {kind} execution path in the source file"
     anchor = _anchor(source_path, node)
-    notes = _collect_execution_path_notes(kind, docstring, branch_markers, tuple(collector.return_points), tuple(collector.conditions))
+    notes = _collect_execution_path_notes(
+        kind,
+        docstring,
+        branch_markers,
+        tuple(collector.return_points),
+        mutations,
+        tuple(collector.conditions),
+    )
 
     return CodeTaxonomyExecutionPath(
         name=qualified_name,
@@ -717,6 +876,9 @@ def _build_execution_path_from_node(
         conditions=tuple(collector.conditions),
         branch_markers=branch_markers,
         return_points=tuple(collector.return_points),
+        mutation_points=mutation_points,
+        mutations=mutations,
+        returns=returns or ("return",),
         role=role,
         responsibility=responsibility,
         notes=notes,
@@ -976,6 +1138,9 @@ def build_code_taxonomy_document_schema(
                         },
                         "branch_markers": {"type": "array", "items": {"type": "string"}},
                         "return_points": {"type": "array", "items": {"type": "integer"}},
+                        "mutation_points": {"type": "array", "items": {"type": "integer"}},
+                        "mutations": {"type": "array", "items": {"type": "string"}},
+                        "returns": {"type": "array", "items": {"type": "string"}},
                         "role": {"type": "string"},
                         "responsibility": {"type": "string"},
                         "notes": {"type": "array", "items": {"type": "string"}},
@@ -996,6 +1161,9 @@ def build_code_taxonomy_document_schema(
                         "conditions",
                         "branch_markers",
                         "return_points",
+                        "mutation_points",
+                        "mutations",
+                        "returns",
                         "role",
                         "responsibility",
                         "notes",

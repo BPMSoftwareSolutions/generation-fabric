@@ -47,6 +47,7 @@ class WorkerBeeObservationTests(unittest.TestCase):
         self.assertIn("build_generation_packet", symbol_names)
         self.assertGreaterEqual(len(taxonomy.execution_paths), 1)
         self.assertTrue(any(path.conditions for path in taxonomy.execution_paths))
+        self.assertTrue(any(path.mutations for path in taxonomy.execution_paths))
 
     def test_worker_bee_observe_command_writes_a_sequence_diagram_document(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -85,6 +86,8 @@ class WorkerBeeObservationTests(unittest.TestCase):
             self.assertIn("Overview", markdown)
             self.assertIn("Code Inventory", markdown)
             self.assertIn("Executions", markdown)
+            self.assertIn("State Changes", markdown)
+            self.assertIn("Returns", markdown)
 
     def test_worker_bee_taxonomy_command_writes_a_taxonomy_document(self) -> None:
         repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -147,6 +150,8 @@ class WorkerBeeObservationTests(unittest.TestCase):
             self.assertIn("sequenceDiagram", markdown)
             self.assertIn("Code Inventory", markdown)
             self.assertIn("Executions", markdown)
+            self.assertIn("State Changes", markdown)
+            self.assertIn("Returns", markdown)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
 
-from .taxonomy import scan_python_source_taxonomy
+from .taxonomy import _call_label_from_identifier, scan_python_source_taxonomy
 
 
 @dataclass(frozen=True)
@@ -41,6 +41,8 @@ class PythonFunctionObservation:
     responsibility: str = ""
     participants: tuple[str, ...] = ()
     flow_steps: tuple[str, ...] = ()
+    mutations: tuple[str, ...] = ()
+    returns: tuple[str, ...] = ()
     mermaid: str = ""
     notes: tuple[str, ...] = ()
 
@@ -200,15 +202,42 @@ def _build_mermaid_sequence(
     resolved_function_label = _normalize_participant_label(function_label or function_name)
     function_alias = participant_aliases.get(resolved_function_label, _mermaid_alias(resolved_function_label))
     lines.append(f"{_indent(1)}Caller->>{function_alias}: invoke")
+    return_emitted = False
     for step in flow_steps:
-        if step.startswith("call "):
-            target = step.removeprefix("call ").strip()
-            target_alias = participant_aliases.get(target, _mermaid_alias(target))
-            lines.append(f"{_indent(1)}{function_alias}->>{target_alias}: {target}")
+        if step.startswith("trigger "):
+            target = step.removeprefix("trigger ").strip()
+            target_label = _call_label_from_identifier(target)
+            target_alias = participant_aliases.get(target_label, _mermaid_alias(target_label))
+            if target_alias == function_alias:
+                continue
+            lines.append(f"{_indent(1)}{function_alias}->>{target_alias}: trigger")
+        elif step.startswith("data "):
+            payload = step.removeprefix("data ").strip()
+            if ": " in payload:
+                target, message = payload.split(": ", 1)
+            else:
+                target, message = payload, ""
+            target_label = _call_label_from_identifier(target)
+            target_alias = participant_aliases.get(target_label, _mermaid_alias(target_label))
+            if target_alias == function_alias:
+                continue
+            label = f"data: {message}" if message else "data"
+            lines.append(f"{_indent(1)}{function_alias}->>{target_alias}: {label}")
+        elif step.startswith("mutation "):
+            mutation = step.removeprefix("mutation ").strip()
+            lines.append(f"{_indent(1)}note over {function_alias}: mutation observed - {mutation}")
         elif step.startswith("branch: "):
             branch = step.removeprefix("branch: ").strip()
             lines.append(f"{_indent(1)}note over {function_alias}: {branch} branch observed")
-    lines.append(f"{_indent(1)}{function_alias}-->>Caller: return")
+        elif step.startswith("return "):
+            value = step.removeprefix("return ").strip()
+            if value:
+                lines.append(f"{_indent(1)}{function_alias}-->>Caller: return {value}")
+            else:
+                lines.append(f"{_indent(1)}{function_alias}-->>Caller: return")
+            return_emitted = True
+    if not return_emitted:
+        lines.append(f"{_indent(1)}{function_alias}-->>Caller: return")
     return "\n".join(lines)
 
 
@@ -227,10 +256,11 @@ def _build_function_observation(
 
     docstring = ast.get_docstring(node) or ""
     signature = _format_signature(node, qualified_name)
-    participants = _unique_preserve_order(("Caller", qualified_name, *collector.calls))
+    function_label = _call_label_from_identifier(qualified_name)
+    participants = _unique_preserve_order(("Caller", function_label, *(_call_label_from_identifier(call) for call in collector.calls)))
     flow_steps: list[str] = [f"invoke {qualified_name}"]
     if class_name:
-        flow_steps.append(f"owner {class_name}")
+        flow_steps.append(f"owner {_call_label_from_identifier(class_name)}")
     flow_steps.extend(collector.flow_steps)
     if not collector.calls:
         flow_steps.append("no helper calls observed")
@@ -251,7 +281,12 @@ def _build_function_observation(
         docstring=docstring,
         participants=participants,
         flow_steps=tuple(flow_steps),
-        mermaid=_build_mermaid_sequence(qualified_name, participants, tuple(collector.flow_steps), function_label=role),
+        mermaid=_build_mermaid_sequence(
+            qualified_name,
+            participants,
+            tuple(collector.flow_steps),
+            function_label=function_label,
+        ),
         notes=tuple(notes),
     )
 
@@ -274,6 +309,8 @@ def _observation_from_taxonomy_execution_path(path: dict[str, Any]) -> PythonFun
         responsibility=str(path.get("responsibility", "")),
         participants=participants,
         flow_steps=flow_steps,
+        mutations=tuple(str(mutation) for mutation in path.get("mutations", [])),
+        returns=tuple(str(value) for value in path.get("returns", [])),
         mermaid=_build_mermaid_sequence(
             str(path.get("name", "")),
             participants,
@@ -340,7 +377,7 @@ def _build_observation_overview(
         "module_path": str(taxonomy_data.get("module_path", "")),
         "source_hash": str(taxonomy_data.get("source_hash", "")),
         "shape": shape,
-        "summary": f"Observed {len(observations)} execution(s) in {source_path.name} and projected them into Mermaid sequence diagrams.",
+        "summary": f"Observed {len(observations)} execution(s) in {source_path.name} and projected triggers, data batons, state changes, and returns into Mermaid sequence diagrams.",
     }
 
 
@@ -359,7 +396,7 @@ def _build_observation_document_payload(
         "executions": [observation.to_dict() for observation in observations],
         "notes": [
             "The worker bee extracts a shape from code before rendering any Markdown.",
-            "The code inventory anchors declarations and the executions show the observed steps.",
+            "The code inventory anchors declarations, while executions show triggers, data batons, mutations, and returns.",
         ],
     }
 
@@ -390,7 +427,7 @@ def build_code_observation_document_schema(
     schema = {
         "$schema": DEFAULT_SCHEMA_DRAFT,
         "title": resolved_title,
-        "description": "A contract-backed code observation that inventories the source file before rendering the observed executions as Mermaid sequence diagrams.",
+        "description": "A contract-backed code observation that inventories the source file before rendering the observed executions, data batons, state changes, and returns as Mermaid sequence diagrams.",
         "type": "object",
         "properties": {
             "overview": {
@@ -523,6 +560,16 @@ def build_code_observation_document_schema(
                             "items": {"type": "string"},
                             "x-markdown": {"kind": "ordered-list"},
                         },
+                        "mutations": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "x-markdown": {"kind": "section", "heading": "State Changes", "item_heading": "Mutation"},
+                        },
+                        "returns": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "x-markdown": {"kind": "section", "heading": "Returns", "item_heading": "Return"},
+                        },
                         "mermaid": {
                             "type": "string",
                             "x-markdown": {"kind": "code", "language": "mermaid"},
@@ -543,6 +590,8 @@ def build_code_observation_document_schema(
                         "docstring",
                         "participants",
                         "flow_steps",
+                        "mutations",
+                        "returns",
                         "mermaid",
                         "notes",
                     ],
