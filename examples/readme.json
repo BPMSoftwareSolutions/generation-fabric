@@ -13,7 +13,8 @@
     "`generation_fabric/markdown/` owns Markdown rendering, the contract registry, contract scaffolding, and Markdown import.",
     "`examples/` contains canonical schema, JSON, and Markdown artifacts.",
     "`scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.",
-    "`tests/` contains end-to-end coverage for the published behaviors."
+    "`tests/` contains end-to-end coverage for the published behaviors.",
+    "`generation_fabric/worker_bee/` owns the migration strategy scaffold and the deterministic packet planner."
   ],
   "raw_1": "If you want the full taxonomy, see [docs/module-map.md](docs/module-map.md).\nIf you want the implementation plan, see [docs/compiler-pipeline-roadmap.md](docs/compiler-pipeline-roadmap.md).",
   "heading_h2_2": "Why It Exists",
@@ -65,7 +66,8 @@
     "`markdown`: render Markdown from a schema plus JSON data",
     "`markdown-contract`: scaffold a canonical document contract",
     "`markdown-import`: convert a legacy Markdown file into a schema plus JSON contract",
-    "`interactive`: use the tiny schema shell for quick experiments"
+    "`interactive`: use the tiny schema shell for quick experiments",
+    "`worker-bee-plan`: build a deterministic generation packet from a brief"
   ],
   "heading_h2_5": "Canonical Example",
   "paragraph_16": "The repository includes a release-notes contract that demonstrates the full pipeline:",
@@ -88,7 +90,8 @@
     "`oneOf` and `anyOf`",
     "Markdown rendering",
     "contract scaffolding",
-    "the interactive shell"
+    "the interactive shell",
+    "worker-bee strategy and packet planning"
   ],
   "heading_h2_7": "Design Principle",
   "paragraph_20": "The long-term direction is to keep the pipeline layered and deterministic:",

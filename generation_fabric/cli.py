@@ -21,6 +21,7 @@ from generation_fabric.markdown.contracts import (
 from generation_fabric.markdown.importer import scaffold_markdown_import
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.markdown.registry import list_markdown_contract_kinds
+from generation_fabric.worker_bee import build_generation_packet
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
 from generation_fabric.schema.inference import build_inferred_schema
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -426,6 +427,46 @@ def markdown_import_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def load_worker_bee_brief(args: argparse.Namespace) -> str:
+    """Load and normalize the worker-bee brief from CLI arguments."""
+
+    if args.brief_file:
+        path = Path(args.brief_file)
+        if not path.exists():
+            raise SchemaError(f"brief file does not exist: {path}")
+        if not path.is_file():
+            raise SchemaError(f"brief path is not a file: {path}")
+        try:
+            brief = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise SchemaError(f"cannot read brief file {path}: {exc}") from exc
+    else:
+        brief = args.brief
+
+    brief = brief.strip()
+    if not brief:
+        raise SchemaError("worker-bee brief cannot be empty")
+    return brief
+
+
+def worker_bee_plan_command(args: argparse.Namespace) -> int:
+    """Build a deterministic worker-bee packet from a brief."""
+
+    brief = load_worker_bee_brief(args)
+    packet = build_generation_packet(brief, base_name=args.base_name)
+    packet_dict = packet.to_dict()
+
+    if args.output:
+        output_path = Path(args.output)
+        if output_path.exists() and not args.overwrite:
+            raise SchemaError(f"output file already exists: {output_path}")
+        write_json_file_atomic(output_path, packet_dict)
+        print(f"worker-bee packet written: {output_path}")
+    else:
+        print(json.dumps(packet_dict, indent=2, ensure_ascii=False))
+    return 0
+
+
 def create_schema_command(args: argparse.Namespace) -> int:
     """Create a schema file and return an exit code."""
 
@@ -760,6 +801,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing existing imported files",
     )
     markdown_import_parser.set_defaults(func=markdown_import_command)
+
+    worker_bee_plan_parser = subparsers.add_parser(
+        "worker-bee-plan",
+        help="Build a deterministic worker-bee generation packet from a brief",
+    )
+    worker_bee_brief_group = worker_bee_plan_parser.add_mutually_exclusive_group(required=True)
+    worker_bee_brief_group.add_argument("--brief", default="", help="Inline natural-language brief")
+    worker_bee_brief_group.add_argument("--brief-file", default="", help="Path to a text file with the brief")
+    worker_bee_plan_parser.add_argument(
+        "--base-name",
+        default="",
+        help="Override the generated base-name slug",
+    )
+    worker_bee_plan_parser.add_argument(
+        "--output",
+        default="",
+        help="Write the packet JSON to a file",
+    )
+    worker_bee_plan_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing packet file",
+    )
+    worker_bee_plan_parser.set_defaults(func=worker_bee_plan_command)
 
     interactive_parser = subparsers.add_parser("interactive", help="Start a tiny interactive shell")
     interactive_parser.add_argument("--file", default="", help="Optional schema file to load at startup")

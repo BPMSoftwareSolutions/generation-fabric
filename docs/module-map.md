@@ -15,6 +15,7 @@ This repository is organized so the file names tell the implementation story.
 
 - `docs/compiler-pipeline-roadmap.md`: implementation roadmap for the compiler-style pipeline.
 - `docs/unsupported-markdown-features.md`: manual reference for Markdown features that are not yet modeled by the fabric.
+- `docs/worker-bee-migration-strategy.md`: migration strategy for adding a planner/executor worker-bee boundary on top of the fabric.
 
 ## Core
 
@@ -31,6 +32,11 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/schema/document.py`: schema creation and combinator attachment.
 - `generation_fabric/schema/inference.py`: schema inference from sample JSON.
 - `generation_fabric/schema/validation.py`: schema and instance validation.
+
+## Worker Bee
+
+- `generation_fabric/worker_bee/strategy.py`: migration strategy scaffold that describes the worker-bee planner, executor, and verification phases.
+- `generation_fabric/worker_bee/planner.py`: deterministic packet builder that turns a brief into a worker-bee generation packet.
 
 ## Markdown
 
@@ -68,3 +74,5 @@ This repository is organized so the file names tell the implementation story.
 ## Tests
 
 - `tests/test_json_schema_crud.py`: CLI-level and end-to-end coverage for schema, inference, scaffolding, and Markdown generation.
+- `tests/test_worker_bee_strategy.py`: coverage for the worker-bee migration strategy scaffold.
+- `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
