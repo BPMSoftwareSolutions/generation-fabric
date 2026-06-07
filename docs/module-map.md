@@ -15,6 +15,7 @@ This repository is organized so the file names tell the implementation story.
 
 - `docs/compiler-pipeline-roadmap.md`: implementation roadmap for the compiler-style pipeline.
 - `docs/unsupported-markdown-features.md`: manual reference for Markdown features that are not yet modeled by the fabric.
+- `docs/ascii-first-governance-layer.md`: contract-first ASCII governance note for the sketch, box-model, and inventory pipeline.
 - `docs/worker-bee-learning-loop.md`: benchmark-style learning loop for exercising the worker-bee surface against the fabric.
 - `docs/worker-bee-code-observation.md`: sequence-diagram shape guidance for observing Python execution paths.
 - `docs/worker-bee-code-observation-taxonomy.md`: richer taxonomy and anchor model for architectural code review and forecasted execution flow.
@@ -46,7 +47,7 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/worker_bee/observation.py`: code-observation helpers that turn Python execution paths into Mermaid sequence-diagram Markdown.
 - `generation_fabric/worker_bee/executor.py`: deterministic executor that turns a packet and sketch prompts into schema, JSON, and Markdown artifacts.
 - `generation_fabric/worker_bee/learning.py`: benchmark-style learning loop that exercises the current fabric capabilities and reports coverage.
-- `generation_fabric/worker_bee/layout_sketch.py`: maps a brief to a segment and value angle, draws an ASCII layout sketch, and renders every layout target plus a coherence report.
+- `generation_fabric/worker_bee/layout_sketch.py`: maps a brief to a segment and value angle, draws an ASCII layout sketch, and writes the sketch, zone taxonomy, box model, rendered targets, and coherence report.
 
 ## Markdown
 
@@ -58,7 +59,10 @@ This repository is organized so the file names tell the implementation story.
 ## Layout
 
 - `generation_fabric/layout/ascii_sketch.py`: parses an ASCII layout sketch into a governed zone taxonomy document and owns the canonical zone contract with `x-html`, `x-css`, and `x-svg` annotations.
+- `generation_fabric/layout/box_model.py`: derives the nested box model from a zone taxonomy so the hierarchy stays contract-backed.
 - `generation_fabric/layout/coherence.py`: deterministic coherence audit that checks a zone taxonomy and its renders, then emits a Markdown report through the Markdown renderer.
+- `generation_fabric/layout/inventory.py`: compares multiple zone taxonomies and writes a layout reuse inventory report.
+- `generation_fabric/layout/visual_inventory.py`: records sketch lineage and visual coherence for the inventory of evolution acceleration.
 
 ## HTML
 
@@ -94,16 +98,24 @@ This repository is organized so the file names tell the implementation story.
 - `examples/raw-sections-showcase.md`: canonical rendered raw-sections showcase output.
 - `examples/value-simulator.ascii.md`: canonical ASCII layout sketch input.
 - `examples/value-simulator.zones.json`: canonical zone taxonomy parsed from the sketch.
+- `examples/value-simulator.boxes.json`: canonical nested box model derived from the zone taxonomy.
 - `examples/value-simulator.html`: canonical semantic HTML rendered from the zone taxonomy.
 - `examples/value-simulator.css`: canonical box-model CSS rendered from the zone taxonomy.
 - `examples/value-simulator.svg`: canonical SVG drawing rendered from the zone taxonomy.
 - `examples/value-simulator.coherence.md`: canonical coherence report rendered from the zone taxonomy.
+- `examples/segment-inventory.schema.json`: canonical layout reuse inventory schema.
+- `examples/segment-inventory.json`: canonical layout reuse inventory data.
+- `examples/segment-inventory.md`: canonical layout reuse inventory across the segment examples.
+- `examples/visual-intent-inventory.schema.json`: canonical visual-intent inventory schema.
+- `examples/visual-intent-inventory.json`: canonical visual-intent inventory data.
+- `examples/visual-intent-inventory.md`: canonical visual-intent inventory for sketch lineage and coherence.
 - `examples/layout-zone.schema.json`: canonical zone taxonomy contract with `x-html`, `x-css`, and `x-svg` annotations.
 
 ## Scripts
 
 - `scripts/generate_table_showcase.py`: portable Python generator for the table showcase example.
 - `scripts/generate_raw_sections_showcase.py`: portable Python generator for the raw sections showcase example.
+- `scripts/generate_segment_examples.py`: portable Python generator for the segment layouts, box models, and both inventory reports.
 
 ## Tests
 
@@ -112,5 +124,8 @@ This repository is organized so the file names tell the implementation story.
 - `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
 - `tests/test_worker_bee_executor.py`: coverage for the worker-bee executor and document generation command.
 - `tests/test_layout_ascii.py`: coverage for ASCII sketch parsing, the zone taxonomy contract, HTML rendering, and the `ascii-zones`/`layout-html` commands.
+- `tests/test_layout_box_model.py`: coverage for box-model derivation and the `layout-boxes` command.
+- `tests/test_layout_inventory.py`: coverage for layout reuse inventory reporting and the `layout-inventory` command.
 - `tests/test_layout_targets.py`: coverage for CSS and SVG rendering, the coherence audit, and the `layout-css`/`layout-svg`/`layout-coherence` commands.
+- `tests/test_layout_visual_inventory.py`: coverage for visual-intent inventory reporting and the generated example report.
 - `tests/test_worker_bee_sketch.py`: coverage for brief-to-sketch profiling, the full sketch bundle, and the `worker-bee-sketch` command.

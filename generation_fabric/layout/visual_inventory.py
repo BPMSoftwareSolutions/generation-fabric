@@ -134,7 +134,6 @@ def build_visual_intent_inventory_document(inventory: dict[str, Any]) -> tuple[d
         "type": "object",
         "properties": {
             "summary": {"type": "string", "x-markdown": {"kind": "paragraph"}},
-            "coverage_heading": {"type": "string", "x-markdown": {"kind": "heading", "level": 2}},
             "coverage": {
                 "type": "object",
                 "properties": {
@@ -184,22 +183,22 @@ def build_visual_intent_inventory_document(inventory: dict[str, Any]) -> tuple[d
                                     "type": "string",
                                     "x-markdown": {"kind": "paragraph", "label": True},
                                 },
-                                "visual_coherence_status": {
-                                    "type": "string",
-                                    "x-markdown": {"kind": "paragraph", "label": True},
-                                },
-                            },
+                        "visual_coherence_status": {
+                            "type": "string",
+                            "x-markdown": {"kind": "paragraph", "label": True},
+                        },
+                    },
                             "required": [
                                 "ascii_sketch_required",
                                 "ascii_sketch_path",
                                 "sketch_type",
                                 "sketch_status",
                                 "zone_taxonomy_path",
-                                "box_model_path",
-                                "visual_coherence_status",
-                            ],
-                            "x-markdown": {"kind": "section", "heading": "Visualization"},
-                        },
+                            "box_model_path",
+                            "visual_coherence_status",
+                        ],
+                        "x-markdown": {"kind": "section", "heading": "Visualization"},
+                    },
                         "notes": {"type": "array", "items": {"type": "string"}, "x-markdown": {"kind": "list"}},
                     },
                     "required": [
@@ -208,14 +207,14 @@ def build_visual_intent_inventory_document(inventory: dict[str, Any]) -> tuple[d
                         "segment_label",
                         "value_angle_label",
                         "visualization",
-                        "notes",
+                            "notes",
                     ],
                     "x-markdown": {"kind": "section"},
                 },
                 "x-markdown": {"kind": "section", "heading": "Inventory Items", "item_heading": "Inventory Item"},
             },
         },
-        "required": ["summary", "coverage_heading", "coverage", "items_heading", "items"],
+        "required": ["summary", "coverage", "items"],
         "additionalProperties": False,
     }
     validate_schema_node(schema)
@@ -223,7 +222,6 @@ def build_visual_intent_inventory_document(inventory: dict[str, Any]) -> tuple[d
     coverage = inventory.get("coverage", {})
     data = {
         "summary": inventory.get("summary", ""),
-        "coverage_heading": "Coverage Metrics",
         "coverage": {
             "total_items": str(coverage.get("total_items", 0)),
             "sketch_required": str(coverage.get("sketch_required", 0)),
@@ -231,7 +229,6 @@ def build_visual_intent_inventory_document(inventory: dict[str, Any]) -> tuple[d
             "drifted": str(coverage.get("drifted", 0)),
             "sketch_coverage": f"{float(coverage.get('sketch_coverage', 0.0)):.1f}%",
         },
-        "items_heading": "Inventory Items",
         "items": [
             {
                 "page_id": item["page_id"],

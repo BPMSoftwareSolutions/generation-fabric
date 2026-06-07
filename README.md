@@ -16,10 +16,11 @@ That lets us keep each responsibility isolated while still composing them into o
 - `generation_fabric/json_documents/` handles generic JSON tree CRUD and schema-driven sample generation.
 - `generation_fabric/schema/` owns schema creation, inference, and validation.
 - `generation_fabric/markdown/` owns Markdown rendering, the contract registry, contract scaffolding, and Markdown import.
-- `generation_fabric/layout/` parses ASCII layout sketches into a governed zone taxonomy contract and audits layout coherence.
+- `generation_fabric/layout/` parses ASCII layout sketches into a governed zone taxonomy, derives nested box models, and audits layout coherence plus inventory lineage.
 - `generation_fabric/html/`, `generation_fabric/css/`, and `generation_fabric/svg/` render HTML, CSS, and SVG from the same contract using `x-html`, `x-css`, and `x-svg` annotations.
 - `examples/` contains canonical schema, JSON, and Markdown artifacts.
 - `scripts/generate_table_showcase.py` is the portable Python generator for the table showcase example.
+- `scripts/generate_segment_examples.py` is the portable Python generator for the layout segment examples and inventories.
 - `tests/` contains end-to-end coverage for the published behaviors.
 - `generation_fabric/worker_bee/` owns the migration strategy scaffold, deterministic packet planner, deterministic taxonomy scanner, and document executor.
 
@@ -118,10 +119,22 @@ Render an SVG drawing of the zones from their parsed bounds:
 python json_schema_crud.py layout-svg --data-file examples/value-simulator.zones.json --output examples/value-simulator.svg
 ```
 
+Derive a nested box model JSON document from the same zone taxonomy contract:
+
+```powershell
+python json_schema_crud.py layout-boxes --data-file examples/value-simulator.zones.json --output examples/value-simulator.boxes.json
+```
+
 Audit the zone taxonomy and write a coherence report through the Markdown renderer:
 
 ```powershell
 python json_schema_crud.py layout-coherence --data-file examples/value-simulator.zones.json --output reports/value-simulator.coherence.md
+```
+
+Compare multiple zone taxonomies and write the segment reuse inventory report:
+
+```powershell
+python json_schema_crud.py layout-inventory --data-file examples/value-simulator.zones.json --data-file examples/msp-consultancy-delivery-acceleration.zones.json --data-file examples/ai-platform-compute-discipline.zones.json --output examples/segment-inventory.md
 ```
 
 Generate a Markdown document from a worker-bee brief:
@@ -195,6 +208,8 @@ python json_schema_crud.py interactive
 - `layout-html`: render semantic HTML from a zone taxonomy contract
 - `layout-css`: render box-model CSS from a zone taxonomy contract
 - `layout-svg`: render an SVG drawing from a zone taxonomy contract
+- `layout-boxes`: derive a nested box model from a zone taxonomy contract
+- `layout-inventory`: compare zone taxonomies and write a reuse inventory report
 - `layout-coherence`: audit a zone taxonomy and write a coherence report
 - `worker-bee-plan`: build a deterministic generation packet from a brief
 - `worker-bee-taxonomy`: scan a Python file into reusable taxonomy JSON
@@ -219,13 +234,16 @@ The repository also ships an ASCII-first layout example that proves the sketch-t
 
 - [examples/value-simulator.ascii.md](examples/value-simulator.ascii.md)
 - [examples/value-simulator.zones.json](examples/value-simulator.zones.json)
+- [examples/value-simulator.boxes.json](examples/value-simulator.boxes.json)
 - [examples/value-simulator.html](examples/value-simulator.html)
 - [examples/value-simulator.css](examples/value-simulator.css)
 - [examples/value-simulator.svg](examples/value-simulator.svg)
 - [examples/value-simulator.coherence.md](examples/value-simulator.coherence.md)
+- [examples/segment-inventory.md](examples/segment-inventory.md)
+- [examples/visual-intent-inventory.md](examples/visual-intent-inventory.md)
 - [examples/layout-zone.schema.json](examples/layout-zone.schema.json)
 
-The ASCII sketch is parsed into a governed zone taxonomy, and that single contract renders to semantic HTML, box-model CSS, and an SVG drawing, plus a deterministic coherence report. ASCII is the first authority-bearing design artifact; every other target is a derived render of the same contract.
+The ASCII sketch is parsed into a governed zone taxonomy, then derives a nested box model and the segment and visual-intent inventories. That single contract renders to semantic HTML, box-model CSS, and an SVG drawing, plus deterministic coherence and inventory reports. ASCII is the first authority-bearing design artifact; every other target is a derived render of the same contract.
 
 ## Testing
 
@@ -247,8 +265,11 @@ The tests cover:
 - contract scaffolding
 - ASCII layout sketch parsing and zone taxonomy
 - semantic HTML rendering from a zone taxonomy contract
+- box-model JSON derivation from a zone taxonomy contract
 - box-model CSS and SVG rendering from the same contract
 - layout coherence auditing
+- segment reuse inventory reporting
+- visual-intent inventory reporting
 - worker-bee layout sketch generation
 - the interactive shell
 - worker-bee strategy and packet planning

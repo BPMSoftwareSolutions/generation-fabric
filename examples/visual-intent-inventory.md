@@ -6,8 +6,6 @@ Inventory of sketch lineage and visual coherence for ASCII-first governance.
 
 ## Coverage Metrics
 
-## Coverage Metrics
-
 **total_items**: 3
 
 **sketch_required**: 3
@@ -17,8 +15,6 @@ Inventory of sketch lineage and visual coherence for ASCII-first governance.
 **drifted**: 0
 
 **sketch_coverage**: 100.0%
-
-## Inventory Items
 
 ## Inventory Items
 

@@ -10,13 +10,6 @@
         "kind": "paragraph"
       }
     },
-    "coverage_heading": {
-      "type": "string",
-      "x-markdown": {
-        "kind": "heading",
-        "level": 2
-      }
-    },
     "coverage": {
       "type": "object",
       "properties": {
@@ -206,9 +199,7 @@
   },
   "required": [
     "summary",
-    "coverage_heading",
     "coverage",
-    "items_heading",
     "items"
   ],
   "additionalProperties": false

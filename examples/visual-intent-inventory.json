@@ -1,6 +1,5 @@
 {
   "summary": "3 inventory item(s) reviewed. 3 approved sketches, 0 needing attention, 100.0% sketch coverage.",
-  "coverage_heading": "Coverage Metrics",
   "coverage": {
     "total_items": "3",
     "sketch_required": "3",
@@ -8,7 +7,6 @@
     "drifted": "0",
     "sketch_coverage": "100.0%"
   },
-  "items_heading": "Inventory Items",
   "items": [
     {
       "page_id": "enterprise-engineering-cost-avoidance",
