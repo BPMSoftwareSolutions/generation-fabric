@@ -257,6 +257,23 @@ def build_layout_zone_schema() -> dict[str, Any]:
         ),
         "type": "object",
         "x-html": {"kind": "document", "tag": "main", "class": "layout"},
+        "x-css": {
+            "container_class": "layout",
+            "grid_columns": 12,
+            "breakpoint": "720px",
+            "spacing_tokens": {
+                "--space-xs": "4px",
+                "--space-sm": "8px",
+                "--space-md": "16px",
+                "--space-lg": "24px",
+            },
+        },
+        "x-svg": {
+            "cell_width": 9,
+            "cell_height": 20,
+            "padding": 12,
+            "font_size": 12,
+        },
         "properties": {
             "page_id": {
                 "type": "string",
@@ -335,6 +352,28 @@ def build_layout_zone_schema() -> dict[str, Any]:
     }
     validate_schema_node(schema)
     return schema
+
+
+def find_zone_list(schema: dict[str, Any], data: Any) -> tuple[dict[str, Any], list[Any]]:
+    """Locate the zone array in a layout contract and return its item schema and data.
+
+    Every layout render target (HTML, CSS, SVG) walks the same zone list, so this
+    helper keeps zone discovery in one place: the first top-level array-of-objects
+    property is the zone list.
+    """
+
+    properties = schema.get("properties", {}) if isinstance(schema, dict) else {}
+    if isinstance(properties, dict):
+        for name, property_schema in properties.items():
+            if not isinstance(property_schema, dict):
+                continue
+            if property_schema.get("type") != "array":
+                continue
+            item_schema = property_schema.get("items")
+            if isinstance(item_schema, dict) and item_schema.get("type") == "object":
+                values = data.get(name, []) if isinstance(data, dict) else []
+                return item_schema, list(values) if isinstance(values, list) else []
+    raise SchemaError("layout contract has no zone list")
 
 
 def build_zone_document(text: str, page_id: str = "", title: str = "") -> dict[str, Any]:

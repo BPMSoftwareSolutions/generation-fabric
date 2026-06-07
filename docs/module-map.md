@@ -46,6 +46,7 @@ This repository is organized so the file names tell the implementation story.
 - `generation_fabric/worker_bee/observation.py`: code-observation helpers that turn Python execution paths into Mermaid sequence-diagram Markdown.
 - `generation_fabric/worker_bee/executor.py`: deterministic executor that turns a packet and sketch prompts into schema, JSON, and Markdown artifacts.
 - `generation_fabric/worker_bee/learning.py`: benchmark-style learning loop that exercises the current fabric capabilities and reports coverage.
+- `generation_fabric/worker_bee/layout_sketch.py`: maps a brief to a segment and value angle, draws an ASCII layout sketch, and renders every layout target plus a coherence report.
 
 ## Markdown
 
@@ -56,11 +57,20 @@ This repository is organized so the file names tell the implementation story.
 
 ## Layout
 
-- `generation_fabric/layout/ascii_sketch.py`: parses an ASCII layout sketch into a governed zone taxonomy document and owns the canonical `x-html`-annotated zone contract.
+- `generation_fabric/layout/ascii_sketch.py`: parses an ASCII layout sketch into a governed zone taxonomy document and owns the canonical zone contract with `x-html`, `x-css`, and `x-svg` annotations.
+- `generation_fabric/layout/coherence.py`: deterministic coherence audit that checks a zone taxonomy and its renders, then emits a Markdown report through the Markdown renderer.
 
 ## HTML
 
 - `generation_fabric/html/renderer.py`: deterministic semantic HTML rendering from a schema contract using the `x-html` annotation namespace.
+
+## CSS
+
+- `generation_fabric/css/renderer.py`: deterministic box-model CSS rendering that projects each zone into an ownership rule using the `x-css` annotation namespace.
+
+## SVG
+
+- `generation_fabric/svg/renderer.py`: deterministic SVG rendering that draws each zone from its parsed bounds using the `x-svg` annotation namespace.
 
 ## Example Assets
 
@@ -85,7 +95,10 @@ This repository is organized so the file names tell the implementation story.
 - `examples/value-simulator.ascii.md`: canonical ASCII layout sketch input.
 - `examples/value-simulator.zones.json`: canonical zone taxonomy parsed from the sketch.
 - `examples/value-simulator.html`: canonical semantic HTML rendered from the zone taxonomy.
-- `examples/layout-zone.schema.json`: canonical zone taxonomy contract with `x-html` annotations.
+- `examples/value-simulator.css`: canonical box-model CSS rendered from the zone taxonomy.
+- `examples/value-simulator.svg`: canonical SVG drawing rendered from the zone taxonomy.
+- `examples/value-simulator.coherence.md`: canonical coherence report rendered from the zone taxonomy.
+- `examples/layout-zone.schema.json`: canonical zone taxonomy contract with `x-html`, `x-css`, and `x-svg` annotations.
 
 ## Scripts
 
@@ -99,3 +112,5 @@ This repository is organized so the file names tell the implementation story.
 - `tests/test_worker_bee_planner.py`: coverage for the worker-bee packet planner and CLI command.
 - `tests/test_worker_bee_executor.py`: coverage for the worker-bee executor and document generation command.
 - `tests/test_layout_ascii.py`: coverage for ASCII sketch parsing, the zone taxonomy contract, HTML rendering, and the `ascii-zones`/`layout-html` commands.
+- `tests/test_layout_targets.py`: coverage for CSS and SVG rendering, the coherence audit, and the `layout-css`/`layout-svg`/`layout-coherence` commands.
+- `tests/test_worker_bee_sketch.py`: coverage for brief-to-sketch profiling, the full sketch bundle, and the `worker-bee-sketch` command.

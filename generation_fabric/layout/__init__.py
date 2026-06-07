@@ -11,13 +11,20 @@ from .ascii_sketch import (
     LayoutZoneBounds,
     build_layout_zone_schema,
     build_zone_document,
+    find_zone_list,
     parse_ascii_sketch,
 )
+
+# Note: coherence audit lives in generation_fabric.layout.coherence but is not
+# re-exported here. It depends on the css/svg render targets, which depend on
+# this package; importing it eagerly would create a circular import. Import it
+# directly from the submodule instead.
 
 __all__ = [
     "LayoutZone",
     "LayoutZoneBounds",
     "build_layout_zone_schema",
     "build_zone_document",
+    "find_zone_list",
     "parse_ascii_sketch",
 ]

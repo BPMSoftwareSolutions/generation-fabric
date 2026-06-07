@@ -18,11 +18,14 @@ from generation_fabric.core.io import (
     write_json_file_atomic,
     write_text_file_atomic,
 )
+from generation_fabric.css.renderer import render_css_document
 from generation_fabric.exceptions import SchemaError
 from generation_fabric.html.renderer import render_html_document
 from generation_fabric.json_documents.crud import create_node, delete_node, read_node, update_node
 from generation_fabric.json_documents.sample import build_json_sample_from_root
 from generation_fabric.layout.ascii_sketch import build_layout_zone_schema, build_zone_document
+from generation_fabric.layout.coherence import write_layout_coherence_report
+from generation_fabric.svg.renderer import render_svg_document
 from generation_fabric.markdown.contracts import (
     DEFAULT_MARKDOWN_CONTRACT_KIND,
     scaffold_markdown_contract,
@@ -39,6 +42,7 @@ from generation_fabric.worker_bee import (
     propose_worker_bee_plan,
     run_worker_bee_learning_loop,
     write_worker_bee_document,
+    write_worker_bee_sketch,
 )
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
 from generation_fabric.schema.inference import build_inferred_schema
@@ -411,22 +415,57 @@ def ascii_zones_command(args: argparse.Namespace) -> int:
     return 0
 
 
-def layout_html_command(args: argparse.Namespace) -> int:
-    """Render semantic HTML from a zone taxonomy contract and JSON data."""
+def _render_layout_target(args: argparse.Namespace, renderer, label: str) -> int:
+    """Render one layout target from a zone taxonomy contract and JSON data."""
 
     schema = read_json_file(Path(args.schema)) if args.schema else build_layout_zone_schema()
     data = load_json_file(args.data_file) if args.data_file else load_json_source(args.data)
-    rendered = render_html_document(schema, data)
+    rendered = renderer(schema, data)
 
     output = Path(args.output) if args.output else None
     if output is not None:
         if output.exists() and not args.overwrite:
             raise SchemaError(f"refusing to overwrite existing file: {output}")
         write_text_file_atomic(output, rendered)
-        print(f"html written: {output}")
+        print(f"{label} written: {output}")
     else:
         print(rendered, end="")
     return 0
+
+
+def layout_html_command(args: argparse.Namespace) -> int:
+    """Render semantic HTML from a zone taxonomy contract and JSON data."""
+
+    return _render_layout_target(args, render_html_document, "html")
+
+
+def layout_css_command(args: argparse.Namespace) -> int:
+    """Render box-model CSS from a zone taxonomy contract and JSON data."""
+
+    return _render_layout_target(args, render_css_document, "css")
+
+
+def layout_svg_command(args: argparse.Namespace) -> int:
+    """Render an SVG drawing from a zone taxonomy contract and JSON data."""
+
+    return _render_layout_target(args, render_svg_document, "svg")
+
+
+def layout_coherence_command(args: argparse.Namespace) -> int:
+    """Audit a zone taxonomy for coherence and write a Markdown report."""
+
+    schema = read_json_file(Path(args.schema)) if args.schema else build_layout_zone_schema()
+    data = load_json_file(args.data_file)
+    paths, report = write_layout_coherence_report(
+        schema,
+        data,
+        output=args.output,
+        overwrite=args.overwrite,
+    )
+    print(f"layout coherence report written: {paths.markdown_path}")
+    print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
+    print(f"{report['summary']} ({report['score']:.1f}% coherence)")
+    return 0 if report["passed"] else 1
 
 
 def json_sample_command(args: argparse.Namespace) -> int:
@@ -573,6 +612,29 @@ def worker_bee_generate_command(args: argparse.Namespace) -> int:
     print(f"worker-bee document written: {paths.markdown_path}")
     print(f"generated: {paths.schema_path}, {paths.data_path}, {paths.markdown_path}")
     return 0
+
+
+def worker_bee_sketch_command(args: argparse.Namespace) -> int:
+    """Generate an ASCII layout sketch and render every layout target from a brief."""
+
+    brief = load_worker_bee_brief(args)
+    paths, bundle = write_worker_bee_sketch(
+        brief,
+        output_dir=args.output_dir,
+        base_name=args.base_name,
+        page_id=args.page_id,
+        title=args.title,
+        overwrite=args.overwrite,
+    )
+    print(f"worker-bee sketch written: {paths.sketch_path}")
+    print(f"segment: {bundle.segment_label} | value angle: {bundle.value_angle_label}")
+    print(
+        "generated: "
+        f"{paths.sketch_path}, {paths.zones_path}, {paths.html_path}, "
+        f"{paths.css_path}, {paths.svg_path}, {paths.coherence_path}"
+    )
+    print(f"{bundle.report['summary']} ({bundle.report['score']:.1f}% coherence)")
+    return 0 if bundle.report["passed"] else 1
 
 
 def worker_bee_taxonomy_command(args: argparse.Namespace) -> int:
@@ -916,6 +978,62 @@ def build_parser() -> argparse.ArgumentParser:
     )
     layout_html_parser.set_defaults(func=layout_html_command)
 
+    layout_css_parser = subparsers.add_parser(
+        "layout-css",
+        help="Render box-model CSS from a zone taxonomy contract and JSON data",
+    )
+    layout_css_parser.add_argument(
+        "--schema",
+        default="",
+        help="Path to the zone taxonomy schema (defaults to the canonical layout-zone contract)",
+    )
+    layout_css_parser.add_argument("--data", default="", help="Inline zone taxonomy JSON to render")
+    layout_css_parser.add_argument("--data-file", default="", help="Path to a zones JSON file to render")
+    layout_css_parser.add_argument("--output", default="", help="Write rendered CSS to a file")
+    layout_css_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing CSS file",
+    )
+    layout_css_parser.set_defaults(func=layout_css_command)
+
+    layout_svg_parser = subparsers.add_parser(
+        "layout-svg",
+        help="Render an SVG drawing from a zone taxonomy contract and JSON data",
+    )
+    layout_svg_parser.add_argument(
+        "--schema",
+        default="",
+        help="Path to the zone taxonomy schema (defaults to the canonical layout-zone contract)",
+    )
+    layout_svg_parser.add_argument("--data", default="", help="Inline zone taxonomy JSON to render")
+    layout_svg_parser.add_argument("--data-file", default="", help="Path to a zones JSON file to render")
+    layout_svg_parser.add_argument("--output", default="", help="Write rendered SVG to a file")
+    layout_svg_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing SVG file",
+    )
+    layout_svg_parser.set_defaults(func=layout_svg_command)
+
+    layout_coherence_parser = subparsers.add_parser(
+        "layout-coherence",
+        help="Audit a zone taxonomy for coherence and write a Markdown report",
+    )
+    layout_coherence_parser.add_argument(
+        "--schema",
+        default="",
+        help="Path to the zone taxonomy schema (defaults to the canonical layout-zone contract)",
+    )
+    layout_coherence_parser.add_argument("--data-file", required=True, help="Path to a zones JSON file to audit")
+    layout_coherence_parser.add_argument("--output", default="", help="Write the coherence report to a file")
+    layout_coherence_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing report file",
+    )
+    layout_coherence_parser.set_defaults(func=layout_coherence_command)
+
     json_sample_parser = subparsers.add_parser(
         "json-sample",
         help="Generate a JSON sample from a schema contract",
@@ -1092,6 +1210,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow replacing existing generated files",
     )
     worker_bee_generate_parser.set_defaults(func=worker_bee_generate_command)
+
+    worker_bee_sketch_parser = subparsers.add_parser(
+        "worker-bee-sketch",
+        help="Generate an ASCII layout sketch and render every layout target from a brief",
+    )
+    worker_bee_sketch_brief_group = worker_bee_sketch_parser.add_mutually_exclusive_group(required=True)
+    worker_bee_sketch_brief_group.add_argument("--brief", default="", help="Inline natural-language brief")
+    worker_bee_sketch_brief_group.add_argument("--brief-file", default="", help="Path to a text file with the brief")
+    worker_bee_sketch_parser.add_argument(
+        "--output-dir",
+        default="generated",
+        help="Directory where the sketch and rendered artifacts should be written",
+    )
+    worker_bee_sketch_parser.add_argument(
+        "--base-name",
+        default="",
+        help="Override the generated base-name slug (defaults to the inferred page id)",
+    )
+    worker_bee_sketch_parser.add_argument("--page-id", default="", help="Override the inferred page id")
+    worker_bee_sketch_parser.add_argument("--title", default="", help="Override the inferred page title")
+    worker_bee_sketch_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing existing generated files",
+    )
+    worker_bee_sketch_parser.set_defaults(func=worker_bee_sketch_command)
 
     worker_bee_taxonomy_parser = subparsers.add_parser(
         "worker-bee-taxonomy",

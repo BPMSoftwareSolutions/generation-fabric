@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Layout Coherence Report",
+  "description": "Deterministic coherence audit of a layout zone taxonomy.",
+  "type": "object",
+  "properties": {
+    "page": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "score": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "status": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph",
+        "label": true
+      }
+    },
+    "summary": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "checks_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "check",
+          "status",
+          "detail"
+        ],
+        "additionalProperties": false
+      },
+      "x-markdown": {
+        "kind": "table"
+      }
+    },
+    "zones_heading": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "heading",
+        "level": 2
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "zone_id": {
+            "type": "string"
+          },
+          "layout_role": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "layout_role",
+          "label"
+        ],
+        "additionalProperties": false
+      },
+      "x-markdown": {
+        "kind": "table"
+      }
+    }
+  },
+  "required": [
+    "page",
+    "score",
+    "status",
+    "summary",
+    "checks_heading",
+    "checks",
+    "zones_heading",
+    "zones"
+  ],
+  "additionalProperties": false
+}

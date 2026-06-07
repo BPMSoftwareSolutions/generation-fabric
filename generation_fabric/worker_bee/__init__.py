@@ -52,6 +52,14 @@ from .taxonomy import (
     scan_python_source_taxonomy,
     write_code_taxonomy_document,
 )
+from .layout_sketch import (
+    WorkerBeeSketchBundle,
+    WorkerBeeSketchPaths,
+    build_segment_value_sketch,
+    build_worker_bee_sketch,
+    infer_sketch_profile,
+    write_worker_bee_sketch,
+)
 from .learning import (
     DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES,
     WorkerBeeLearningCase,
@@ -87,6 +95,12 @@ __all__ = [
     "WorkerBeeLearningReport",
     "WorkerBeeLearningRoundResult",
     "WorkerBeeDocumentPaths",
+    "WorkerBeeSketchBundle",
+    "WorkerBeeSketchPaths",
+    "build_segment_value_sketch",
+    "build_worker_bee_sketch",
+    "infer_sketch_profile",
+    "write_worker_bee_sketch",
     "build_generation_packet",
     "build_ascii_billboard",
     "build_worker_bee_document",

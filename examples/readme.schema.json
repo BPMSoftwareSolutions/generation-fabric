@@ -214,6 +214,45 @@
         "language": "powershell"
       }
     },
+    "paragraph_layout_css": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_css": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_layout_svg": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_svg": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_layout_coherence": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_layout_coherence": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
     "paragraph_worker_bee": {
       "type": "string",
       "x-markdown": {
@@ -286,6 +325,19 @@
       }
     },
     "code_worker_bee_learn": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "code",
+        "language": "powershell"
+      }
+    },
+    "paragraph_worker_bee_sketch": {
+      "type": "string",
+      "x-markdown": {
+        "kind": "paragraph"
+      }
+    },
+    "code_worker_bee_sketch": {
       "type": "string",
       "x-markdown": {
         "kind": "code",
@@ -467,6 +519,12 @@
     "code_layout_ascii",
     "paragraph_layout_html",
     "code_layout_html",
+    "paragraph_layout_css",
+    "code_layout_css",
+    "paragraph_layout_svg",
+    "code_layout_svg",
+    "paragraph_layout_coherence",
+    "code_layout_coherence",
     "paragraph_worker_bee",
     "code_worker_bee",
     "paragraph_worker_bee_observe",
@@ -479,6 +537,8 @@
     "code_worker_bee_propose",
     "paragraph_worker_bee_learn",
     "code_worker_bee_learn",
+    "paragraph_worker_bee_sketch",
+    "code_worker_bee_sketch",
     "paragraph_15",
     "code_9",
     "heading_h2_4",

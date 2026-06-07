@@ -1,0 +1,97 @@
+{
+  "page": "value-simulator",
+  "score": "100.0%",
+  "status": "coherent",
+  "summary": "10/10 coherence checks passed across 7 zones.",
+  "checks_heading": "Checks",
+  "checks": [
+    {
+      "check": "sketch_present",
+      "status": "pass",
+      "detail": "ASCII source sketch is recorded"
+    },
+    {
+      "check": "zones_detected",
+      "status": "pass",
+      "detail": "7 zones detected"
+    },
+    {
+      "check": "unique_zone_ids",
+      "status": "pass",
+      "detail": "all zone ids are unique"
+    },
+    {
+      "check": "zones_have_labels",
+      "status": "pass",
+      "detail": "every zone has a label"
+    },
+    {
+      "check": "zones_have_layout_role",
+      "status": "pass",
+      "detail": "every zone has a layout role"
+    },
+    {
+      "check": "zones_have_bounds",
+      "status": "pass",
+      "detail": "every zone has positive bounds"
+    },
+    {
+      "check": "reading_order_preserved",
+      "status": "pass",
+      "detail": "zones follow band/column reading order"
+    },
+    {
+      "check": "html_preserves_zones",
+      "status": "pass",
+      "detail": "every zone renders to an HTML section"
+    },
+    {
+      "check": "css_owns_zones",
+      "status": "pass",
+      "detail": "every zone owns a CSS rule"
+    },
+    {
+      "check": "svg_preserves_zones",
+      "status": "pass",
+      "detail": "every zone draws an SVG box"
+    }
+  ],
+  "zones_heading": "Zones",
+  "zones": [
+    {
+      "zone_id": "hero",
+      "layout_role": "full_width",
+      "label": "HERO: Estimate the value of governed AI engineering"
+    },
+    {
+      "zone_id": "segment-picker",
+      "layout_role": "split_left",
+      "label": "SEGMENT PICKER"
+    },
+    {
+      "zone_id": "value-simulator",
+      "layout_role": "split_right",
+      "label": "VALUE SIMULATOR"
+    },
+    {
+      "zone_id": "formula-assumptions",
+      "layout_role": "full_width",
+      "label": "FORMULA + ASSUMPTIONS"
+    },
+    {
+      "zone_id": "market-citations",
+      "layout_role": "split_left",
+      "label": "MARKET CITATIONS"
+    },
+    {
+      "zone_id": "loc-evidence-chain",
+      "layout_role": "split_right",
+      "label": "LOC EVIDENCE CHAIN"
+    },
+    {
+      "zone_id": "limitations-transformation-review-cta",
+      "layout_role": "full_width",
+      "label": "LIMITATIONS + TRANSFORMATION REVIEW CTA"
+    }
+  ]
+}
