@@ -35,6 +35,7 @@ The default learning catalog exercises:
 - Markdown contract scaffolding
 - legacy Markdown import
 - the interactive schema shell
+- provider-backed worker-bee planning
 - worker-bee packet planning
 - worker-bee document generation
 
@@ -44,6 +45,12 @@ Use the benchmark command from the repository root:
 
 ```powershell
 python json_schema_crud.py worker-bee-learn --rounds 3 --output reports/worker-bee-learning.json
+```
+
+To inspect the provider proposal directly:
+
+```powershell
+python json_schema_crud.py worker-bee-propose --brief "Create a markdown operations note for the generation fabric."
 ```
 
 The command emits a JSON report that includes:

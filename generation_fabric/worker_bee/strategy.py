@@ -70,7 +70,7 @@ def build_default_worker_bee_strategy() -> WorkerBeeMigrationStrategy:
             ),
             WorkerBeeSurface(
                 name="planner_layer",
-                status="planned",
+                status="existing",
                 responsibility="Propose a generation plan from a natural-language brief and select the right contract path",
                 files=(
                     "generation_fabric/worker_bee/planner.py",
@@ -79,7 +79,7 @@ def build_default_worker_bee_strategy() -> WorkerBeeMigrationStrategy:
             ),
             WorkerBeeSurface(
                 name="executor_layer",
-                status="planned",
+                status="existing",
                 responsibility="Apply approved plans through the existing fabric without hand-stitching generated artifacts",
                 files=(
                     "generation_fabric/worker_bee/executor.py",

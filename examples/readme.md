@@ -98,6 +98,12 @@ Generate a Markdown document from a worker-bee brief:
 python json_schema_crud.py worker-bee-generate --brief 'Generate me a markdown file that has two ASCII sketches' --output generated/billboards.md
 ```
 
+Produce a provider-backed planning proposal before building the packet:
+
+```powershell
+python json_schema_crud.py worker-bee-propose --brief 'Create a markdown operations note for the generation fabric.' --output reports/worker-bee-proposal.json
+```
+
 Run the worker-bee learning loop to benchmark the full fabric surface:
 
 ```powershell
@@ -130,6 +136,7 @@ python json_schema_crud.py interactive
 - `markdown-contract`: scaffold a canonical document contract
 - `markdown-import`: convert a legacy Markdown file into a schema plus JSON contract
 - `worker-bee-plan`: build a deterministic generation packet from a brief
+- `worker-bee-propose`: build a provider-backed planning proposal from a brief
 - `worker-bee-generate`: generate Markdown, schema, and JSON artifacts from a brief
 - `worker-bee-learn`: run the benchmark loop and report coverage
 - `interactive`: use the tiny schema shell for quick experiments
@@ -164,6 +171,7 @@ The tests cover:
 - contract scaffolding
 - the interactive shell
 - worker-bee strategy and packet planning
+- provider-backed worker-bee planning
 - worker-bee executor and Markdown generation
 - worker-bee learning loop
 

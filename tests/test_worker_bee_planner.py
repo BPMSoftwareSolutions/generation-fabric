@@ -77,3 +77,18 @@ class WorkerBeePlannerTests(unittest.TestCase):
             self.assertEqual(packet["routing_notes"][0], "planner emits packet JSON only")
             self.assertIn("validate the generated schema", packet["verification"])
 
+    def test_worker_bee_plan_command_can_use_the_provider_seam(self) -> None:
+        code, stdout, stderr = self.run_cli(
+            "worker-bee-plan",
+            "--brief",
+            "Create a schema-backed markdown status page",
+            "--provider",
+            "local",
+        )
+
+        self.assertEqual(code, 0, stderr)
+        packet = json.loads(stdout)
+        self.assertEqual(packet["metadata"]["planner_mode"], "provider-backed")
+        self.assertEqual(packet["metadata"]["provider"]["provider_name"], "local-deterministic")
+        self.assertEqual(packet["metadata"]["provider"]["focus"], "markdown")
+        self.assertEqual(packet["focus"], "markdown")

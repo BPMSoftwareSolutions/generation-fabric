@@ -12,6 +12,14 @@ from .planner import (
     build_generation_packet,
     infer_focus,
 )
+from .prompts import build_worker_bee_planning_prompt
+from .provider import (
+    DeterministicWorkerBeePlanningProvider,
+    WorkerBeePlanProposal,
+    WorkerBeePlanningProvider,
+    build_provider_backed_generation_packet,
+    propose_worker_bee_plan,
+)
 from .executor import (
     WorkerBeeDocumentPaths,
     build_ascii_billboard,
@@ -42,6 +50,9 @@ __all__ = [
     "WorkerBeeMigrationStrategy",
     "WorkerBeePhase",
     "WorkerBeeSurface",
+    "WorkerBeePlanProposal",
+    "WorkerBeePlanningProvider",
+    "DeterministicWorkerBeePlanningProvider",
     "DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES",
     "WorkerBeeLearningCase",
     "WorkerBeeLearningCaseResult",
@@ -52,12 +63,15 @@ __all__ = [
     "build_ascii_billboard",
     "build_worker_bee_document",
     "build_worker_bee_document_data",
+    "build_provider_backed_generation_packet",
+    "build_worker_bee_planning_prompt",
     "build_default_worker_bee_learning_cases",
     "build_worker_bee_document_schema",
     "build_default_worker_bee_strategy",
     "extract_sketch_phrases",
     "infer_focus",
     "normalize_sketch_phrase",
+    "propose_worker_bee_plan",
     "resolve_sketch_phrases",
     "run_worker_bee_learning_loop",
     "write_worker_bee_document",

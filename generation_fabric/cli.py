@@ -21,7 +21,13 @@ from generation_fabric.markdown.contracts import (
 from generation_fabric.markdown.importer import scaffold_markdown_import
 from generation_fabric.markdown.renderer import render_markdown_document
 from generation_fabric.markdown.registry import list_markdown_contract_kinds
-from generation_fabric.worker_bee import build_generation_packet, run_worker_bee_learning_loop, write_worker_bee_document
+from generation_fabric.worker_bee import (
+    build_generation_packet,
+    build_provider_backed_generation_packet,
+    propose_worker_bee_plan,
+    run_worker_bee_learning_loop,
+    write_worker_bee_document,
+)
 from generation_fabric.schema.document import DEFAULT_SCHEMA_DRAFT, attach_combinator, new_schema
 from generation_fabric.schema.inference import build_inferred_schema
 from generation_fabric.schema.validation import validate_instance_against_schema, validate_schema_node
@@ -464,7 +470,10 @@ def worker_bee_plan_command(args: argparse.Namespace) -> int:
     """Build a deterministic worker-bee packet from a brief."""
 
     brief = load_worker_bee_brief(args)
-    packet = build_generation_packet(brief, base_name=args.base_name)
+    if args.provider == "deterministic":
+        packet = build_generation_packet(brief, base_name=args.base_name)
+    else:
+        packet = build_provider_backed_generation_packet(brief, base_name=args.base_name)
     packet_dict = packet.to_dict()
 
     if args.output:
@@ -475,6 +484,24 @@ def worker_bee_plan_command(args: argparse.Namespace) -> int:
         print(f"worker-bee packet written: {output_path}")
     else:
         print(json.dumps(packet_dict, indent=2, ensure_ascii=False))
+    return 0
+
+
+def worker_bee_propose_command(args: argparse.Namespace) -> int:
+    """Produce a provider-backed planning proposal for a brief."""
+
+    brief = load_worker_bee_brief(args)
+    proposal = propose_worker_bee_plan(brief, base_name=args.base_name)
+    proposal_dict = proposal.to_dict()
+
+    if args.output:
+        output_path = Path(args.output)
+        if output_path.exists() and not args.overwrite:
+            raise SchemaError(f"output file already exists: {output_path}")
+        write_json_file_atomic(output_path, proposal_dict)
+        print(f"worker-bee proposal written: {output_path}")
+    else:
+        print(json.dumps(proposal_dict, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -868,11 +895,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write the packet JSON to a file",
     )
     worker_bee_plan_parser.add_argument(
+        "--provider",
+        default="deterministic",
+        choices=["deterministic", "local"],
+        help="Choose how the planning proposal is assembled before the packet is built",
+    )
+    worker_bee_plan_parser.add_argument(
         "--overwrite",
         action="store_true",
         help="Allow replacing an existing packet file",
     )
     worker_bee_plan_parser.set_defaults(func=worker_bee_plan_command)
+
+    worker_bee_propose_parser = subparsers.add_parser(
+        "worker-bee-propose",
+        help="Produce a provider-backed planning proposal from a brief",
+    )
+    worker_bee_propose_brief_group = worker_bee_propose_parser.add_mutually_exclusive_group(required=True)
+    worker_bee_propose_brief_group.add_argument("--brief", default="", help="Inline natural-language brief")
+    worker_bee_propose_brief_group.add_argument("--brief-file", default="", help="Path to a text file with the brief")
+    worker_bee_propose_parser.add_argument(
+        "--base-name",
+        default="",
+        help="Override the generated base-name slug",
+    )
+    worker_bee_propose_parser.add_argument(
+        "--output",
+        default="",
+        help="Write the proposal JSON to a file",
+    )
+    worker_bee_propose_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow replacing an existing proposal file",
+    )
+    worker_bee_propose_parser.set_defaults(func=worker_bee_propose_command)
 
     worker_bee_generate_parser = subparsers.add_parser(
         "worker-bee-generate",

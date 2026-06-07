@@ -38,6 +38,8 @@ This repository is organized so the file names tell the implementation story.
 
 - `generation_fabric/worker_bee/strategy.py`: migration strategy scaffold that describes the worker-bee planner, executor, and verification phases.
 - `generation_fabric/worker_bee/planner.py`: deterministic packet builder that turns a brief into a worker-bee generation packet.
+- `generation_fabric/worker_bee/prompts.py`: prompt helpers that prepare a provider-facing worker-bee planning prompt.
+- `generation_fabric/worker_bee/provider.py`: provider-backed planning proposal helpers and the deterministic local provider adapter.
 - `generation_fabric/worker_bee/executor.py`: deterministic executor that turns a packet and sketch prompts into schema, JSON, and Markdown artifacts.
 - `generation_fabric/worker_bee/learning.py`: benchmark-style learning loop that exercises the current fabric capabilities and reports coverage.
 

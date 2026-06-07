@@ -26,6 +26,7 @@ from generation_fabric.schema.validation import validate_instance_against_schema
 
 from .executor import build_worker_bee_document, write_worker_bee_document
 from .planner import build_generation_packet
+from .provider import build_provider_backed_generation_packet, propose_worker_bee_plan
 
 DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "new",
@@ -47,6 +48,7 @@ DEFAULT_WORKER_BEE_LEARNING_CAPABILITIES: tuple[str, ...] = (
     "markdown-import",
     "interactive",
     "worker-bee-plan",
+    "worker-bee-propose",
     "worker-bee-generate",
 )
 
@@ -476,6 +478,35 @@ def _worker_bee_plan_case(root: Path) -> WorkerBeeLearningCaseResult:
     )
 
 
+def _worker_bee_provider_case(root: Path) -> WorkerBeeLearningCaseResult:
+    """Exercise provider-backed planning before packet creation."""
+
+    brief = "Create a schema-backed markdown status page with a portable planning seam."
+    proposal = propose_worker_bee_plan(brief)
+    packet = build_provider_backed_generation_packet(brief)
+
+    if proposal.provider_name != "local-deterministic":
+        raise SchemaError("provider-backed planning did not use the expected local provider")
+    if packet.metadata.get("planner_mode") != "provider-backed":
+        raise SchemaError("provider-backed planning did not annotate the packet metadata")
+    if packet.metadata.get("provider", {}).get("provider_name") != proposal.provider_name:
+        raise SchemaError("provider-backed packet metadata does not match the proposal")
+
+    proposal_path = root / "provider-proposal.json"
+    packet_path = root / "provider-packet.json"
+    write_json_file_atomic(proposal_path, proposal.to_dict())
+    write_json_file_atomic(packet_path, packet.to_dict())
+
+    return WorkerBeeLearningCaseResult(
+        name="worker_bee_provider_planning",
+        capabilities=("worker-bee-propose",),
+        passed=True,
+        details="provider-backed planning produced a proposal and packet successfully",
+        lessons=("The planner seam can be backed by a provider without changing the downstream fabric contract.",),
+        artifacts=(str(proposal_path), str(packet_path)),
+    )
+
+
 def _worker_bee_generate_case(root: Path) -> WorkerBeeLearningCaseResult:
     """Exercise worker-bee document generation."""
 
@@ -570,6 +601,12 @@ def build_default_worker_bee_learning_cases() -> tuple[WorkerBeeLearningCase, ..
             capabilities=("worker-bee-plan",),
             description="Build a deterministic worker-bee planning packet",
             exercise=_worker_bee_plan_case,
+        ),
+        WorkerBeeLearningCase(
+            name="worker_bee_provider_planning",
+            capabilities=("worker-bee-propose",),
+            description="Build a provider-backed worker-bee planning proposal and packet",
+            exercise=_worker_bee_provider_case,
         ),
         WorkerBeeLearningCase(
             name="worker_bee_generate",

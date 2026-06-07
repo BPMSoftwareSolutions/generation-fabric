@@ -60,6 +60,8 @@ The next layer is `generation_fabric/worker_bee/executor.py`, which turns that p
 
 The benchmark loop lives in `generation_fabric/worker_bee/learning.py`, which exercises the current fabric surface, records coverage, and tells us whether the worker bee is actually using the tools it is supposed to use.
 
+The provider seam lives in `generation_fabric/worker_bee/prompts.py` and `generation_fabric/worker_bee/provider.py`, which make the planning step swappable without changing the downstream packet or fabric contract.
+
 The `worker-bee-plan` CLI command writes that packet to JSON, or prints it to stdout, so the planning contract is visible before the executor exists.
 
 The `worker-bee-generate` CLI command executes the full brief-to-document path and writes the contract-backed Markdown output plus its sidecar schema and JSON files.
@@ -124,6 +126,8 @@ We know the migration is working when:
 ## Related Files
 
 - `generation_fabric/worker_bee/strategy.py`
+- `generation_fabric/worker_bee/prompts.py`
+- `generation_fabric/worker_bee/provider.py`
 - `generation_fabric/worker_bee/learning.py`
 - `docs/module-map.md`
 - `docs/worker-bee-learning-loop.md`
